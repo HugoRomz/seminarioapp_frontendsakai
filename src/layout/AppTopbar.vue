@@ -1,13 +1,12 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
-import { useRouter } from 'vue-router';
 
-const { layoutConfig, onMenuToggle } = useLayout();
+const { onMenuToggle } = useLayout();
 
 const outsideClickListener = ref(null);
 const topbarMenuActive = ref(false);
-const router = useRouter();
+const userMenuActive = ref(false); // Nueva referencia para el menú del usuario
 
 onMounted(() => {
     bindOutsideClickListener();
@@ -17,17 +16,10 @@ onBeforeUnmount(() => {
     unbindOutsideClickListener();
 });
 
-const logoUrl = computed(() => {
-    return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
-});
-
 const onTopBarMenuButton = () => {
     topbarMenuActive.value = !topbarMenuActive.value;
 };
-const onSettingsClick = () => {
-    topbarMenuActive.value = false;
-    router.push('/documentation');
-};
+
 const topbarMenuClasses = computed(() => {
     return {
         'layout-topbar-menu-mobile-active': topbarMenuActive.value
@@ -39,6 +31,7 @@ const bindOutsideClickListener = () => {
         outsideClickListener.value = (event) => {
             if (isOutsideClicked(event)) {
                 topbarMenuActive.value = false;
+                userMenuActive.value = false; // Asegurarse de que el menú del usuario también se cierre
             }
         };
         document.addEventListener('click', outsideClickListener.value);
@@ -46,20 +39,29 @@ const bindOutsideClickListener = () => {
 };
 const unbindOutsideClickListener = () => {
     if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener('click', outsideClickListener.value);
         outsideClickListener.value = null;
     }
 };
 const isOutsideClicked = (event) => {
-    if (!topbarMenuActive.value) return;
+    if (!topbarMenuActive.value && !userMenuActive.value) return true; // Actualizar la lógica para incluir userMenuActive
 
     const sidebarEl = document.querySelector('.layout-topbar-menu');
     const topbarEl = document.querySelector('.layout-topbar-menu-button');
+    const userMenuBtnEl = document.querySelector('.layout-topbar-user-menu-button'); // Selector para el nuevo botón del menú del usuario
+    const userMenuEl = document.querySelector('.layout-topbar-user-menu'); // Selector para el nuevo menú del usuario
 
-    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+    return !(
+        sidebarEl.isSameNode(event.target) ||
+        sidebarEl.contains(event.target) ||
+        topbarEl.isSameNode(event.target) ||
+        topbarEl.contains(event.target) ||
+        userMenuBtnEl.isSameNode(event.target) ||
+        userMenuBtnEl.contains(event.target) ||
+        (userMenuEl && (userMenuEl.isSameNode(event.target) || userMenuEl.contains(event.target)))
+    );
 };
 </script>
-
 <template>
     <div class="layout-topbar">
         <router-link to="/" class="layout-topbar-logo">
@@ -77,7 +79,7 @@ const isOutsideClicked = (event) => {
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
             <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-user"></i>
+                <i class="pi pi-sign-out"></i>
                 <span>Logout</span>
             </button>
         </div>
