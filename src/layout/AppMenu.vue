@@ -11,10 +11,14 @@ const model = ref([
     {
         label: 'Alumnos',
         items: [
-            { label: 'Home', icon: 'pi pi-fw pi-home', to: '/alumnos' },
+            {
+                label: 'Home',
+                icon: 'pi pi-fw pi-home',
+                to: '/alumnos'
+            },
             {
                 label: 'Subir Archivos',
-                icon: 'pi pi-fw pi-home',
+                icon: 'pi pi-cloud-upload',
                 to: '/subirArchivos'
             }
         ]

@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
+import { useUser } from '../stores/user';
+
+const user = useUser();
 
 const { onMenuToggle } = useLayout();
 
@@ -65,8 +68,7 @@ const isOutsideClicked = (event) => {
 <template>
     <div class="layout-topbar">
         <router-link to="/" class="layout-topbar-logo">
-            <!-- <img :src="logoUrl" alt="logo" />
-            <span>SAKAI</span> -->
+            <span class="tracking-[0.3rem] text-3xl">SIGEST<strong class="text-xs tracking-normal">UNACH</strong></span>
         </router-link>
 
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
@@ -78,7 +80,7 @@ const isOutsideClicked = (event) => {
         </button>
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
+            <button @click="user.logout" class="p-link layout-topbar-button">
                 <i class="pi pi-sign-out"></i>
                 <span>Logout</span>
             </button>
