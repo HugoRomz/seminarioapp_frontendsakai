@@ -18,23 +18,28 @@ const model = ref([
         items: [
             {
                 label: 'Preinscripción',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-users',
+                to: '/admin/preregister'
+            },
+            {
+                label: 'Alumnos',
+                icon: 'pi pi-user',
+                to: '/admin/alumnos'
             },
             {
                 label: 'Documentación',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-file-pdf',
+                to: '/admin/documentacion'
             },
             {
                 label: 'Docentes',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-book',
+                to: '/admin/docentes'
             },
             {
                 label: 'Seminarios',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-th-large',
+                to: '/admin/seminarios'
             }
         ],
         roles: ['Administrador']
@@ -44,8 +49,8 @@ const model = ref([
         items: [
             {
                 label: 'Subir Archivos',
-                icon: 'pi pi-cloud-upload',
-                to: '/subirArchivos'
+                icon: 'pi pi-file-import',
+                to: '/alumnos/subirArchivos'
             }
         ],
         roles: ['Alumno']
@@ -55,23 +60,23 @@ const model = ref([
         items: [
             {
                 label: 'Documentación',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-file-import',
+                to: '/docentes/documentacion'
             },
             {
                 label: 'Módulos',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-circle',
+                to: '/docentes/modulos'
             },
             {
                 label: 'Evidencias',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-file',
+                to: '/docentes/evidencias'
             },
             {
                 label: 'Asesorias',
-                icon: 'pi pi-cloud-upload',
-                to: '/pages/empty'
+                icon: 'pi pi-desktop',
+                to: '/docentes/asesorias'
             }
         ],
         roles: ['Profesor']

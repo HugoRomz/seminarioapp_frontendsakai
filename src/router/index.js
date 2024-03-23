@@ -15,22 +15,70 @@ const router = createRouter({
                     name: 'home',
                     component: () => import('@/views/Home.vue')
                 },
+                // Rutas de Administrador
                 {
-                    path: '/subirArchivos',
-                    name: 'subirArchivos',
-                    component: () => import('@/views/alumnos/subirArchivos.vue')
+                    path: '/admin/preregister',
+                    name: 'preregister',
+                    component: () => import('@/views/administrador/PreregisterView.vue'),
+                    meta: { roles: ['Administrador'] }
                 },
                 {
-                    path: '/pages/empty',
-                    name: 'empty',
-                    component: () => import('@/views/pages/Empty.vue')
+                    path: '/admin/documentacion',
+                    name: 'documentacionAdmin',
+                    component: () => import('@/views/administrador/documentacionView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/alumnos',
+                    name: 'alumnosAdmin',
+                    component: () => import('@/views/administrador/alumnosView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/docentes',
+                    name: 'docentesAdmin',
+                    component: () => import('@/views/administrador/docentesView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/seminarios',
+                    name: 'seminario',
+                    component: () => import('@/views/administrador/seminarioView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                // Rutas de alumno
+                {
+                    path: 'alumnos/subirArchivos',
+                    name: 'subirArchivos',
+                    component: () => import('@/views/alumnos/subirArchivos.vue'),
+                    meta: { roles: ['Alumno'] }
+                },
+                // Rutas docentes
+                {
+                    path: '/docentes/documentacion',
+                    name: 'documentacionDocente',
+                    component: () => import('@/views/docentes/documentacionView.vue'),
+                    meta: { roles: ['Profesor'] }
+                },
+                {
+                    path: '/docentes/asesorias',
+                    name: 'asesorias',
+                    component: () => import('@/views/docentes/asesoriasView.vue'),
+                    meta: { roles: ['Profesor'] }
+                },
+                {
+                    path: '/docentes/modulos',
+                    name: 'modulos',
+                    component: () => import('@/views/docentes/modulosView.vue'),
+                    meta: { roles: ['Profesor'] }
+                },
+                {
+                    path: '/docentes/evidencias',
+                    name: 'evidencias',
+                    component: () => import('@/views/docentes/evidenciasView.vue'),
+                    meta: { roles: ['Profesor'] }
                 }
             ]
-        },
-        {
-            path: '/pages/notfound',
-            name: 'notfound',
-            component: () => import('@/views/pages/NotFound.vue')
         },
         {
             path: '/auth',
@@ -48,22 +96,49 @@ const router = createRouter({
                     component: () => import('@/views/auth/LoginView.vue')
                 }
             ]
+        },
+        {
+            path: '/no-autorizado',
+            name: 'NoAutorizado',
+            component: () => import('@/views/pages/Unauthorized.vue')
+        },
+        {
+            path: '/:catchAll(.*)',
+            name: '404',
+            component: () => import('@/views/pages/NotFound.vue')
         }
     ]
 });
-
 router.beforeEach(async (to, from, next) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+    let userRoles = []; // Aquí almacenaremos los roles del usuario
 
-    if (requiresAuth) {
-        try {
-            await AuthAPI.auth();
-            next();
-        } catch (error) {
-            next({ name: 'Login' });
+    try {
+        const response = await AuthAPI.auth(); // Suponiendo que esto devuelve la información del usuario
+        if (response && response.data && response.data.roles) {
+            // Extraemos los roles del usuario
+            userRoles = response.data.roles.map((role) => role.nombre_rol);
         }
-    } else {
-        next();
+
+        if (to.matched.some((record) => record.name === 'Login' || record.name === 'Preregistro')) {
+            next({ name: 'home' });
+        } else if (requiresAuth && to.meta.roles) {
+            const hasPermission = to.meta.roles.some((role) => userRoles.includes(role));
+            if (!hasPermission) {
+                // Si el usuario no tiene ningún rol que le permita acceder a la ruta
+                next({ name: 'NoAutorizado' });
+            } else {
+                next();
+            }
+        } else {
+            next();
+        }
+    } catch (error) {
+        if (requiresAuth) {
+            next({ name: 'Login' });
+        } else {
+            next();
+        }
     }
 });
 
