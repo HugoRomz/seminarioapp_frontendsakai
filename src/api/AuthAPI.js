@@ -9,6 +9,9 @@ export default {
     },
     auth() {
         const token = localStorage.getItem('AUTH_TOKEN');
+        if (!token) {
+            return Promise.reject('No authenticated');
+        }
         return api.get('/auth/user', {
             headers: {
                 Authorization: `Bearer ${token}`
