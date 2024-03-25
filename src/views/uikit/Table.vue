@@ -10,9 +10,7 @@ const customer3 = ref(null);
 const filters1 = ref(null);
 const loading1 = ref(null);
 const loading2 = ref(null);
-const idFrozen = ref(false);
 const products = ref(null);
-const expandedRows = ref([]);
 const statuses = ref(['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal']);
 const representatives = ref([
     { name: 'Amy Elsner', image: 'amyelsner.png' },
@@ -30,18 +28,6 @@ const representatives = ref([
 const customerService = new CustomerService();
 const productService = new ProductService();
 
-const getBadgeSeverity = (inventoryStatus) => {
-    switch (inventoryStatus.toLowerCase()) {
-        case 'instock':
-            return 'success';
-        case 'lowstock':
-            return 'warning';
-        case 'outofstock':
-            return 'danger';
-        default:
-            return 'info';
-    }
-};
 const getSeverity = (status) => {
     switch (status) {
         case 'unqualified':
@@ -92,12 +78,6 @@ const initFilters1 = () => {
 const clearFilter1 = () => {
     initFilters1();
 };
-const expandAll = () => {
-    expandedRows.value = products.value.reduce((acc, p) => (acc[p.id] = true) && acc, {});
-};
-const collapseAll = () => {
-    expandedRows.value = null;
-};
 const formatCurrency = (value) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
@@ -108,18 +88,6 @@ const formatDate = (value) => {
         month: '2-digit',
         year: 'numeric'
     });
-};
-const calculateCustomerTotal = (name) => {
-    let total = 0;
-    if (customer3.value) {
-        for (let customer of customer3.value) {
-            if (customer.representative.name === name) {
-                total++;
-            }
-        }
-    }
-
-    return total;
 };
 </script>
 
@@ -248,163 +216,6 @@ const calculateCustomerTotal = (name) => {
                             <TriStateCheckbox v-model="filterModel.value" />
                         </template>
                     </Column>
-                </DataTable>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card">
-                <h5>Frozen Columns</h5>
-                <ToggleButton v-model="idFrozen" onIcon="pi pi-lock" offIcon="pi pi-lock-open" onLabel="Unfreeze Id" offLabel="Freeze Id" style="width: 10rem" />
-
-                <DataTable :value="customer2" :scrollable="true" scrollHeight="400px" :loading="loading2" scrollDirection="both" class="mt-3">
-                    <Column field="name" header="Name" style="min-width: 200px" frozen></Column>
-                    <Column field="id" header="Id" style="min-width: 100px" :frozen="idFrozen"></Column>
-                    <Column field="country.name" header="Country" :style="{ width: '200px' }">
-                        <template #body="{ data }">
-                            <div class="flex align-items-center gap-2">
-                                <img alt="flag" src="/demo/images/flag/flag_placeholder.png" :class="`flag flag-${data.country.code}`" style="width: 24px" />
-                                <span>{{ data.country.name }}</span>
-                            </div>
-                        </template>
-                    </Column>
-                    <Column field="date" header="Date" style="min-width: 200px"></Column>
-                    <Column field="company" header="Company" style="min-width: 200px"></Column>
-                    <Column field="status" header="Status" style="min-width: 200px">
-                        <template #body="{ data }">
-                            <Tag :severity="getSeverity(data.status)">{{ data.status.toUpperCase() }}</Tag>
-                        </template>
-                    </Column>
-                    <Column field="activity" header="Activity" style="min-width: 200px"></Column>
-                    <Column field="representative.name" header="Representative" style="min-width: 200px">
-                        <template #body="{ data }">
-                            <div class="flex align-items-center gap-2">
-                                <img :alt="data.representative.name" :src="`https://primefaces.org/cdn/primevue/images/avatar/${data.representative.image}`" style="width: 32px" />
-                                <span>{{ data.representative.name }}</span>
-                            </div>
-                        </template>
-                    </Column>
-                    <Column field="balance" header="Balance" style="min-width: 200px" frozen alignFrozen="right">
-                        <template #body="{ data }">
-                            <span class="text-bold">{{ formatCurrency(data.balance) }}</span>
-                        </template>
-                    </Column>
-                </DataTable>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card">
-                <h5>Row Expand</h5>
-                <DataTable :value="products" v-model:expandedRows="expandedRows" dataKey="id" tableStyle="min-width: 60rem">
-                    <template #header>
-                        <div>
-                            <Button icon="pi pi-plus" label="Expand All" @click="expandAll" class="mr-2 mb-2" />
-                            <Button icon="pi pi-minus" label="Collapse All" @click="collapseAll" class="mb-2" />
-                        </div>
-                    </template>
-                    <Column :expander="true" headerStyle="width: 3rem" />
-                    <Column field="name" header="Name" :sortable="true">
-                        <template #body="slotProps">
-                            {{ slotProps.data.name }}
-                        </template>
-                    </Column>
-                    <Column header="Image">
-                        <template #body="slotProps">
-                            <img :src="'/demo/images/product/' + slotProps.data.image" :alt="slotProps.data.image" class="shadow-2" width="100" />
-                        </template>
-                    </Column>
-                    <Column field="price" header="Price" :sortable="true">
-                        <template #body="slotProps">
-                            {{ formatCurrency(slotProps.data.price) }}
-                        </template>
-                    </Column>
-                    <Column field="category" header="Category" :sortable="true">
-                        <template #body="slotProps">
-                            {{ formatCurrency(slotProps.data.category) }}
-                        </template></Column
-                    >
-                    <Column field="rating" header="Reviews" :sortable="true">
-                        <template #body="slotProps">
-                            <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
-                        </template>
-                    </Column>
-                    <Column field="inventoryStatus" header="Status" :sortable="true">
-                        <template #body="slotProps">
-                            <Tag :severity="getBadgeSeverity(slotProps.data.inventoryStatus)">{{ slotProps.data.inventoryStatus }}</Tag>
-                        </template>
-                    </Column>
-                    <template #expansion="slotProps">
-                        <div class="p-3">
-                            <h5>Orders for {{ slotProps.data.name }}</h5>
-                            <DataTable :value="slotProps.data.orders">
-                                <Column field="id" header="Id" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ slotProps.data.id }}
-                                    </template>
-                                </Column>
-                                <Column field="customer" header="Customer" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ slotProps.data.customer }}
-                                    </template>
-                                </Column>
-                                <Column field="date" header="Date" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ slotProps.data.date }}
-                                    </template>
-                                </Column>
-                                <Column field="amount" header="Amount" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ formatCurrency(slotProps.data.amount) }}
-                                    </template>
-                                </Column>
-                                <Column field="status" header="Status" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span :class="'order-badge order-' + (slotProps.data.status ? slotProps.data.status.toLowerCase() : '')">{{ slotProps.data.status }}</span>
-                                    </template>
-                                </Column>
-                                <Column headerStyle="width:4rem">
-                                    <template #body>
-                                        <Button icon="pi pi-search" />
-                                    </template>
-                                </Column>
-                            </DataTable>
-                        </div>
-                    </template>
-                </DataTable>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="card">
-                <h5>Subheader Grouping</h5>
-                <DataTable :value="customer3" rowGroupMode="subheader" groupRowsBy="representative.name" sortMode="single" sortField="representative.name" :sortOrder="1" scrollable scrollHeight="400px">
-                    <Column field="representative.name" header="Representative"></Column>
-                    <Column field="name" header="Name" style="min-width: 200px"></Column>
-                    <Column field="country" header="Country" style="min-width: 200px">
-                        <template #body="{ data }">
-                            <div class="flex align-items-center gap-2">
-                                <img alt="flag" src="/demo/images/flag/flag_placeholder.png" :class="`flag flag-${data.country.code}`" style="width: 24px" />
-                                <span>{{ data.country.name }}</span>
-                            </div>
-                        </template>
-                    </Column>
-                    <Column field="company" header="Company" style="min-width: 200px"></Column>
-                    <Column field="status" header="Status" style="min-width: 200px">
-                        <template #body="slotProps">
-                            <Tag :severity="getSeverity(slotProps.data.status)">{{ slotProps.data.status.toUpperCase() }}</Tag>
-                        </template>
-                    </Column>
-                    <Column field="date" header="Date" style="min-width: 200px"></Column>
-                    <template #groupheader="slotProps">
-                        <div class="flex align-items-center gap-2">
-                            <img :alt="slotProps.data.representative.name" :src="'/demo/images/avatar/' + slotProps.data.representative.image" width="32" style="vertical-align: middle" />
-                            <span>{{ slotProps.data.representative.name }}</span>
-                        </div>
-                    </template>
-                    <template #groupfooter="slotProps">
-                        <td style="text-align: right" class="text-bold pr-6">Total Customers: {{ calculateCustomerTotal(slotProps.data.representative.name) }}</td>
-                    </template>
                 </DataTable>
             </div>
         </div>

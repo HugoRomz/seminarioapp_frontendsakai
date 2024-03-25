@@ -25,7 +25,7 @@ const router = createRouter({
                 {
                     path: '/admin/documentacion',
                     name: 'documentacionAdmin',
-                    component: () => import('@/views/administrador/documentacionView.vue'),
+                    component: () => import('@/views/uikit/Table.vue'),
                     meta: { roles: ['Administrador'] }
                 },
                 {
