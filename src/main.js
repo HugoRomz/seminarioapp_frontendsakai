@@ -1,9 +1,10 @@
-import './assets/main.css';
+// import './assets/main.css';
 
 import { createPinia } from 'pinia';
 import { plugin, defaultConfig } from '@formkit/vue';
+import genesisTheme from '@formkit/themes/genesis';
+
 import { useToast } from 'vue-toast-notification';
-import config from '../formkit.config';
 
 import 'vue-toast-notification/dist/theme-bootstrap.css';
 
@@ -128,7 +129,16 @@ const app = createApp(App);
 
 app.provide('toast', $toast);
 app.use(createPinia());
-app.use(plugin, defaultConfig(config));
+
+// FORMKIT
+app.use(
+    plugin,
+    defaultConfig({
+        themes: {
+            genesis: genesisTheme
+        }
+    })
+);
 
 app.use(router);
 app.use(PrimeVue, { ripple: true });
