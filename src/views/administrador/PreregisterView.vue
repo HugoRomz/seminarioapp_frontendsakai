@@ -2,6 +2,12 @@
 import UserApi from '../../api/UserApi';
 import { ref, onBeforeMount, inject } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
+import { useConfirm } from 'primevue/useconfirm';
+const confirmPopup = useConfirm();
+
+import Spinner from '../../components/Spinner.vue';
+
+const isAccepting = ref(false);
 
 const toast = inject('toast');
 
@@ -24,6 +30,7 @@ const loadUsers = async () => {
 onBeforeMount(loadUsers);
 
 const aceptarUsuario = async (userData) => {
+    isAccepting.value = true;
     try {
         const response = await UserApi.create(userData);
         toast.open({
@@ -36,13 +43,38 @@ const aceptarUsuario = async (userData) => {
             message: error.response.data.msg,
             type: 'error'
         });
+    } finally {
+        isAccepting.value = false; // Detener spinner
     }
 };
 
-const rechazarUsuario = (userData) => {
-    console.log('Rechazar usuario:', userData);
+const rechazarUsuario = async (userData) => {
+    confirmPopup.require({
+        target: event.target,
+        message: '¿Estás seguro de que quieres rechazar a este usuario?',
+        acceptLabel: 'Sí, rechazar',
+        rejectLabel: 'Cancelar',
+        icon: 'pi pi-exclamation-triangle',
+        accept: async () => {
+            isAccepting.value = true;
+            try {
+                const response = await UserApi.delete(userData.id);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+                loadUsers();
+            } catch (error) {
+                toast.open({
+                    message: error.response.data.msg,
+                    type: 'error'
+                });
+            } finally {
+                isAccepting.value = false;
+            }
+        }
+    });
 };
-
 const dt = ref();
 const exportCSV = () => {
     dt.value.exportCSV();
@@ -62,6 +94,7 @@ const clearFilter = () => {
 </script>
 
 <template>
+    <Spinner v-if="isAccepting" />
     <div class="grid">
         <div class="col-12">
             <div class="card bg-white shadow-xl rounded-lg p-5 border border-gray-200">
@@ -100,6 +133,7 @@ const clearFilter = () => {
                     <Column header="Acciones" bodyStyle="text-align:center" style="min-width: 10rem">
                         <template #body="{ data }">
                             <Button @click="aceptarUsuario(data)" class="p-button-success mr-2 mb-2">Aceptar</Button>
+                            <ConfirmPopup></ConfirmPopup>
                             <Button @click="rechazarUsuario(data)" class="p-button-danger mr-2 mb-2">Rechazar</Button>
                         </template>
                     </Column>
