@@ -1,6 +1,6 @@
 <script setup>
 import UserApi from '../../api/UserApi';
-import { ref, onBeforeMount, inject } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useConfirm } from 'primevue/useconfirm';
 const confirmPopup = useConfirm();
@@ -27,7 +27,7 @@ const loadUsers = async () => {
     }
 };
 
-onBeforeMount(loadUsers);
+onMounted(loadUsers);
 
 const aceptarUsuario = async (userData) => {
     isAccepting.value = true;
@@ -98,7 +98,7 @@ const clearFilter = () => {
     <div class="grid">
         <div class="col-12">
             <div class="card bg-white shadow-xl rounded-lg p-5 border border-gray-200">
-                <h5 class="text-xl font-bold mb-4 border-b border-gray-200 pb-2">Filter Menu</h5>
+                <h5 class="text-xl font-bold mb-4 border-b border-gray-200 pb-2">TABLA DE PRE REGISTROS</h5>
                 <DataTable :value="users" paginator :rows="10" ref="dt" :rowsPerPageOptions="[5, 10, 20, 50]" v-model:filters="filters" filterDisplay="row" tableStyle="min-width: 50rem">
                     <template #header>
                         <div class="flex justify-content-between flex-column sm:flex-row">
