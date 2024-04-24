@@ -58,25 +58,25 @@ const router = createRouter({
                     path: '/docentes/documentacion',
                     name: 'documentacionDocente',
                     component: () => import('@/views/docentes/documentacionView.vue'),
-                    meta: { roles: ['Profesor'] }
+                    meta: { roles: ['Docente'] }
                 },
                 {
                     path: '/docentes/asesorias',
                     name: 'asesorias',
                     component: () => import('@/views/docentes/asesoriasView.vue'),
-                    meta: { roles: ['Profesor'] }
+                    meta: { roles: ['Docente'] }
                 },
                 {
                     path: '/docentes/modulos',
                     name: 'modulos',
                     component: () => import('@/views/docentes/modulosView.vue'),
-                    meta: { roles: ['Profesor'] }
+                    meta: { roles: ['Docente'] }
                 },
                 {
                     path: '/docentes/evidencias',
                     name: 'evidencias',
                     component: () => import('@/views/docentes/evidenciasView.vue'),
-                    meta: { roles: ['Profesor'] }
+                    meta: { roles: ['Docente'] }
                 }
             ]
         },

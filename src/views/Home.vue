@@ -1,31 +1,55 @@
 <script setup>
-import { useUser } from '../stores/user';
-const user = useUser();
+import { ref, onMounted } from 'vue';
+import AuthAPI from '../api/AuthAPI';
+import Spinner from '../components/Spinner.vue';
+
+const loading = ref(null);
+const users = ref(null);
+
+onMounted(async () => {
+    loading.value = true;
+    try {
+        const response = await AuthAPI.auth();
+        users.value = response.data;
+        console.log(users.value);
+    } catch (error) {
+        console.error('Error al obtener los datos:', error);
+    } finally {
+        loading.value = false;
+    }
+});
 </script>
 <template>
-    <div class="card">
+    <Spinner v-if="loading" />
+    <div class="card" v-if="users">
         <div class="content">
             <img src="@/assets/img/userIcon.png" alt="User icon" class="user-icon" />
             <div class="info">
                 <div class="label">
-                    Matricula:<span class="value uppercase" id="matricula">{{ user.getUser.usuario_id }}</span>
+                    Matricula: <span class="value uppercase" id="matricula">{{ users.alumno ? users.alumno.matricula : users.usuario_id }}</span>
                 </div>
                 <div class="label">
-                    Estudiante: <span class="value uppercase" id="nombre">{{ user.getUser.nombre }} {{ user.getUser.apellido_p }} {{ user.getUser.apellido_m }}</span>
+                    Estudiante: <span class="value uppercase" id="nombre">{{ users.nombre }} {{ users.apellido_p }} {{ users.apellido_m }}</span>
                 </div>
                 <div class="label">
-                    Email: <span class="value" id="email">{{ user.getUser.email_usuario }}</span>
+                    Email: <span class="value" id="email">{{ users.email_usuario }}</span>
                 </div>
                 <div class="label">
-                    Teléfono: <span class="value" id="telefono">{{ user.getUser.telefono_usuario }}</span>
+                    Teléfono: <span class="value" id="telefono">{{ users.telefono_usuario }}</span>
+                </div>
+                <div v-if="users.alumno && users.alumno.calificacionFinal !== null">
+                    <div class="label">
+                        Calificación Final: <span class="value">{{ users.alumno.calificacionFinal }}</span>
+                    </div>
                 </div>
                 <div class="label">
-                    Status: <span class="ml-2 lowercase" :class="{ 'text-green-600': user.user.status === 'ACTIVO', 'text-red-600': user.user.status !== 'ACTIVO' }">{{ user.getUser.status }}</span>
+                    Status: <span class="ml-2 lowercase" :class="{ 'text-green-600': users.status === 'ACTIVO', 'text-red-600': users.status !== 'ACTIVO' }">{{ users.status }}</span>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
 <style scoped>
 .content {
     display: flex;

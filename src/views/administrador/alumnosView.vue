@@ -48,7 +48,7 @@ const hideDialog = () => {
 const saveAlumno = async () => {
     submitted.value = true;
     isAccepting.value = true;
-    if (alumno.value.usuario_id && alumno.value.nombre.trim() && alumno.value.apellido_p.trim() && alumno.value.apellido_m.trim() && alumno.value.telefono_usuario.trim() && alumno.value.email_usuario.trim() && alumno.value.password.trim()) {
+    if (alumno.value.matricula && alumno.value.nombre.trim() && alumno.value.apellido_p.trim() && alumno.value.apellido_m.trim() && alumno.value.telefono_usuario.trim() && alumno.value.email_usuario.trim() && alumno.value.password.trim()) {
         loading.value = true;
         try {
             let response;
@@ -100,7 +100,7 @@ const editAlumno = (editAlumno) => {
 const deleteAlumno = async () => {
     isAccepting.value = true;
     try {
-        const response = await UserApi.deleteAlumno(alumno.value.usuario_id);
+        const response = await UserApi.deleteAlumno(alumno.value.matricula);
         toast.open({
             message: response.data.msg,
             type: 'success'
@@ -159,7 +159,7 @@ const clearFilter = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Montrando del {first} al {last} de {totalRecords} alumnos"
+                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} alumnos"
                 >
                     <template #header>
                         <div class="flex justify-content-between flex-column sm:flex-row">
@@ -175,12 +175,13 @@ const clearFilter = () => {
                     <template #paginatorstart>
                         <Button icon="pi pi-refresh" @click="loadUsers" />
                     </template>
-                    <Column field="usuario_id" header="Matricula" :sortable="true"></Column>
+                    <Column field="alumno.matricula" header="Matricula" :sortable="true"></Column>
                     <Column field="nombre" header="Nombre" :sortable="true"></Column>
                     <Column field="apellido_p" header="Apellido Paterno" :sortable="true"></Column>
                     <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>
                     <Column field="telefono_usuario" header="Telefono" :sortable="true"></Column>
                     <Column field="email_usuario" header="Email" :sortable="true"></Column>
+                    <Column field="alumno.calificacionFinal" header="Calificacion" :sortable="true"></Column>
                     <Column field="status" header="Status" dataType="boolean" style="min-width: 8rem" :sortable="true">
                         <template #body="{ data }">
                             <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.status, 'pi-times-circle text-red-500': !data.status }"></i>
@@ -199,9 +200,9 @@ const clearFilter = () => {
 
                 <Dialog v-model:visible="alumnoModal" :style="{ width: '40%' }" :header="isEditMode ? 'Datos del Alumno - Editar' : 'Datos del Alumno - Registrar'" :modal="true" class="p-fluid">
                     <div class="field">
-                        <label for="usuario_id">Matricula</label>
-                        <InputText id="usuario_id" :disabled="isEditMode" v-model.trim="alumno.usuario_id" required="true" autofocus :invalid="submitted && !alumno.usuario_id" />
-                        <small class="p-invalid" v-if="submitted && !alumno.usuario_id">La matricula es requerida.</small>
+                        <label for="matricula">Matricula ó Codigo Alumno</label>
+                        <InputText id="matricula" :disabled="isEditMode" v-model.trim="alumno.matricula" required="true" autofocus :invalid="submitted && !alumno.matricula" />
+                        <small class="p-invalid" v-if="submitted && !alumno.matricula">La matricula es requerida.</small>
                     </div>
                     <div class="formgrid grid">
                         <div class="field col">
@@ -252,7 +253,7 @@ const clearFilter = () => {
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="alumno"
-                            >¿Estás seguro que quieres eliminar a <b>{{ alumno.usuario_id }}</b
+                            >¿Estás seguro que quieres eliminar a <b>{{ alumno.alumno.matricula }}</b
                             >?</span
                         >
                     </div>

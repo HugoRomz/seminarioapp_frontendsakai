@@ -15,6 +15,8 @@ const handleSubmitLogin = async (formdata) => {
         localStorage.setItem('AUTH_TOKEN', token);
         reset('preregisterform');
         router.push({ name: 'home' });
+        // Recarga la página
+        window.location.reload();
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
