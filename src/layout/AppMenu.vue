@@ -1,17 +1,24 @@
 <script setup>
-import { ref, computed } from 'vue';
-
+import { ref, computed, onMounted } from 'vue';
+import AuthAPI from '../api/AuthAPI';
 import AppMenuItem from './AppMenuItem.vue';
 
-import { useUser } from '../stores/user';
+const users = ref(null);
 
-const user = useUser();
+onMounted(async () => {
+    try {
+        const response = await AuthAPI.auth();
+        users.value = response.data;
+    } catch (error) {
+        console.error('Error al obtener los datos:', error);
+    }
+});
 
 const model = ref([
     {
         label: 'Home',
         items: [{ label: 'Home', icon: 'pi pi-fw pi-home', to: '/' }],
-        roles: ['Administrador', 'Profesor', 'Alumno', 'Asistente']
+        roles: ['Administrador', 'Docente', 'Alumno', 'Asistente']
     },
     {
         label: 'Administrador',
@@ -79,12 +86,12 @@ const model = ref([
                 to: '/docentes/asesorias'
             }
         ],
-        roles: ['Profesor']
+        roles: ['Docente']
     }
 ]);
 
 const filteredMenuItems = computed(() => {
-    const userRoles = (user.getUser.roles ?? []).map((rol) => rol.nombre_rol);
+    const userRoles = (users.value?.roles ?? []).map((rol) => rol.nombre_rol);
     return model.value.filter((section) => section.roles?.some((role) => userRoles.includes(role)) || section.roles === undefined);
 });
 </script>
@@ -95,7 +102,7 @@ const filteredMenuItems = computed(() => {
             <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>
         </template>
-        <p>{{ user.getUser.roles }}</p>
+        <p>{{ users }}</p>
     </ul>
 </template>
 
