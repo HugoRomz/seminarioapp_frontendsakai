@@ -79,6 +79,7 @@ const saveAlumno = async () => {
             isAccepting.value = false;
         }
     } else {
+        isAccepting.value = false;
         toast.open({
             message: 'Por favor, completa todos los campos requeridos.',
             type: 'warn'
@@ -92,15 +93,17 @@ const confirmDeleteProduct = (editProduct) => {
 };
 
 const editAlumno = (editAlumno) => {
-    alumno.value = { ...editAlumno };
+    const alumnoData = { ...editAlumno, ...editAlumno.alumno };
+    alumno.value = alumnoData;
     alumnoModal.value = true;
     isEditMode.value = true;
 };
 
 const deleteAlumno = async () => {
     isAccepting.value = true;
+
     try {
-        const response = await UserApi.deleteAlumno(alumno.value.matricula);
+        const response = await UserApi.deleteAlumno(alumno.value.usuario_id);
         toast.open({
             message: response.data.msg,
             type: 'success'
@@ -198,21 +201,25 @@ const clearFilter = () => {
                     </Column>
                 </DataTable>
 
-                <Dialog v-model:visible="alumnoModal" :style="{ width: '40%' }" :header="isEditMode ? 'Datos del Alumno - Editar' : 'Datos del Alumno - Registrar'" :modal="true" class="p-fluid">
+                <Dialog v-model:visible="alumnoModal" :header="isEditMode ? 'Datos del Alumno - Editar' : 'Datos del Alumno - Registrar'" :modal="true" class="p-fluid">
+                    <div class="field" v-show="isEditMode">
+                        <label for="usuario_id">ID</label>
+                        <InputText id="usuario_id" :disabled="isEditMode" v-model.trim="alumno.usuario_id" />
+                    </div>
                     <div class="field">
                         <label for="matricula">Matricula ó Codigo Alumno</label>
-                        <InputText id="matricula" :disabled="isEditMode" v-model.trim="alumno.matricula" required="true" autofocus :invalid="submitted && !alumno.matricula" />
+                        <InputText id="matricula" v-model.trim="alumno.matricula" required="true" :invalid="submitted && !alumno.matricula" />
                         <small class="p-invalid" v-if="submitted && !alumno.matricula">La matricula es requerida.</small>
                     </div>
                     <div class="formgrid grid">
                         <div class="field col">
                             <label for="nombre">Nombre Completo</label>
-                            <InputText id="nombre" v-model.trim="alumno.nombre" required="true" autofocus :invalid="submitted && !alumno.nombre" />
+                            <InputText id="nombre" v-model.trim="alumno.nombre" required="true" :invalid="submitted && !alumno.nombre" />
                             <small class="p-invalid" v-if="submitted && !alumno.nombre">El nombre es requerido.</small>
                         </div>
                         <div class="field col">
                             <label for="apellido_p">Apellido Paterno</label>
-                            <InputText id="apellido_p" v-model.trim="alumno.apellido_p" required="true" autofocus :invalid="submitted && !alumno.apellido_p" />
+                            <InputText id="apellido_p" v-model.trim="alumno.apellido_p" required="true" :invalid="submitted && !alumno.apellido_p" />
                             <small class="p-invalid" v-if="submitted && !alumno.apellido_p">El apellido paterno es requerido.</small>
                         </div>
                     </div>
@@ -220,24 +227,24 @@ const clearFilter = () => {
                     <div class="formgrid grid">
                         <div class="field col">
                             <label for="apellido_m">Apellido Materno</label>
-                            <InputText id="apellido_m" v-model.trim="alumno.apellido_m" required="true" autofocus :invalid="submitted && !alumno.apellido_m" />
+                            <InputText id="apellido_m" v-model.trim="alumno.apellido_m" required="true" :invalid="submitted && !alumno.apellido_m" />
                             <small class="p-invalid" v-if="submitted && !alumno.apellido_m">El apellido materno es requerido.</small>
                         </div>
                         <div class="field col">
                             <label for="telefono_usuario">Telefono</label>
-                            <InputText id="telefono_usuario" v-model.trim="alumno.telefono_usuario" required="true" autofocus :invalid="submitted && !alumno.telefono_usuario" />
+                            <InputText id="telefono_usuario" v-model.trim="alumno.telefono_usuario" required="true" :invalid="submitted && !alumno.telefono_usuario" />
                             <small class="p-invalid" v-if="submitted && !alumno.telefono_usuario">El telefono es requerido.</small>
                         </div>
                     </div>
                     <div class="formgrid grid">
                         <div class="field col">
                             <label for="email_usuario">Email</label>
-                            <InputText id="email_usuario" v-model.trim="alumno.email_usuario" required="true" autofocus :invalid="submitted && !alumno.email_usuario" />
+                            <InputText id="email_usuario" v-model.trim="alumno.email_usuario" required="true" :invalid="submitted && !alumno.email_usuario" />
                             <small class="p-invalid" v-if="submitted && !alumno.email_usuario">El email es requerido.</small>
                         </div>
                         <div class="field col">
                             <label for="password">Contraseña</label>
-                            <InputText id="password" v-model.trim="alumno.password" required="true" autofocus :invalid="submitted && !alumno.password" />
+                            <InputText id="password" v-model.trim="alumno.password" required="true" :invalid="submitted && !alumno.password" />
                             <small class="p-invalid" v-if="submitted && !alumno.password">El password es requerido.</small>
                         </div>
                     </div>
