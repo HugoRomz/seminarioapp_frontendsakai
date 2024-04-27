@@ -11,7 +11,6 @@ onMounted(async () => {
     try {
         const response = await AuthAPI.auth();
         users.value = response.data;
-        console.log(users.value);
     } catch (error) {
         console.error('Error al obtener los datos:', error);
     } finally {

@@ -24,6 +24,11 @@ const model = ref([
         label: 'Administrador',
         items: [
             {
+                label: 'Seminarios',
+                icon: 'pi pi-th-large',
+                to: '/admin/seminarios'
+            },
+            {
                 label: 'Preinscripción',
                 icon: 'pi pi-users',
                 to: '/admin/preregister'
@@ -42,11 +47,6 @@ const model = ref([
                 label: 'Docentes',
                 icon: 'pi pi-book',
                 to: '/admin/docentes'
-            },
-            {
-                label: 'Seminarios',
-                icon: 'pi pi-th-large',
-                to: '/admin/seminarios'
             }
         ],
         roles: ['Administrador']

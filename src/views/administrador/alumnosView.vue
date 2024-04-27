@@ -67,8 +67,8 @@ const saveAlumno = async () => {
             }
             alumnoModal.value = false; // Cierra el modal
             alumno.value = {}; // Limpia el formulario
-            isEditMode.value = false; // Restablece el modo
-            await loadUsers(); // Recarga la lista de usuarios
+            isEditMode.value = false;
+            await loadUsers();
         } catch (error) {
             toast.open({
                 message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
@@ -244,7 +244,7 @@ const clearFilter = () => {
                         </div>
                         <div class="field col">
                             <label for="password">Contraseña</label>
-                            <InputText id="password" v-model.trim="alumno.password" required="true" :invalid="submitted && !alumno.password" />
+                            <InputText type="password" id="password" v-model.trim="alumno.password" required="true" :invalid="submitted && !alumno.password" />
                             <small class="p-invalid" v-if="submitted && !alumno.password">El password es requerido.</small>
                         </div>
                     </div>
