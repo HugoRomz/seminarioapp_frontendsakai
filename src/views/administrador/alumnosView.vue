@@ -4,6 +4,8 @@ import { ref, inject, onMounted } from 'vue';
 import UserApi from '../../api/UserApi';
 import Spinner from '../../components/Spinner.vue';
 
+const switchValue = ref(false);
+
 const isAccepting = ref(false);
 const toast = inject('toast');
 
@@ -14,7 +16,9 @@ const dt = ref();
 
 const isEditMode = ref(false);
 
-const alumno = ref({});
+const alumno = ref({
+    esEgresado: false
+});
 const deleteAlumnoModal = ref(false);
 const alumnoModal = ref(false);
 const submitted = ref(false);
@@ -33,6 +37,19 @@ const loadUsers = async () => {
 
 onMounted(loadUsers);
 
+const displayMatricula = (data) => {
+    if (data.alumno) {
+        return {
+            matricula: data.alumno.matricula,
+            calificacionFinal: data.alumno.calificacionFinal
+        };
+    } else if (data.egresado) {
+        return {
+            matricula: data.egresado.cod_egresado,
+            calificacionFinal: data.egresado.calificacionFinal
+        };
+    }
+};
 const openNew = () => {
     alumno.value = {};
     submitted.value = false;
@@ -52,6 +69,8 @@ const saveAlumno = async () => {
         loading.value = true;
         try {
             let response;
+            alumno.value.esEgresado = switchValue.value;
+
             if (isEditMode.value) {
                 response = await UserApi.updateAlumno(alumno.value);
                 toast.open({
@@ -87,13 +106,30 @@ const saveAlumno = async () => {
     }
 };
 
-const confirmDeleteProduct = (editProduct) => {
-    alumno.value = editProduct;
+const confirmDeleteProduct = (deleteAlumno) => {
+    const alumnoData = { ...deleteAlumno };
+    // Verificar si el alumno es egresado
+    if (deleteAlumno.egresado) {
+        alumnoData.matricula = deleteAlumno.egresado.cod_egresado; // Usar el código de egresado
+        alumnoData.esEgresado = true;
+    } else {
+        alumnoData.matricula = deleteAlumno.alumno.matricula;
+        alumnoData.esEgresado = false;
+    }
+    alumno.value = alumnoData;
     deleteAlumnoModal.value = true;
 };
 
 const editAlumno = (editAlumno) => {
-    const alumnoData = { ...editAlumno, ...editAlumno.alumno };
+    const alumnoData = { ...editAlumno };
+    // Verificar si el alumno es egresado
+    if (editAlumno.egresado) {
+        alumnoData.matricula = editAlumno.egresado.cod_egresado; // Usar el código de egresado
+        switchValue.value = true; // Marcar como egresado
+    } else {
+        alumnoData.matricula = editAlumno.alumno.matricula;
+        switchValue.value = false; // No es egresado
+    }
     alumno.value = alumnoData;
     alumnoModal.value = true;
     isEditMode.value = true;
@@ -178,21 +214,38 @@ const clearFilter = () => {
                     <template #paginatorstart>
                         <Button icon="pi pi-refresh" @click="loadUsers" />
                     </template>
-                    <Column field="alumno.matricula" header="Matricula" :sortable="true"></Column>
+                    <Column field="alumno.matricula" header="Matricula" :sortable="true">
+                        <template #body="{ data }">
+                            {{ displayMatricula(data).matricula }}
+                        </template>
+                    </Column>
+
                     <Column field="nombre" header="Nombre" :sortable="true"></Column>
                     <Column field="apellido_p" header="Apellido Paterno" :sortable="true"></Column>
                     <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>
                     <Column field="telefono_usuario" header="Telefono" :sortable="true"></Column>
                     <Column field="email_usuario" header="Email" :sortable="true"></Column>
-                    <Column field="alumno.calificacionFinal" header="Calificacion" :sortable="true"></Column>
-                    <Column field="status" header="Status" dataType="boolean" style="min-width: 8rem" :sortable="true">
+                    <Column field="alumno.calificacionFinal" header="Calificacion" :sortable="true">
                         <template #body="{ data }">
-                            <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.status, 'pi-times-circle text-red-500': !data.status }"></i>
+                            {{ displayMatricula(data).calificacionFinal }}
+                        </template>
+                    </Column>
+                    <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
+                        <template #body="{ data }">
+                            <i
+                                class="pi"
+                                :class="{
+                                    'pi-check-circle text-green-500': data.status === 'ACTIVO',
+                                    'pi-times-circle text-red-500': data.status !== 'ACTIVO'
+                                }"
+                            ></i>
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
+                            <!-- Aquí puedes mantener el componente de filtro existente -->
                             <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
                         </template>
                     </Column>
+
                     <Column headerStyle="min-width:10rem;">
                         <template #body="{ data }">
                             <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editAlumno(data)" />
@@ -206,10 +259,16 @@ const clearFilter = () => {
                         <label for="usuario_id">ID</label>
                         <InputText id="usuario_id" :disabled="isEditMode" v-model.trim="alumno.usuario_id" />
                     </div>
-                    <div class="field">
-                        <label for="matricula">Matricula ó Codigo Alumno</label>
-                        <InputText id="matricula" v-model.trim="alumno.matricula" required="true" :invalid="submitted && !alumno.matricula" />
-                        <small class="p-invalid" v-if="submitted && !alumno.matricula">La matricula es requerida.</small>
+                    <div class="formgrid grid">
+                        <div class="field col">
+                            <label for="matricula">Matricula ó Codigo Alumno</label>
+                            <InputText id="matricula" v-model.trim="alumno.matricula" required="true" :invalid="submitted && !alumno.matricula" />
+                            <small class="p-invalid" v-if="submitted && !alumno.matricula">La matricula es requerida.</small>
+                        </div>
+                        <div class="field col">
+                            <h6>¿Es egresado?</h6>
+                            <InputSwitch :disabled="isEditMode" v-model="switchValue" />
+                        </div>
                     </div>
                     <div class="formgrid grid">
                         <div class="field col">
@@ -260,7 +319,7 @@ const clearFilter = () => {
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                         <span v-if="alumno"
-                            >¿Estás seguro que quieres eliminar a <b>{{ alumno.alumno.matricula }}</b
+                            >¿Estás seguro que quieres eliminar a <b>{{ alumno.matricula }}</b
                             >?</span
                         >
                     </div>
