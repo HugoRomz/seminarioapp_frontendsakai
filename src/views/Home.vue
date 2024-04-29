@@ -25,7 +25,22 @@ onMounted(async () => {
             <img src="@/assets/img/userIcon.png" alt="User icon" class="user-icon" />
             <div class="info">
                 <div class="label">
-                    Matricula: <span class="value uppercase" id="matricula">{{ users.alumno ? users.alumno.matricula : users.usuario_id }}</span>
+                    <template v-if="users.alumno && users.alumno.matricula">
+                        <span class="type">Matrícula:</span>
+                        <span class="value uppercase">{{ users.alumno.matricula }}</span>
+                    </template>
+                    <template v-else-if="users.docente && users.docente.num_plaza">
+                        <span class="type">Número de Plaza:</span>
+                        <span class="value uppercase">{{ users.docente.num_plaza }}</span>
+                    </template>
+                    <template v-else-if="users.egresado && users.egresado.cod_egresado">
+                        <span class="type">Código de Egresado:</span>
+                        <span class="value uppercase">{{ users.egresado.cod_egresado }}</span>
+                    </template>
+                    <template v-else>
+                        <span class="type">Usuario ID:</span>
+                        <span class="value uppercase">{{ users.usuario_id }}</span>
+                    </template>
                 </div>
                 <div class="label">
                     Estudiante: <span class="value uppercase" id="nombre">{{ users.nombre }} {{ users.apellido_p }} {{ users.apellido_m }}</span>

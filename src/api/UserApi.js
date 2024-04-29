@@ -1,6 +1,7 @@
 import api from '@/lib/axios';
 
 export default {
+    // TODOS LOS USUARIOS
     all() {
         return api.get('/user/preregister');
     },
@@ -21,6 +22,8 @@ export default {
             }
         });
     },
+
+    // ALUMNOS
     allUserAlumnos() {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.get('/user/alumnos', {
@@ -51,6 +54,42 @@ export default {
         // Asume que `data` contiene un campo `usuario_id` que es el identificador del alumno
         // y que el endpoint del servidor para actualizar un alumno espera ese `usuario_id` en la URL.
         return api.put(`/user/alumnos/${data.usuario_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    // DOCENTES
+    allUserDocentes() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/user/docentes', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deleteDocente(userId) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        // Asegúrate de que el `id` del usuario se incluye correctamente en la URL
+        return api.delete(`/user/docentes/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createDocente(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/user/docentes', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateDocente(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        // Asume que `data` contiene un campo `usuario_id` que es el identificador del alumno
+        // y que el endpoint del servidor para actualizar un alumno espera ese `usuario_id` en la URL.
+        return api.put(`/user/docentes/${data.usuario_id}`, data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
