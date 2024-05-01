@@ -34,5 +34,5 @@ onMounted(loadUsers);
         <p>Periodo ID: {{ seminarioActivo[0].periodo_id }}</p>
         <p>Curso ID: {{ seminarioActivo[0].curso_id }}</p>
     </div>
-    <p v-else>No hay seminarios activos</p>
+    <p v-else>No hay seminarios activossss</p>
 </template>
