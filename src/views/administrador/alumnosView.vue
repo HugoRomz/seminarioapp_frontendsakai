@@ -124,11 +124,11 @@ const editAlumno = (editAlumno) => {
     const alumnoData = { ...editAlumno };
     // Verificar si el alumno es egresado
     if (editAlumno.egresado) {
-        alumnoData.matricula = editAlumno.egresado.cod_egresado; // Usar el código de egresado
-        switchValue.value = true; // Marcar como egresado
+        alumnoData.matricula = editAlumno.egresado.cod_egresado;
+        switchValue.value = true;
     } else {
         alumnoData.matricula = editAlumno.alumno.matricula;
-        switchValue.value = false; // No es egresado
+        switchValue.value = false;
     }
     alumno.value = alumnoData;
     alumnoModal.value = true;
