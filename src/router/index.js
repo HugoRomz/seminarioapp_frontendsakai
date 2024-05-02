@@ -46,6 +46,24 @@ const router = createRouter({
                     component: () => import('@/views/administrador/seminarioView.vue'),
                     meta: { roles: ['Administrador'] }
                 },
+                {
+                    path: '/admin/materias',
+                    name: 'materias',
+                    component: () => import('@/views/administrador/materiasView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/carreras',
+                    name: 'carreras',
+                    component: () => import('@/views/administrador/carrerasView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/createSeminarios',
+                    name: 'createSeminarios',
+                    component: () => import('@/views/administrador/createSeminariosView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
                 // Rutas de alumno
                 {
                     path: 'alumnos/subirArchivos',
