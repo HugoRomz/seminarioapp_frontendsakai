@@ -1,4 +1,4 @@
-<!-- <script setup>
+<script setup>
 import { FilterMatchMode } from 'primevue/api';
 import { ref, inject, onMounted } from 'vue';
 import catalogoApi from '../../api/catalogoApi.js';
@@ -199,7 +199,7 @@ const clearFilter = () => {
                         <small class="p-invalid" v-if="submitted && !carreraEdit.nombre_carrera">El numero de nombre carrera es requerida.</small>
                     </div>
 
-                    </ScrollPanel>
+                    <!-- </ScrollPanel> -->
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
                         <Button label="Guardar" icon="pi pi-check" text="" @click="saveCarrera" />
@@ -223,7 +223,7 @@ const clearFilter = () => {
         </div>
     </div>
 
-    <DataTable :value="products" v-model:expandedRows="expandedRows" dataKey="id" tableStyle="min-width: 60rem">
+    <!-- <DataTable :value="products" v-model:expandedRows="expandedRows" dataKey="id" tableStyle="min-width: 60rem">
         <template #header>
             <div>
                 <Button icon="pi pi-plus" label="Expand All" @click="expandAll" class="mr-2 mb-2" />
@@ -299,4 +299,5 @@ const clearFilter = () => {
             </div>
         </template>
     </DataTable>
-</template> -->
+ -->
+</template>
