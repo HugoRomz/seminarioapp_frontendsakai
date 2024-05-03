@@ -66,5 +66,30 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    findCursos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/cursos', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createCurso(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/cursos', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateCurso(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        console.log(data.curso_id);
+        return api.put(`/catalogo/cursos/${data.curso_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
