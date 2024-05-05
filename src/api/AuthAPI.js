@@ -17,5 +17,11 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    findCarreras() {
+        return api.get('/auth/carreras');
+    },
+    findCursosPeriodos() {
+        return api.get('/auth/cursosPeriodos');
     }
 };
