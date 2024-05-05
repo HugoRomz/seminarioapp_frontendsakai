@@ -27,42 +27,54 @@ const handleSubmitLogin = async (formdata) => {
 </script>
 
 <template>
-    <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0">
-        <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-            <h1 class="text-lg font-bold leading-tight tracking-wider text-gray-800 text-center">Iniciar Sesión</h1>
-            <FormKit id="loginForm" type="form" :actions="false" incomplete-message="No se pudo enviar, intenta de nuevo" @submit="handleSubmitLogin">
-                <FormKit
-                    type="email"
-                    label="Email"
-                    name="email_usuario"
-                    placeholder="correo@unach.mx"
-                    validation="required|email"
-                    :validation-messages="{
-                        required: 'El email es obligatorio',
-                        email: 'Email no válido'
-                    }"
-                />
-                <FormKit
-                    type="password"
-                    label="Contraseña"
-                    name="password"
-                    placeholder="••••••••"
-                    validation="required"
-                    :validation-messages="{
-                        required: 'La contraseña es obligatoria'
-                    }"
-                />
+    <div class="surface-card p-4 shadow-2 border-round-3xl w-full lg:w-3">
+        <div class="text-center mt-5">
+            <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Iniciar Sesión</h1>
+        </div>
+        <FormKit id="loginForm" type="form" :actions="false" incomplete-message="No se pudo enviar, intenta de nuevo" @submit="handleSubmitLogin">
+            <FormKit
+                type="email"
+                label="Email"
+                name="email_usuario"
+                placeholder="correo@unach.mx"
+                validation="required|email"
+                :validation-messages="{
+                    required: 'El email es obligatorio',
+                    email: 'Email no válido'
+                }"
+            />
+            <FormKit
+                type="password"
+                label="Contraseña"
+                name="password"
+                placeholder="••••••••"
+                validation="required"
+                :validation-messages="{
+                    required: 'La contraseña es obligatoria'
+                }"
+            />
 
-                <FormKit type="submit">Iniciar Sesión</FormKit>
-            </FormKit>
-            <div class="space-y-3 text-center">
-                <p class="text-base text-blue-600">
-                    <a href="/auth/" class="font-medium hover:underline">Recuperar contraseña</a>
-                </p>
-                <p class="text-base text-blue-600">
-                    <a href="/auth/registro" class="font-medium hover:underline">Pre Registro</a>
-                </p>
-            </div>
+            <FormKit type="submit">Iniciar Sesión</FormKit>
+        </FormKit>
+        <div class="text-center mt-4">
+            <p class="text-base text-blue-900">
+                <a href="/auth/" class="font-medium hover:underline">Recuperar contraseña</a>
+            </p>
+            <p class="text-base text-blue-900">
+                <a href="/auth/registro" class="font-medium hover:underline">Pre Registro</a>
+            </p>
         </div>
     </div>
 </template>
+
+<style scoped>
+.bg-custom {
+    background-color: #00294f;
+}
+.tracking {
+    letter-spacing: 0.05em;
+}
+.tracking-wide {
+    letter-spacing: 0.5em;
+}
+</style>

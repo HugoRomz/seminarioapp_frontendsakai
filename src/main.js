@@ -2,7 +2,7 @@
 
 import { createPinia } from 'pinia';
 import { plugin, defaultConfig } from '@formkit/vue';
-import genesisTheme from '@formkit/themes/genesis';
+import '@formkit/themes/genesis';
 
 import { useToast } from 'vue-toast-notification';
 
@@ -12,10 +12,10 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 
+import Stepper from 'primevue/stepper';
+import StepperPanel from 'primevue/stepperpanel';
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
-import Accordion from 'primevue/accordion';
-import AccordionTab from 'primevue/accordiontab';
 import Avatar from 'primevue/avatar';
 import AvatarGroup from 'primevue/avatargroup';
 import Badge from 'primevue/badge';
@@ -23,16 +23,9 @@ import BadgeDirective from 'primevue/badgedirective';
 import BlockUI from 'primevue/blockui';
 import Button from 'primevue/button';
 import ButtonGroup from 'primevue/buttongroup';
-import Breadcrumb from 'primevue/breadcrumb';
 import Calendar from 'primevue/calendar';
 import Card from 'primevue/card';
-import Chart from 'primevue/chart';
-import CascadeSelect from 'primevue/cascadeselect';
-import Carousel from 'primevue/carousel';
 import Checkbox from 'primevue/checkbox';
-import Chip from 'primevue/chip';
-import Chips from 'primevue/chips';
-import ColorPicker from 'primevue/colorpicker';
 import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';
 import ConfirmDialog from 'primevue/confirmdialog';
@@ -45,14 +38,12 @@ import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions';
 import DeferredContent from 'primevue/deferredcontent';
 import Dialog from 'primevue/dialog';
 import DialogService from 'primevue/dialogservice';
-import Divider from 'primevue/divider';
 import Dock from 'primevue/dock';
 import Dropdown from 'primevue/dropdown';
 import DynamicDialog from 'primevue/dynamicdialog';
 import Fieldset from 'primevue/fieldset';
 import FileUpload from 'primevue/fileupload';
 import FloatLabel from 'primevue/floatlabel';
-import Galleria from 'primevue/galleria';
 import IconField from 'primevue/iconfield';
 import Image from 'primevue/image';
 import InlineMessage from 'primevue/inlinemessage';
@@ -131,14 +122,7 @@ app.provide('toast', $toast);
 app.use(createPinia());
 
 // FORMKIT
-app.use(
-    plugin,
-    defaultConfig({
-        themes: {
-            genesis: genesisTheme
-        }
-    })
-);
+app.use(plugin, defaultConfig());
 
 app.use(router);
 app.use(PrimeVue, { ripple: true });
@@ -153,25 +137,18 @@ app.directive('styleclass', StyleClass);
 
 app.component('BlockViewer', BlockViewer);
 
-app.component('Accordion', Accordion);
-app.component('AccordionTab', AccordionTab);
+app.component('Stepper', Stepper);
+app.component('StepperPanel', StepperPanel);
 app.component('AutoComplete', AutoComplete);
 app.component('Avatar', Avatar);
 app.component('AvatarGroup', AvatarGroup);
 app.component('Badge', Badge);
 app.component('BlockUI', BlockUI);
-app.component('Breadcrumb', Breadcrumb);
 app.component('Button', Button);
 app.component('ButtonGroup', ButtonGroup);
 app.component('Calendar', Calendar);
 app.component('Card', Card);
-app.component('Chart', Chart);
-app.component('Carousel', Carousel);
-app.component('CascadeSelect', CascadeSelect);
 app.component('Checkbox', Checkbox);
-app.component('Chip', Chip);
-app.component('Chips', Chips);
-app.component('ColorPicker', ColorPicker);
 app.component('Column', Column);
 app.component('ColumnGroup', ColumnGroup);
 app.component('ConfirmDialog', ConfirmDialog);
@@ -182,14 +159,12 @@ app.component('DataView', DataView);
 app.component('DataViewLayoutOptions', DataViewLayoutOptions);
 app.component('DeferredContent', DeferredContent);
 app.component('Dialog', Dialog);
-app.component('Divider', Divider);
 app.component('Dock', Dock);
 app.component('Dropdown', Dropdown);
 app.component('DynamicDialog', DynamicDialog);
 app.component('Fieldset', Fieldset);
 app.component('FileUpload', FileUpload);
 app.component('FloatLabel', FloatLabel);
-app.component('Galleria', Galleria);
 app.component('IconField', IconField);
 app.component('Image', Image);
 app.component('InlineMessage', InlineMessage);
