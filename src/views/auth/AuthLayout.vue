@@ -1,19 +1,26 @@
 <script setup></script>
 
 <template>
-    <section class="bg-unachBlue min-h-screen">
-        <div class="flex flex-col items-center justify-center px-6 py-6 mx-auto md:h-screen lg:py-0">
-            <div class="space-y-2 mb-8">
-                <img src="../../assets/img/unachLogo.png" alt="Logo Unach" class="w-32" />
-                <h1 class="text-2xl text-white font-bold tracking-[0.5rem]">SIGEST</h1>
-            </div>
-            <RouterView />
+    <div class="bg-custom flex flex-column align-items-center justify-content-center min-h-screen overflow-hidden p-4">
+        <div class="text-center mb-5">
+            <img src="../../assets/img/unachLogo.png" alt="Image" width="150" class="" />
+            <h1 class="text-2xl font-bold line-height-2 tracking-wide text-white text-center">SIGEST</h1>
         </div>
-    </section>
+        <RouterView />
+    </div>
 </template>
 
-<style>
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+<style scoped>
+.p-stepper {
+    flex-basis: 50rem;
+}
+.bg-custom {
+    background-color: #00294f;
+}
+.tracking {
+    letter-spacing: 0.05em;
+}
+.tracking-wide {
+    letter-spacing: 0.5em;
+}
 </style>
