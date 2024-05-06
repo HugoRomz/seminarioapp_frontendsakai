@@ -147,7 +147,7 @@ const handleSubmit = async (formData) => {
                     }"
                 />
                 <FormKit
-                    type="text"
+                    type="number"
                     label="Año de egreso:"
                     name="anio_egreso"
                     placeholder="Año de egreso"
