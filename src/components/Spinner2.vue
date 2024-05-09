@@ -20,55 +20,30 @@
     z-index: 9999;
 }
 .loader {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
     position: relative;
-}
-.loader::before,
-.loader::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 48em;
-    height: 48em;
-    background-image: radial-gradient(circle 10px, #d4b012 100%, transparent 0), radial-gradient(circle 10px, #d4b012 100%, transparent 0), radial-gradient(circle 10px, #d4b012 100%, transparent 0),
-        radial-gradient(circle 10px, #d4b012 100%, transparent 0), radial-gradient(circle 10px, #d4b012 100%, transparent 0), radial-gradient(circle 10px, #d4b012 100%, transparent 0), radial-gradient(circle 10px, #d4b012 100%, transparent 0),
-        radial-gradient(circle 10px, #d4b012 100%, transparent 0);
-    background-position: 0em -18em, 0em 18em, 18em 0em, -18em 0em, 13em -13em, -13em -13em, 13em 13em, -13em 13em;
+    background-image: linear-gradient(#d4b012 16px, transparent 0), linear-gradient(#00294f 16px, transparent 0), linear-gradient(#00294f 16px, transparent 0), linear-gradient(#d4b012 16px, transparent 0);
     background-repeat: no-repeat;
-    font-size: 0.5px;
-    border-radius: 50%;
-    animation: blast 1s ease-in infinite;
+    background-size: 16px 16px;
+    background-position: left top, left bottom, right top, right bottom;
+    animation: rotate 1s linear infinite;
 }
-.loader::after {
-    font-size: 1px;
-    background: #d4b012;
-    animation: bounce 1s ease-in infinite;
-}
-
-@keyframes bounce {
-    0%,
-    100% {
-        font-size: 0.75px;
+@keyframes rotate {
+    0% {
+        width: 64px;
+        height: 64px;
+        transform: rotate(0deg);
     }
     50% {
-        font-size: 1.5px;
-    }
-}
-@keyframes blast {
-    0%,
-    40% {
-        font-size: 0.5px;
-    }
-    70% {
-        opacity: 1;
-        font-size: 4px;
+        width: 30px;
+        height: 30px;
+        transform: rotate(180deg);
     }
     100% {
-        font-size: 6px;
-        opacity: 0;
+        width: 64px;
+        height: 64px;
+        transform: rotate(360deg);
     }
 }
 </style>
