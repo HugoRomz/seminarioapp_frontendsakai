@@ -61,7 +61,7 @@ const handleSubmit = async (formData) => {
 
 <template>
     <Spinner v-if="loading" />
-    <div v-if="carreras" class="surface-card p-4 mb-5 shadow-2 border-round-3xl w-full lg:w-3">
+    <div v-if="carreras" class="surface-card p-4 mb-5 shadow-2 border-round-3xl w-full md:w-6 lg:w-3">
         <div class="text-center mt-3 mb-5">
             <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Pre Registro</h1>
         </div>
@@ -71,37 +71,44 @@ const handleSubmit = async (formData) => {
                 label="Nombre completo:"
                 name="nombres"
                 placeholder="Tu nombre completo"
-                validation="required|length:3"
+                validation="required|alpha"
                 :validation-messages="{
                     required: 'El nombre es obligatorio',
-                    length: 'El nombre es muy corto'
+                    alpha: 'Por favor, ingresa solo letras para el nombre'
                 }"
+                validation-visibility="dirty"
             />
             <FormKit
                 type="text"
                 label="Apellidos:"
                 name="apellidos"
                 placeholder="Tus apellidos"
-                validation="required|length:3"
+                validation="required|alpha"
                 :validation-messages="{
                     required: 'Los apellidos son obligatorios',
-                    length: 'Los apellidos son muy cortos'
+                    alpha: 'Por favor, ingresa solo letras para los apellidos'
                 }"
+                validation-visibility="dirty"
             />
+
             <FormKit
-                type="text"
+                type="tel"
                 label="Teléfono:"
                 name="telefono"
-                placeholder="Tu número de teléfono"
-                validation="required|numeric"
+                prefix-icon="telephone"
+                placeholder="xxx-xxx-xxxx"
+                validation="required|matches:/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/"
                 :validation-messages="{
-                    required: 'El teléfono es obligatorio',
-                    numeric: 'El teléfono debe contener solo números'
+                    matches: 'El telefono debe tener el formato xxx-xxx-xxxx',
+                    required: 'El teléfono es obligatorio'
                 }"
+                validation-visibility="dirty"
             />
+
             <FormKit
                 type="email"
                 label="Email"
+                prefix-icon="email"
                 name="email_usuario"
                 placeholder="correo@unach.mx"
                 validation="required|email"
@@ -113,6 +120,7 @@ const handleSubmit = async (formData) => {
             <FormKit
                 type="select"
                 label="Selecciona tu carrera"
+                select-icon="caretDown"
                 placeholder="Selecciona tu carrera"
                 validation="required"
                 :validation-messages="{
@@ -164,6 +172,7 @@ const handleSubmit = async (formData) => {
             </div>
             <FormKit
                 type="select"
+                select-icon="caretDown"
                 label="Selecciona el seminario"
                 placeholder="Selecciona el seminario"
                 validation="required"
@@ -173,7 +182,9 @@ const handleSubmit = async (formData) => {
                 name="seminario"
                 :options="cursos ? cursos.map((curso) => ({ value: curso.curso_periodo_id, label: curso.curso.nombre_curso })) : []"
             />
+
             <FormKit type="checkbox" label="¿Deseas ingresar al otro seminario si no se abre el deseado?" name="ingresar_otro_seminario" v-model="form.ingresar_otro_seminario" />
+
             <div class="text-center">
                 <FormKit type="submit">Pre-registrarse</FormKit>
             </div>

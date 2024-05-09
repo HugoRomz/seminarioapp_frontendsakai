@@ -24,10 +24,15 @@ const handleSubmitLogin = async (formdata) => {
         });
     }
 };
+
+const handleIconClick = (node) => {
+    node.props.suffixIcon = node.props.suffixIcon === 'eye' ? 'eyeClosed' : 'eye';
+    node.props.type = node.props.type === 'password' ? 'text' : 'password';
+};
 </script>
 
 <template>
-    <div class="surface-card p-4 shadow-2 border-round-3xl w-full lg:w-3">
+    <div class="surface-card p-4 shadow-2 border-round-3xl w-full md:w-6 lg:w-3">
         <div class="text-center mt-5">
             <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Iniciar Sesión</h1>
         </div>
@@ -35,6 +40,7 @@ const handleSubmitLogin = async (formdata) => {
             <FormKit
                 type="email"
                 label="Email"
+                prefix-icon="email"
                 name="email_usuario"
                 placeholder="correo@unach.mx"
                 validation="required|email"
@@ -48,13 +54,18 @@ const handleSubmitLogin = async (formdata) => {
                 label="Contraseña"
                 name="password"
                 placeholder="••••••••"
+                prefix-icon="password"
+                suffix-icon="eyeClosed"
+                @suffix-icon-click="handleIconClick"
+                suffix-icon-class="hover:text-blue-900"
                 validation="required"
                 :validation-messages="{
                     required: 'La contraseña es obligatoria'
                 }"
             />
-
-            <FormKit type="submit">Iniciar Sesión</FormKit>
+            <div class="text-center">
+                <FormKit type="submit">Iniciar Sesión</FormKit>
+            </div>
         </FormKit>
         <div class="text-center mt-4">
             <p class="text-base text-blue-900">
