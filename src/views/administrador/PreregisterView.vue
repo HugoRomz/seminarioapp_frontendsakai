@@ -17,6 +17,7 @@ const loading = ref(null);
 
 const loadUsers = async () => {
     loading.value = true;
+    isAccepting.value = true;
     try {
         const response = await UserApi.all();
         users.value = response.data;
@@ -24,6 +25,7 @@ const loadUsers = async () => {
         console.error('Error al obtener los usuarios:', error);
     } finally {
         loading.value = false;
+        isAccepting.value = false;
     }
 };
 
