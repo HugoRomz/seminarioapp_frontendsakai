@@ -4,6 +4,8 @@ import { createPinia } from 'pinia';
 import { plugin, defaultConfig } from '@formkit/vue';
 import '@formkit/themes/genesis';
 
+import VueTheMask from 'vue-the-mask';
+
 import { useToast } from 'vue-toast-notification';
 
 import 'vue-toast-notification/dist/theme-bootstrap.css';
@@ -120,6 +122,8 @@ const app = createApp(App);
 
 app.provide('toast', $toast);
 app.use(createPinia());
+
+app.use(VueTheMask);
 
 // FORMKIT
 app.use(plugin, defaultConfig());

@@ -71,10 +71,10 @@ const handleSubmit = async (formData) => {
                 label="Nombre completo:"
                 name="nombres"
                 placeholder="Tu nombre completo"
-                validation="required|alpha"
+                validation="required|alpha_spaces:latin"
                 :validation-messages="{
                     required: 'El nombre es obligatorio',
-                    alpha: 'Por favor, ingresa solo letras para el nombre'
+                    alpha_spaces: 'Por favor, ingresa solo letras y espacios para el nombre'
                 }"
                 validation-visibility="dirty"
             />
@@ -83,26 +83,25 @@ const handleSubmit = async (formData) => {
                 label="Apellidos:"
                 name="apellidos"
                 placeholder="Tus apellidos"
-                validation="required|alpha"
+                validation="required|alpha_spaces:latin"
                 :validation-messages="{
                     required: 'Los apellidos son obligatorios',
-                    alpha: 'Por favor, ingresa solo letras para los apellidos'
+                    alpha_spaces: 'Por favor, ingresa solo letras para los apellidos'
                 }"
                 validation-visibility="dirty"
             />
-
             <FormKit
                 type="tel"
                 label="Teléfono:"
                 name="telefono"
                 prefix-icon="telephone"
                 placeholder="xxx-xxx-xxxx"
-                validation="required|matches:/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/"
+                validation="required"
                 :validation-messages="{
-                    matches: 'El telefono debe tener el formato xxx-xxx-xxxx',
                     required: 'El teléfono es obligatorio'
                 }"
                 validation-visibility="dirty"
+                v-mask="'###-###-####'"
             />
 
             <FormKit

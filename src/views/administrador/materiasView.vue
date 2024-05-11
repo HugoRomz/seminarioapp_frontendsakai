@@ -21,6 +21,7 @@ const submitted = ref(false);
 
 const loadMaterias = async () => {
     loading.value = true;
+    isAccepting.value = true;
     try {
         const response = await catalogoApi.findMaterias();
         materias.value = response.data;
@@ -28,6 +29,7 @@ const loadMaterias = async () => {
         console.error('Error al obtener los usuarios:', error);
     } finally {
         loading.value = false;
+        isAccepting.value = false;
     }
 };
 

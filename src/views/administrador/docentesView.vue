@@ -21,6 +21,7 @@ const submitted = ref(false);
 
 const loadUsers = async () => {
     loading.value = true;
+    isAccepting.value = true;
     try {
         const response = await UserApi.allUserDocentes();
         users.value = response.data;
@@ -28,6 +29,7 @@ const loadUsers = async () => {
         console.error('Error al obtener los usuarios:', error);
     } finally {
         loading.value = false;
+        isAccepting.value = false;
     }
 };
 
