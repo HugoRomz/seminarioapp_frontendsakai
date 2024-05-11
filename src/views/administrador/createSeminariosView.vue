@@ -123,7 +123,7 @@ const clearFilter = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
-                            <Button label="Nueva Carrera" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                            <Button label="Nuevo curso" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
                         </div>
                     </template>
                 </Toolbar>
