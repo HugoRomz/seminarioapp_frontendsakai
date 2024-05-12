@@ -14,6 +14,9 @@ const rechazarCurso = ref(false);
 const verMotivo = ref(false);
 const altaCursoModal = ref(false);
 const dataCursoModal = ref({});
+const periodoModal = ref(false);
+
+const periodoForm = ref({});
 
 const loadSeminarios = async () => {
     loading.value = true;
@@ -60,6 +63,28 @@ const openModalCurso = () => {
     altaCursoModal.value = true;
 };
 
+const openModalPeriodo = () => {
+    periodoForm.value = {};
+    periodoModal.value = true;
+};
+
+const savePeriodo = async () => {
+    loading.value = true;
+    try {
+        const response = await SeminarioApi.createPeriodo(periodoForm.value);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        periodoModal.value = false;
+        periodoForm.value = {};
+    } catch (error) {
+        console.error('Error al guardar el periodo:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -78,7 +103,7 @@ const clearFilter = () => {
             <div class="card">
                 <Toolbar class="mb-4">
                     <template v-slot:start>
-                        <div class="my-2"><Button label="Periodo" icon="pi pi-calendar-times" iconPos="right" class="mr-2" severity="primary" @click="console.log('Periodo')" /></div>
+                        <div class="my-2"><Button label="Periodo" icon="pi pi-calendar-times" iconPos="right" class="mr-2" severity="primary" @click="openModalPeriodo" /></div>
                         <div class="my-2"><Button label="Alta Curso" icon="pi pi-plus" class="mr-2" severity="success" @click="openModalCurso" /></div>
                     </template>
                     <template v-slot:center> </template>
@@ -162,6 +187,21 @@ const clearFilter = () => {
                     </div>
                     <template #footer>
                         <Button label="Cerrar" icon="pi pi-times" text @click="verMotivo = false" />
+                    </template>
+                </Dialog>
+
+                <Dialog v-model:visible="periodoModal" :style="{ width: '450px' }" header="Periodo" :modal="true" class="p-fluid">
+                    <div class="field">
+                        <label for="periodo">Fecha de Inicio</label>
+                        <Calendar :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaInicio" :minDate="new Date()"></Calendar>
+                    </div>
+                    <div class="field">
+                        <label for="periodo">Fecha de Cierre</label>
+                        <Calendar :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaCierre" :minDate="periodoForm.fechaInicio"></Calendar>
+                    </div>
+                    <template #footer>
+                        <Button label="Cancelar" icon="pi pi-times" text="" @click="(periodoModal = false), (periodoForm = {})" />
+                        <Button label="Guardar" icon="pi pi-check" text="" @click="savePeriodo" />
                     </template>
                 </Dialog>
 
