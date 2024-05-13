@@ -10,11 +10,15 @@ import Spinner from '../../components/Spinner.vue';
 const filters = ref();
 const loading = ref(false);
 const cursosData = ref(null);
+const periodos = ref([]);
+const cursos = ref([]);
 const rechazarCurso = ref(false);
 const verMotivo = ref(false);
 const altaCursoModal = ref(false);
+const cursosDataAlta = ref({});
 const dataCursoModal = ref({});
 const periodoModal = ref(false);
+const submitted = ref(false);
 
 const periodoForm = ref({});
 
@@ -27,6 +31,28 @@ const loadSeminarios = async () => {
         console.error('Error al obtener los usuarios:', error);
     } finally {
         loading.value = false;
+    }
+};
+
+const loadPeriodos = async () => {
+    if (!periodos.value.length) {
+        try {
+            const response = await SeminarioApi.loadPeriodos();
+            periodos.value = response.data;
+        } catch (error) {
+            console.error('Error al obtener los periodos:', error);
+        }
+    }
+};
+
+const loadCursos = async () => {
+    if (!cursos.value.length) {
+        try {
+            const response = await SeminarioApi.loadCursos();
+            cursos.value = response.data;
+        } catch (error) {
+            console.error('Error al obtener los cursos:', error);
+        }
     }
 };
 
@@ -60,7 +86,9 @@ const verMotivoModal = (data) => {
     dataCursoModal.value = data;
 };
 const openModalCurso = () => {
+    cursosDataAlta.value = {};
     altaCursoModal.value = true;
+    submitted.value = false;
 };
 
 const openModalPeriodo = () => {
@@ -89,6 +117,27 @@ const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     };
+};
+
+const altaCursos = async () => {
+    submitted.value = true;
+    if (cursosDataAlta.value.periodos && cursosDataAlta.value.cursos) {
+        loading.value = true;
+        try {
+            const response = await SeminarioApi.altaCursos(cursosDataAlta.value);
+            toast.open({
+                message: response.data.msg,
+                type: 'success'
+            });
+            altaCursoModal.value = false;
+            cursosDataAlta.value = {};
+            loadSeminarios();
+        } catch (error) {
+            console.error('Error al dar de alta los cursos:', error);
+        } finally {
+            loading.value = false;
+        }
+    }
 };
 
 initFilters();
@@ -122,7 +171,7 @@ const clearFilter = () => {
                     :rows="10"
                     :filters="filters"
                     :sortField="'periodo.descripcion'"
-                    :sortOrder="-1"
+                    :sortOrder="1"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} cursos"
@@ -205,18 +254,43 @@ const clearFilter = () => {
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="altaCursoModal" :style="{ width: '450px' }" header="Alta Curso" :modal="true">
+                <Dialog v-model:visible="altaCursoModal" :style="{ width: '450px' }" header="Alta Curso" :modal="true" class="p-fluid">
                     <div class="field">
-                        <label for="materia_id">ID Materia</label>
-                        <InputText id="materia_id" />
+                        <label for="descripcion">Periodos</label>
+                        <Dropdown
+                            id="descripcion"
+                            v-model.trim="cursosDataAlta.periodos"
+                            :options="periodos"
+                            @click="loadPeriodos"
+                            optionLabel="descripcion"
+                            placeholder="Selecciona el periodo"
+                            required="true"
+                            :invalid="submitted && !cursosDataAlta.periodos"
+                            :filter="true"
+                        >
+                            <small class="p-invalid" v-if="submitted && !cursosDataAlta.periodos">El periodo es requerido.</small>
+                        </Dropdown>
                     </div>
                     <div class="field">
-                        <label for="nombre_materia">Nombre de la Materia</label>
-                        <InputText id="nombre_materia" required="true" />
+                        <label for="materia">Selecciona los cursos que quieres aperturar</label>
+                        <MultiSelect v-model="cursosDataAlta.cursos" :options="cursos" @click="loadCursos" optionLabel="nombre_curso" placeholder="Selecciona los cursos que deseas aperturar" :filter="true">
+                            <template #value="slotProps">
+                                <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
+                                    <div>{{ option.nombre_curso }}</div>
+                                </div>
+                                <template v-if="!slotProps.value || slotProps.value.length === 0">
+                                    <div class="p-1">Selecciona el Curso</div>
+                                </template>
+                            </template>
+                            <template #option="slotProps">
+                                <div>{{ slotProps.option.nombre_curso }}</div>
+                            </template>
+                        </MultiSelect>
                     </div>
+
                     <template #footer>
-                        <!-- <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
-                        <Button label="Guardar" icon="pi pi-check" text="" @click="saveMateria" /> -->
+                        <Button label="Cancelar" icon="pi pi-times" text="" @click="altaCursoModal = false" />
+                        <Button label="Guardar" icon="pi pi-check" text="" @click="altaCursos" />
                     </template>
                 </Dialog>
             </div>
