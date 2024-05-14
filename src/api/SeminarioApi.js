@@ -49,5 +49,14 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+
+    getCursoById(id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/curso/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

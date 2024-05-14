@@ -64,6 +64,11 @@ const router = createRouter({
                     component: () => import('@/views/administrador/createSeminariosView.vue'),
                     meta: { roles: ['Administrador'] }
                 },
+                {
+                    path: '/admin/detalleCurso/:id',
+                    name: 'detalleCurso',
+                    component: () => import('@/views/administrador/detalleCursoView.vue')
+                },
                 // Rutas de alumno
                 {
                     path: 'alumnos/subirArchivos',
