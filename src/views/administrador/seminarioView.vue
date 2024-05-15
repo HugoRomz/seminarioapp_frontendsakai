@@ -22,6 +22,11 @@ const cursosDataAlta = ref({});
 const dataCursoModal = ref({});
 const periodoModal = ref(false);
 const submitted = ref(false);
+const aceptarCurso = ref(false);
+
+const dataModulos = ref([]);
+const formDataModulos = ref([]);
+const dataDocentes = ref([]);
 
 const periodoForm = ref({});
 
@@ -93,10 +98,30 @@ const openModalCurso = () => {
     altaCursoModal.value = true;
     submitted.value = false;
 };
-
 const openModalPeriodo = () => {
     periodoForm.value = {};
     periodoModal.value = true;
+};
+
+const openModalAceptarCurso = async (data) => {
+    loading.value = true;
+    aceptarCurso.value = true;
+    try {
+        const response = await SeminarioApi.getMateriasCurso(data.curso_id);
+        const responseDocentes = await SeminarioApi.getDocentes();
+
+        dataDocentes.value = responseDocentes.data;
+        dataModulos.value = response.data;
+        formDataModulos.value = dataModulos.value.map(() => ({
+            fecha_inicio: '',
+            fecha_cierre: '',
+            docente: ''
+        }));
+    } catch (error) {
+        console.error('Error al obtener los módulos:', error);
+    } finally {
+        loading.value = false;
+    }
 };
 
 const savePeriodo = async () => {
@@ -111,6 +136,20 @@ const savePeriodo = async () => {
         periodoForm.value = {};
     } catch (error) {
         console.error('Error al guardar el periodo:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+const saveAceptarCurso = async () => {
+    loading.value = true;
+    try {
+        console.log('formDataModulos', formDataModulos.value);
+        dataModulos.value = [];
+        formDataModulos.value = [];
+        aceptarCurso.value = false;
+    } catch (error) {
+        console.error('Error al aceptar el curso:', error);
     } finally {
         loading.value = false;
     }
@@ -208,7 +247,7 @@ const clearFilter = () => {
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="{ data }">
                             <div class="flex flex-row justify-content-center">
-                                <Button v-if="data.status == 'Pendiente'" label="Aceptar" class="mr-2" rounded severity="success" @click="console.log('Aceptar')" />
+                                <Button v-if="data.status == 'Pendiente'" label="Aceptar" class="mr-2" rounded severity="success" @click="openModalAceptarCurso(data)" />
                                 <Button v-if="data.status == 'Pendiente'" label="Rechazar" class="mr-2" rounded severity="danger" @click="rechazarCursoModal(data)" />
                                 <Button v-if="data.status == 'Aceptado'" label="Ver detalle" class="mr-2" rounded severity="info" @click="router.push({ name: 'detalleCurso', params: { id: data.curso_periodo_id } })" />
                                 <Button v-if="data.status == 'Cancelado'" label="Ver motivo" class="mr-2" rounded severity="warning" @click="verMotivoModal(data)" />
@@ -295,6 +334,54 @@ const clearFilter = () => {
                         <Button label="Cancelar" icon="pi pi-times" text="" @click="altaCursoModal = false" />
                         <Button label="Guardar" icon="pi pi-check" text="" @click="altaCursos" />
                     </template>
+                </Dialog>
+
+                <Dialog v-model:visible="aceptarCurso" class="w-full md:w-6" header="Aceptar Curso" :modal="true">
+                    <Spinner v-if="loading" />
+                    <Stepper>
+                        <StepperPanel v-for="(modulo, index) in dataModulos" :key="index" :header="`Módulo ${index + 1}`">
+                            <template #content="{ nextCallback, prevCallback }">
+                                <div class="flex flex-column h-12rem">
+                                    <div class="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                        <div class="p-fluid formgrid grid p-4">
+                                            <div class="field col-12">
+                                                <div class="text-center text-lg">{{ modulo.materia.nombre_materia }}</div>
+                                            </div>
+                                            <div class="field col-12 md:col-6">
+                                                <label for="periodo">Fecha de Inicio</label>
+                                                <Calendar :showIcon="true" :showButtonBar="true" v-model="formDataModulos[index].fecha_inicio" dateFormat="dd/mm/yy"></Calendar>
+                                            </div>
+                                            <div class="field col-12 md:col-6">
+                                                <label for="periodo">Fecha de Cierre</label>
+                                                <Calendar :showIcon="true" :showButtonBar="true" v-model="formDataModulos[index].fecha_cierre" dateFormat="dd/mm/yy"></Calendar>
+                                            </div>
+                                            <div class="field col-12">
+                                                <MultiSelect v-model="formDataModulos[index].docente" :selectionLimit="1" :options="dataDocentes" optionLabel="nombre" placeholder="Selecciona el docente para asignar al módulo" :filter="true">
+                                                    <template #value="slotProps">
+                                                        <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
+                                                            <div>{{ option.nombre }}</div>
+                                                        </div>
+                                                        <template v-if="!slotProps.value || slotProps.value.length === 0">
+                                                            <div class="p-1">Selecciona el Curso</div>
+                                                        </template>
+                                                    </template>
+                                                    <template #option="slotProps">
+                                                        <div>{{ slotProps.option.nombre }}</div>
+                                                    </template>
+                                                </MultiSelect>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex pt-7 justify-content-between">
+                                    <Button v-if="index > 0" label="Regresar" icon="pi pi-arrow-left" @click="prevCallback" />
+                                    <Button v-else label="Regresar" icon="pi pi-arrow-left" disabled />
+                                    <Button v-if="index < dataModulos.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" />
+                                    <Button v-else label="Guardar" icon="pi pi-check" iconPos="right" @click="saveAceptarCurso" />
+                                </div>
+                            </template>
+                        </StepperPanel>
+                    </Stepper>
                 </Dialog>
             </div>
         </div>

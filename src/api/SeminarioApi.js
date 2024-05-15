@@ -58,5 +58,21 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    getMateriasCurso(id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/materiasCurso/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    getDocentes() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/seminario/docentes', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
