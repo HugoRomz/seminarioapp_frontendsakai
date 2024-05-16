@@ -11,7 +11,7 @@ import SeminarioApi from '../../api/SeminarioApi.js';
 import Spinner from '../../components/Spinner.vue';
 
 const filters = ref();
-const loading = ref(false);
+const loadingSpinner = ref(false);
 const cursosData = ref(null);
 const periodos = ref([]);
 const cursos = ref([]);
@@ -31,35 +31,41 @@ const dataDocentes = ref([]);
 const periodoForm = ref({});
 
 const loadSeminarios = async () => {
-    loading.value = true;
+    loadingSpinner.value = true;
     try {
         const response = await SeminarioApi.findSeminarioActivo();
         cursosData.value = response.data;
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
-        loading.value = false;
+        loadingSpinner.value = false;
     }
 };
 
 const loadPeriodos = async () => {
+    loadingSpinner.value = true;
     if (!periodos.value.length) {
         try {
             const response = await SeminarioApi.loadPeriodos();
             periodos.value = response.data;
         } catch (error) {
             console.error('Error al obtener los periodos:', error);
+        } finally {
+            loadingSpinner.value = false;
         }
     }
 };
 
 const loadCursos = async () => {
+    loadingSpinner.value = true;
     if (!cursos.value.length) {
         try {
             const response = await SeminarioApi.loadCursos();
             cursos.value = response.data;
         } catch (error) {
             console.error('Error al obtener los cursos:', error);
+        } finally {
+            loadingSpinner.value = false;
         }
     }
 };
@@ -72,7 +78,7 @@ const rechazarCursoModal = (dataCurso) => {
 };
 
 const rechazarCursoMotivo = async (dataCurso) => {
-    loading.value = true;
+    loadingSpinner.value = true;
     try {
         const response = await SeminarioApi.rechazarCurso(dataCurso);
         toast.open({
@@ -83,7 +89,7 @@ const rechazarCursoMotivo = async (dataCurso) => {
     } catch (error) {
         console.error('Error al rechazar el curso:', error);
     } finally {
-        loading.value = false;
+        loadingSpinner.value = false;
         rechazarCurso.value = false;
         dataCursoModal.value = {};
     }
@@ -104,28 +110,32 @@ const openModalPeriodo = () => {
 };
 
 const openModalAceptarCurso = async (data) => {
-    loading.value = true;
+    loadingSpinner.value = true;
     aceptarCurso.value = true;
     try {
         const response = await SeminarioApi.getMateriasCurso(data.curso_id);
-        const responseDocentes = await SeminarioApi.getDocentes();
-
-        dataDocentes.value = responseDocentes.data;
+        if (dataDocentes.value.length === 0) {
+            const responseDocentes = await SeminarioApi.getDocentes();
+            dataDocentes.value = responseDocentes.data;
+        }
         dataModulos.value = response.data;
-        formDataModulos.value = dataModulos.value.map(() => ({
+        formDataModulos.value = dataModulos.value.map((modulo) => ({
+            detalle_curso_id: modulo.det_curso_id,
+            materia: modulo.materia.nombre_materia,
             fecha_inicio: '',
             fecha_cierre: '',
-            docente: ''
+            docente: '',
+            curso_periodo_id: data.curso_periodo_id
         }));
     } catch (error) {
         console.error('Error al obtener los módulos:', error);
     } finally {
-        loading.value = false;
+        loadingSpinner.value = false;
     }
 };
 
 const savePeriodo = async () => {
-    loading.value = true;
+    loadingSpinner.value = true;
     try {
         const response = await SeminarioApi.createPeriodo(periodoForm.value);
         toast.open({
@@ -137,21 +147,26 @@ const savePeriodo = async () => {
     } catch (error) {
         console.error('Error al guardar el periodo:', error);
     } finally {
-        loading.value = false;
+        loadingSpinner.value = false;
     }
 };
 
 const saveAceptarCurso = async () => {
-    loading.value = true;
+    loadingSpinner.value = true;
     try {
-        console.log('formDataModulos', formDataModulos.value);
+        const response = await SeminarioApi.aceptarCurso(formDataModulos.value);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
         dataModulos.value = [];
         formDataModulos.value = [];
         aceptarCurso.value = false;
+        loadSeminarios();
     } catch (error) {
         console.error('Error al aceptar el curso:', error);
     } finally {
-        loading.value = false;
+        loadingSpinner.value = false;
     }
 };
 
@@ -164,7 +179,7 @@ const initFilters = () => {
 const altaCursos = async () => {
     submitted.value = true;
     if (cursosDataAlta.value.periodos && cursosDataAlta.value.cursos) {
-        loading.value = true;
+        loadingSpinner.value = true;
         try {
             const response = await SeminarioApi.altaCursos(cursosDataAlta.value);
             toast.open({
@@ -177,7 +192,7 @@ const altaCursos = async () => {
         } catch (error) {
             console.error('Error al dar de alta los cursos:', error);
         } finally {
-            loading.value = false;
+            loadingSpinner.value = false;
         }
     }
 };
@@ -188,7 +203,7 @@ const clearFilter = () => {
 };
 </script>
 <template>
-    <Spinner v-if="loading" />
+    <Spinner v-if="loadingSpinner" />
     <div class="grid">
         <div class="col-12">
             <div class="card">
@@ -337,7 +352,7 @@ const clearFilter = () => {
                 </Dialog>
 
                 <Dialog v-model:visible="aceptarCurso" class="w-full md:w-6" header="Aceptar Curso" :modal="true">
-                    <Spinner v-if="loading" />
+                    <Spinner v-if="loadingSpinner" />
                     <Stepper>
                         <StepperPanel v-for="(modulo, index) in dataModulos" :key="index" :header="`Módulo ${index + 1}`">
                             <template #content="{ nextCallback, prevCallback }">
@@ -377,7 +392,7 @@ const clearFilter = () => {
                                     <Button v-if="index > 0" label="Regresar" icon="pi pi-arrow-left" @click="prevCallback" />
                                     <Button v-else label="Regresar" icon="pi pi-arrow-left" disabled />
                                     <Button v-if="index < dataModulos.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" />
-                                    <Button v-else label="Guardar" icon="pi pi-check" iconPos="right" @click="saveAceptarCurso" />
+                                    <Button v-else label="Guardar" icon="pi pi-check" iconPos="right" @click="saveAceptarCurso()" />
                                 </div>
                             </template>
                         </StepperPanel>

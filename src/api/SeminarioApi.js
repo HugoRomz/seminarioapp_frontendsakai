@@ -74,5 +74,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    aceptarCurso(dataCurso) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/seminario/aceptarCurso', dataCurso, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
