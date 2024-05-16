@@ -85,7 +85,9 @@ const exportCSV = () => {
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        egresado: { value: null, matchMode: FilterMatchMode.EQUALS }
+        egresado: { value: null, matchMode: FilterMatchMode.EQUALS },
+        trabajando: { value: null, matchMode: FilterMatchMode.EQUALS },
+        checkSeminario: { value: null, matchMode: FilterMatchMode.EQUALS }
     };
 };
 
@@ -119,11 +121,45 @@ const clearFilter = () => {
                     <template #paginatorend>
                         <Button type="button" icon="pi pi-download" text @click="exportCSV($event)" />
                     </template>
-                    <Column field="matricula" header="Matricula" :sortable="true"></Column>
+                    <Column field="id_estudiante" header="Matricula" :sortable="true"></Column>
                     <Column field="nombres" header="Nombres" :sortable="true"></Column>
                     <Column field="apellidos" header="Apellidos" :sortable="true"></Column>
-                    <Column field="carrera" header="Carrera" :sortable="true"></Column>
+                    <Column field="telefono" header="Telefono" :sortable="true"></Column>
                     <Column field="email_usuario" header="Email" :sortable="true"></Column>
+                    <Column field="nombre_carrera" header="Carrera" :sortable="true"></Column>
+                    <Column field="anio_egreso" header="Año de Egreso" :sortable="true">
+                        <template #body="{ data }">
+                            <template v-if="data.anio_egreso !== null">
+                                {{ data.anio_egreso }}
+                            </template>
+                            <template v-else> Aun no egresa </template>
+                        </template>
+                    </Column>
+                    <Column field="trabajando" header="¿Trabaja?" dataType="boolean" :sortable="true">
+                        <template #body="{ data }">
+                            <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.trabajando, 'pi-times-circle text-red-500': !data.trabajando }"></i>
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
+                        </template>
+                    </Column>
+                    <Column field="lugar_trabajo" header="Lugar de Trabajo" :sortable="true">
+                        <template #body="{ data }">
+                            <template v-if="data.trabajando">
+                                {{ data.lugar_trabajo }}
+                            </template>
+                            <template v-else> No está trabajando </template>
+                        </template>
+                    </Column>
+                    <Column field="cursos_periodo.curso.nombre_curso" header="Seminario" :sortable="true"></Column>
+                    <Column field="checkSeminario" header="¿Ingresar a otro seminario?" dataType="boolean" :sortable="true">
+                        <template #body="{ data }">
+                            <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.checkSeminario, 'pi-times-circle text-red-500': !data.checkSeminario }"></i>
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
+                        </template>
+                    </Column>
                     <Column field="egresado" header="Egresado" dataType="boolean" style="min-width: 8rem" :sortable="true">
                         <template #body="{ data }">
                             <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.egresado, 'pi-times-circle text-red-500': !data.egresado }"></i>
