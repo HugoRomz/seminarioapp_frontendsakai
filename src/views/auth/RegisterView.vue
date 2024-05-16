@@ -144,16 +144,6 @@ const handleSubmit = async (formData) => {
             </div>
             <div v-if="form.es_egresado === 'Sí'">
                 <FormKit
-                    type="text"
-                    label="Código de alumno:"
-                    name="codigo_alumno"
-                    placeholder="Tu código de alumno"
-                    validation="required"
-                    :validation-messages="{
-                        required: 'El código de alumno es obligatorio'
-                    }"
-                />
-                <FormKit
                     type="number"
                     label="Año de egreso:"
                     name="anio_egreso"
