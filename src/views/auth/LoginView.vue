@@ -32,7 +32,7 @@ const handleIconClick = (node) => {
 </script>
 
 <template>
-    <div class="surface-card p-4 shadow-2 border-round-3xl w-full md:w-6 lg:w-3">
+    <div class="surface-card p-4 shadow-2 border-round-3xl w-auto">
         <div class="text-center mt-5">
             <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Iniciar Sesión</h1>
         </div>
