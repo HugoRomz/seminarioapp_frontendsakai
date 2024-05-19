@@ -128,6 +128,19 @@ const handleSubmit = async (formData) => {
                 name="carrera"
                 :options="carreras"
             />
+            <FormKit
+                type="text"
+                label="CURP:"
+                name="curp"
+                placeholder="Tu CURP"
+                validation="required|alpha_num|length:18"
+                :validation-messages="{
+                    required: 'El CURP es obligatorio',
+                    alpha_num: 'El CURP debe contener solo letras y números',
+                    length: 'El CURP debe tener 18 caracteres'
+                }"
+                validation-visibility="dirty"
+            />
             <FormKit type="radio" label="¿Eres egresado?" name="es_egresado" :options="['Sí', 'No']" v-model="form.es_egresado" inline />
             <div v-if="form.es_egresado === 'No'">
                 <FormKit
