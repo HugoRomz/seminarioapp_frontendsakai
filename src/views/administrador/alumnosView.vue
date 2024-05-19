@@ -219,7 +219,7 @@ const clearFilter = () => {
                             {{ displayMatricula(data).matricula }}
                         </template>
                     </Column>
-
+                    <Column field="curp" header="Curp" :sortable="true"></Column>
                     <Column field="nombre" header="Nombre" :sortable="true"></Column>
                     <Column field="apellido_p" header="Apellido Paterno" :sortable="true"></Column>
                     <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>

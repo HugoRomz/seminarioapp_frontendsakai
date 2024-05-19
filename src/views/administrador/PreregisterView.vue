@@ -126,6 +126,7 @@ const clearFilter = () => {
                     <Column field="apellidos" header="Apellidos" :sortable="true"></Column>
                     <Column field="telefono" header="Telefono" :sortable="true"></Column>
                     <Column field="email_usuario" header="Email" :sortable="true"></Column>
+                    <Column field="curp" header="Curp" :sortable="true"></Column>
                     <Column field="nombre_carrera" header="Carrera" :sortable="true"></Column>
                     <Column field="anio_egreso" header="Año de Egreso" :sortable="true">
                         <template #body="{ data }">
