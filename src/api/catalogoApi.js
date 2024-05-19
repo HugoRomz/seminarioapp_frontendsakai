@@ -91,5 +91,21 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    findDocumentos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/documentos', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    asignarDocumentos(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/asginarDocumentos', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

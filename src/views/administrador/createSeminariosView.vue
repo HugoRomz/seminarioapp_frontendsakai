@@ -14,6 +14,24 @@ const filters = ref();
 const loading = ref(null);
 const expandedRows = ref([]);
 
+const dataDocumentos = ref([]);
+const modalDocumentos = ref(false);
+const formDataDocumentos = ref([]);
+
+const DocumentosDataFor = ref([
+    {
+        id: 1,
+        nombre: 'Alumno'
+    },
+    {
+        id: 2,
+        nombre: 'Egresado'
+    },
+    {
+        id: 3,
+        nombre: 'Docente'
+    }
+]);
 const isEditMode = ref(false);
 
 const cursosEdit = ref({});
@@ -48,7 +66,16 @@ const findMaterias = async () => {
     }
 };
 
-onMounted(loadCursos(), findCarreras(), findMaterias());
+const findDocumentos = async () => {
+    try {
+        const response = await catalogoApi.findDocumentos();
+        dataDocumentos.value = response.data;
+    } catch (error) {
+        console.error('Error al obtener los documentos:', error);
+    }
+};
+
+onMounted(loadCursos(), findCarreras(), findMaterias(), findDocumentos());
 
 const openNew = () => {
     cursosEdit.value = {};
@@ -60,6 +87,17 @@ const openNew = () => {
 const hideDialog = () => {
     cursosModal.value = false;
     submitted.value = false;
+};
+
+const showModalDocumentos = (data) => {
+    modalDocumentos.value = true;
+    formDataDocumentos.value = DocumentosDataFor.value.map((documento) => ({
+        curso_id: data.curso_id,
+        tipo: documento.nombre,
+        nombre_curso: data.nombre_curso,
+        documento_id: []
+    }));
+    console.log(formDataDocumentos.value);
 };
 
 const saveCurso = async () => {
@@ -103,6 +141,28 @@ const editCursos = (curso) => {
     cursosEdit.value = { ...cursoData, carrera: cursoData.carrera };
     cursosModal.value = true;
     isEditMode.value = true;
+};
+
+const saveAsignarDocumentos = async () => {
+    isAccepting.value = true;
+    loading.value = true;
+
+    try {
+        const response = await catalogoApi.asignarDocumentos(formDataDocumentos.value);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        modalDocumentos.value = false;
+    } catch (error) {
+        toast.open({
+            message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+        isAccepting.value = false;
+    }
 };
 
 const initFilters = () => {
@@ -165,6 +225,7 @@ const clearFilter = () => {
                     </Column>
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="{ data }">
+                            <Button icon="pi pi-file" class="mr-2" label="Asignar Documentos" severity="warning" rounded @click="showModalDocumentos(data)" />
                             <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editCursos(data)" />
                         </template>
                     </Column>
@@ -227,12 +288,49 @@ const clearFilter = () => {
                             </template>
                         </MultiSelect>
                     </div>
-
-                    <!-- </ScrollPanel> -->
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
                         <Button label="Guardar" icon="pi pi-check" text="" @click="saveCurso" />
                     </template>
+                </Dialog>
+
+                <Dialog v-model:visible="modalDocumentos" class="w-full md:w-6" header="Asignar Documentos al Curso" :modal="true">
+                    <Spinner v-if="loading" />
+                    <Stepper>
+                        <StepperPanel v-for="(documento, index) in DocumentosDataFor" :key="index" :header="`Documentos ${documento.nombre}`">
+                            <template #content="{ nextCallback, prevCallback }">
+                                <div class="flex flex-column h-12rem">
+                                    <div class="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                        <div class="p-fluid formgrid grid p-4 w-full">
+                                            <div class="field col-12"></div>
+                                            <div class="field col-12">
+                                                <MultiSelect v-model="formDataDocumentos[index].documento_id" :options="dataDocumentos" optionLabel="nombre_documento" placeholder="Selecciona el documento" :filter="true" class="w-full">
+                                                    <template #value="slotProps">
+                                                        <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
+                                                            <div>{{ option.nombre_documento }}</div>
+                                                        </div>
+                                                        <template v-if="!slotProps.value || slotProps.value.length === 0">
+                                                            <div class="p-1">Selecciona el documento</div>
+                                                        </template>
+                                                    </template>
+                                                    <template #option="slotProps">
+                                                        <div>{{ slotProps.option.nombre_documento }}</div>
+                                                    </template>
+                                                </MultiSelect>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex pt-7 justify-content-between">
+                                    <Button v-if="index > 0" label="Regresar" icon="pi pi-arrow-left" @click="prevCallback" />
+                                    <Button v-else label="Regresar" icon="pi pi-arrow-left" disabled />
+                                    <Button v-if="index < DocumentosDataFor.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" />
+                                    <Button v-else label="Guardar" icon="pi pi-check" iconPos="right" @click="saveAsignarDocumentos()" />
+                                </div>
+                            </template>
+                        </StepperPanel>
+                    </Stepper>
                 </Dialog>
             </div>
         </div>
