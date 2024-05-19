@@ -64,7 +64,6 @@ onMounted(loadCurso);
             <Toolbar class="mb-4">
                 <template v-slot:start>
                     <div class="my-2"><Button label="Agregar Alumnos" icon="pi pi-users" class="mr-2" severity="primary" @click="console.log('Alumnos')" /></div>
-                    <div class="my-2"><Button label="Agregar Documentos" icon="pi pi-file" class="mr-2" severity="primary" @click="console.log('Documentos')" /></div>
                 </template>
 
                 <template v-slot:end>
