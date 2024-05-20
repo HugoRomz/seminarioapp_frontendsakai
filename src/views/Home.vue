@@ -46,6 +46,9 @@ onMounted(async () => {
                     Estudiante: <span class="value uppercase" id="nombre">{{ users.nombre }} {{ users.apellido_p }} {{ users.apellido_m }}</span>
                 </div>
                 <div class="label">
+                    Curp: <span class="value uppercase" id="curp">{{ users.curp }}</span>
+                </div>
+                <div class="label">
                     Email: <span class="value" id="email">{{ users.email_usuario }}</span>
                 </div>
                 <div class="label">

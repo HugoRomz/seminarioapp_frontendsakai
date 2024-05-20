@@ -34,14 +34,19 @@ const model = ref([
                 to: '/admin/preregister'
             },
             {
+                label: 'Documentación Alumnos',
+                icon: 'pi pi-file-pdf',
+                to: '/admin/documentacionAlumnos'
+            },
+            {
+                label: 'Documentación Docentes',
+                icon: 'pi pi-file-pdf',
+                to: '/admin/documentacionDocentes'
+            },
+            {
                 label: 'Alumnos',
                 icon: 'pi pi-user',
                 to: '/admin/alumnos'
-            },
-            {
-                label: 'Documentación',
-                icon: 'pi pi-file-pdf',
-                to: '/admin/documentacion'
             },
             {
                 label: 'Docentes',

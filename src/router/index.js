@@ -23,11 +23,17 @@ const router = createRouter({
                     meta: { roles: ['Administrador'] }
                 },
                 {
-                    path: '/admin/documentacion',
+                    path: '/admin/documentacionAlumnos',
                     name: 'documentacionAdmin',
                     component: () => import('@/views/administrador/documentacionView.vue'),
                     meta: { roles: ['Administrador'] }
                 },
+                // {
+                //     path: '/admin/documentacionDocentes',
+                //     name: 'documentacionAdmin',
+                //     component: () => import('@/views/administrador/documentacionView.vue'),
+                //     meta: { roles: ['Administrador'] }
+                // },
                 {
                     path: '/admin/alumnos',
                     name: 'alumnosAdmin',

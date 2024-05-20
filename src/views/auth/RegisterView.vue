@@ -3,6 +3,7 @@ import AuthAPI from '@/api/AuthAPI';
 import { reset } from '@formkit/vue';
 import { onMounted } from 'vue';
 import { inject, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import Spinner from '../../components/Spinner2.vue';
 
@@ -11,6 +12,8 @@ const form = ref({ es_egresado: '', trabaja_actualmente: false, ingresar_otro_se
 const carreras = ref(null);
 const cursos = ref(null);
 const loading = ref(false);
+
+const router = useRouter();
 
 // Función para obtener carreras
 const getCarreras = async () => {
@@ -50,6 +53,7 @@ const handleSubmit = async (formData) => {
             type: 'success'
         });
         reset('preregisterform');
+        router.push({ name: 'home' });
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -65,16 +69,16 @@ const handleSubmit = async (formData) => {
         <div class="text-center mt-3 mb-5">
             <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Pre Registro</h1>
         </div>
-        <FormKit id="preregisterform" type="form" :actions="false" incomplete-message="No se pudo enviar, intenta de nuevo" @submit="handleSubmit">
+        <FormKit id="preregisterform" type="form" :actions="false" incomplete-message="No se pudo enviar, verifica los campos" @submit="handleSubmit">
             <FormKit
                 type="text"
                 label="Nombre completo:"
                 name="nombres"
                 placeholder="Tu nombre completo"
-                validation="required|alpha_spaces:latin"
+                validation="required|regex:/^[A-Za-záéíóúÁÉÍÓÚüÜ\s]+$/"
                 :validation-messages="{
                     required: 'El nombre es obligatorio',
-                    alpha_spaces: 'Por favor, ingresa solo letras y espacios para el nombre'
+                    regex: 'Por favor, ingresa solo letras y espacios para el nombre'
                 }"
                 validation-visibility="dirty"
             />
@@ -83,10 +87,10 @@ const handleSubmit = async (formData) => {
                 label="Apellidos:"
                 name="apellidos"
                 placeholder="Tus apellidos"
-                validation="required|alpha_spaces:latin"
+                validation="required|regex:/^[A-Za-záéíóúÁÉÍÓÚüÜ\s]+$/"
                 :validation-messages="{
                     required: 'Los apellidos son obligatorios',
-                    alpha_spaces: 'Por favor, ingresa solo letras para los apellidos'
+                    regex: 'Por favor, ingresa solo letras para los apellidos'
                 }"
                 validation-visibility="dirty"
             />
@@ -133,13 +137,12 @@ const handleSubmit = async (formData) => {
                 label="CURP:"
                 name="curp"
                 placeholder="Tu CURP"
-                validation="required|alpha_num|length:18"
+                :validation="[['matches', /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/]]"
                 :validation-messages="{
-                    required: 'El CURP es obligatorio',
-                    alpha_num: 'El CURP debe contener solo letras y números',
-                    length: 'El CURP debe tener 18 caracteres'
+                    matches: 'El CURP no es válido'
                 }"
                 validation-visibility="dirty"
+                required
             />
             <FormKit type="radio" label="¿Eres egresado?" name="es_egresado" :options="['Sí', 'No']" v-model="form.es_egresado" inline />
             <div v-if="form.es_egresado === 'No'">
@@ -148,10 +151,9 @@ const handleSubmit = async (formData) => {
                     label="Matrícula:"
                     name="matricula"
                     placeholder="Tu matrícula"
-                    validation="required|length:7"
+                    validation="required"
                     :validation-messages="{
-                        required: 'La matrícula es obligatoria',
-                        length: 'La matrícula debe tener 7 caracteres'
+                        required: 'La matrícula es obligatoria'
                     }"
                 />
             </div>
