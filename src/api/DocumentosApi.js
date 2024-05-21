@@ -31,5 +31,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    subirDocumentos(formData) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/documentos/subir', formData, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
