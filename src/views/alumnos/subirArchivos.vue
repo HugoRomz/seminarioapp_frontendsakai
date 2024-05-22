@@ -48,10 +48,14 @@ const subirArchivos = async (event, documento) => {
 
 <template>
     <Spinner v-if="loading" />
+    <Message severity="warn" :closable="false"> Por favor, tenga en cuenta que todos los documentos que sean enviados estarán sujetos a revisión antes de ser aceptados. Agradecemos su paciencia y colaboración en este proceso. </Message>
     <div class="grid">
         <div v-for="(documento, index) in cursoDocumentos" :key="index" class="col-12 lg:col">
             <Card class="min-h-full">
-                <template #title>{{ documento.det_doc_alumno.documento.nombre_documento }}</template>
+                <template #title
+                    >{{ documento.det_doc_alumno.documento.nombre_documento }}
+                    <Message> El documento debe ser subido en formato PDF y no debe exceder 1 MB. </Message>
+                </template>
                 <template #content>
                     <FileUpload
                         name="documento"

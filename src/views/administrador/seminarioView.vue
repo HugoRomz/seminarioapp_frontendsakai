@@ -44,21 +44,19 @@ const loadSeminarios = async () => {
 
 const loadPeriodos = async () => {
     loadingSpinner.value = true;
-    if (!periodos.value.length) {
-        try {
-            const response = await SeminarioApi.loadPeriodos();
-            periodos.value = response.data;
-        } catch (error) {
-            console.error('Error al obtener los periodos:', error);
-        } finally {
-            loadingSpinner.value = false;
-        }
+    try {
+        const response = await SeminarioApi.loadPeriodos();
+        periodos.value = response.data;
+    } catch (error) {
+        console.error('Error al obtener los periodos:', error);
+    } finally {
+        loadingSpinner.value = false;
     }
 };
 
 const loadCursos = async () => {
-    loadingSpinner.value = true;
     if (!cursos.value.length) {
+        loadingSpinner.value = true;
         try {
             const response = await SeminarioApi.loadCursos();
             cursos.value = response.data;
@@ -190,7 +188,11 @@ const altaCursos = async () => {
             cursosDataAlta.value = {};
             loadSeminarios();
         } catch (error) {
-            console.error('Error al dar de alta los cursos:', error);
+            const errorMessage = error.response?.data?.msg || 'Error al dar de alta los cursos.';
+            toast.open({
+                message: errorMessage,
+                type: 'error'
+            });
         } finally {
             loadingSpinner.value = false;
         }
@@ -251,6 +253,11 @@ const clearFilter = () => {
                     <Column field="curso.nombre_curso" header="Nombre del Curso" :sortable="true"></Column>
                     <Column field="periodo.descripcion" header="Periodo" :sortable="true"></Column>
                     <Column field="curso.carrera.nombre_carrera" header="Carrera" :sortable="true"></Column>
+                    <Column field="creditos" header="Preregistros" :sortable="true">
+                        <template #body="{ data }">
+                            <Badge :value="data.preregistrosCount" size="large" severity="secondary"></Badge>
+                        </template>
+                    </Column>
                     <Column field="status" header="Status" :sortable="true">
                         <template #body="{ data }">
                             <Tag v-if="data.status == 'Pendiente'" class="mr-2" severity="info" value="Pendiente"></Tag>
