@@ -23,5 +23,8 @@ export default {
     },
     findCursosPeriodos() {
         return api.get('/auth/cursosPeriodos');
+    },
+    recuperarcontrasena(data) {
+        return api.post('/auth/recuperarcontrasena', data);
     }
 };

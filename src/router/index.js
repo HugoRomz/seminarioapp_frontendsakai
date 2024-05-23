@@ -123,6 +123,11 @@ const router = createRouter({
                     path: 'login',
                     name: 'Login',
                     component: () => import('@/views/auth/LoginView.vue')
+                },
+                {
+                    path: 'recuperarcontrasena',
+                    name: 'RecuperarContrasena',
+                    component: () => import('@/views/auth/recuperarContrasena.vue')
                 }
             ]
         },
