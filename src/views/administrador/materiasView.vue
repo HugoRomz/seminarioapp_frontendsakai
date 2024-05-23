@@ -182,6 +182,12 @@ const clearFilter = () => {
                     </template>
                     <Column field="materia_id" header="ID Materia" :sortable="true"></Column>
                     <Column field="nombre_materia" header="Nombre de la Materia" :sortable="true"></Column>
+                    <Column field="descripcion" header="Descripción"></Column>
+                    <Column field="creditos" header="Créditos" :sortable="true">
+                        <template #body="{ data }">
+                            <Badge :value="data.creditos" size="large" severity="secondary"></Badge>
+                        </template>
+                    </Column>
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="{ data }">
                             <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editMateria(data)" />
@@ -199,6 +205,14 @@ const clearFilter = () => {
                         <label for="nombre_materia">Nombre de la Materia</label>
                         <InputText id="nombre_materia" v-model.trim="materiaEdit.nombre_materia" required="true" :invalid="submitted && !materiaEdit.nombre_materia" />
                         <small class="p-invalid" v-if="submitted && !materiaEdit.nombre_materia">El numero de nombre materia es requerida.</small>
+                    </div>
+                    <div class="field">
+                        <label for="descripcion">Descripción</label>
+                        <Textarea id="descripcion" v-model.trim="materiaEdit.descripcion" />
+                    </div>
+                    <div class="field">
+                        <label for="creditos">Créditos</label>
+                        <InputNumber id="creditos" v-model.trim="materiaEdit.creditos" mode="decimal" :minFractionDigits="0" :maxFractionDigits="0" showButtons :min="0" />
                     </div>
 
                     <!-- </ScrollPanel> -->

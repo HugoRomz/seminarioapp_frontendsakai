@@ -35,17 +35,17 @@ const model = ref([
             },
             {
                 label: 'Documentación Alumnos',
-                icon: 'pi pi-file-pdf',
+                icon: 'pi pi-file-check',
                 to: '/admin/documentacionAlumnos'
             },
             {
                 label: 'Documentación Docentes',
-                icon: 'pi pi-file-pdf',
+                icon: 'pi pi-file-check',
                 to: '/admin/documentacionDocentes'
             },
             {
                 label: 'Alumnos',
-                icon: 'pi pi-user',
+                icon: 'pi pi-user-plus',
                 to: '/admin/alumnos'
             },
             {
@@ -61,7 +61,7 @@ const model = ref([
         items: [
             {
                 label: 'Subir Archivos',
-                icon: 'pi pi-file-import',
+                icon: 'pi pi-file-plus',
                 to: '/alumnos/subirArchivos'
             }
         ],
@@ -72,12 +72,12 @@ const model = ref([
         items: [
             {
                 label: 'Documentación',
-                icon: 'pi pi-file-import',
+                icon: 'pi pi-file-plus',
                 to: '/docentes/documentacion'
             },
             {
                 label: 'Módulos',
-                icon: 'pi pi-circle',
+                icon: 'pi pi-box',
                 to: '/docentes/modulos'
             },
             {

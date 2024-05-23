@@ -50,7 +50,15 @@ export default {
     },
     aceptarDocUsuario(data) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.post(`/documentos/aceptarDocUsuario/${data.alumno_estado_id}`, data, {
+        return api.post(/documentos/aceptarDocUsuario/${data.alumno_estado_id}, data, {
+            headers: {
+                Authorization: Bearer ${token}
+            }
+        });
+    },
+    subirDocumentos(formData) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/documentos/subir', formData, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

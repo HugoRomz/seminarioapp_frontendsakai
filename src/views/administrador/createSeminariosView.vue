@@ -1,6 +1,6 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject, onMounted, watch } from 'vue';
 import catalogoApi from '../../api/catalogoApi.js';
 import Spinner from '../../components/Spinner.vue';
 
@@ -17,6 +17,8 @@ const expandedRows = ref([]);
 const dataDocumentos = ref([]);
 const modalDocumentos = ref(false);
 const formDataDocumentos = ref([]);
+
+const selectionLimit = ref(1);
 
 const DocumentosDataFor = ref([
     {
@@ -43,6 +45,7 @@ const loadCursos = async () => {
     try {
         const response = await catalogoApi.findCursos();
         cursosTable.value = response.data;
+        console.log(cursosTable.value);
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
@@ -174,6 +177,21 @@ initFilters();
 const clearFilter = () => {
     initFilters();
 };
+
+watch(selectionLimit, (newValue) => {
+    if (cursosEdit.value.materias && cursosEdit.value.materias.length > newValue) {
+        cursosEdit.value.materias = cursosEdit.value.materias.slice(0, newValue);
+    }
+});
+
+watch(
+    () => cursosEdit.value.materias,
+    (newMaterias) => {
+        if (newMaterias && newMaterias.length > selectionLimit.value) {
+            cursosEdit.value.materias = newMaterias.slice(0, selectionLimit.value);
+        }
+    }
+);
 </script>
 <template>
     <Spinner v-if="isAccepting" />
@@ -185,6 +203,12 @@ const clearFilter = () => {
                         <div class="my-2">
                             <Button label="Nuevo curso" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
                         </div>
+                    </template>
+                    <template v-slot:end>
+                        <div class="my-2">
+                            <Button icon="pi pi-book" class="mr-2" label="Agregar Materias" @click="$router.push('materias')" />
+                        </div>
+                        <Button icon="pi pi-building-columns" label="Agregar Carreras" @click="$router.push('carreras')" />
                     </template>
                 </Toolbar>
 
@@ -223,6 +247,12 @@ const clearFilter = () => {
                             {{ slotProps.data.carrera.nombre_carrera }}
                         </template>
                     </Column>
+                    <Column field="cursos_periodos.periodo.descripcion" header="Ultimo Activo" :sortable="true">
+                        <template #body="slotProps">
+                            {{ slotProps.data.cursos_periodos.length > 0 ? slotProps.data.cursos_periodos[0].periodo.descripcion : 'No datos' }}
+                        </template>
+                    </Column>
+
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="{ data }">
                             <Button icon="pi pi-file" class="mr-2" label="Asignar Documentos" severity="warning" rounded @click="showModalDocumentos(data)" />
@@ -272,9 +302,14 @@ const clearFilter = () => {
                         <InputText id="nombre_curso" v-model.trim="cursosEdit.nombre_curso" required="true" :invalid="submitted && !cursosEdit.nombre_curso" />
                         <small class="p-invalid" v-if="submitted && !cursosEdit.nombre_curso">El numero de nombre carrera es requerida.</small>
                     </div>
+                    <div class="field">
+                        <label for="selectionLimit">Número máximo de materias</label>
+                        <InputNumber id="selectionLimit" v-model.number="selectionLimit" :min="1" placeholder="Selecciona el número máximo de materias" />
+                    </div>
+
                     <div class="field" v-if="!isEditMode">
                         <label for="materia">Selecciona las materias</label>
-                        <MultiSelect v-model="cursosEdit.materias" :options="materias" :selectionLimit="5" optionLabel="nombre_materia" placeholder="Selecciona la materia" :filter="true">
+                        <MultiSelect v-model="cursosEdit.materias" :options="materias" :selectionLimit="selectionLimit" optionLabel="nombre_materia" placeholder="Selecciona la materia" :filter="true">
                             <template #value="slotProps">
                                 <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
                                     <div>{{ option.nombre_materia }}</div>
