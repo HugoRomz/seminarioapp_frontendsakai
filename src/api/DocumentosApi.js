@@ -21,12 +21,36 @@ export default {
             }
         });
     },
+    agregarComentario(dataComentario) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/documentos/comentarios/${dataComentario.alumno_estado_id}`, dataComentario, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
     getCursoDocumentos(userId) {
         const token = localStorage.getItem('AUTH_TOKEN');
         if (!token) {
             return Promise.reject('No authenticated');
         }
         return api.get(`/documentos/cursoDocumento/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateDocumentoStatus(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/documentos/actualizarEstado/${data.alumno_estado_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    aceptarDocUsuario(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post(`/documentos/aceptarDocUsuario/${data.alumno_estado_id}`, data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
