@@ -69,7 +69,7 @@ const handleIconClick = (node) => {
         </FormKit>
         <div class="text-center mt-4">
             <p class="text-base text-blue-900">
-                <a href="/auth/" class="font-medium hover:underline">Recuperar contraseña</a>
+                <a href="/auth/recuperarcontrasena" class="font-medium hover:underline">Recuperar contraseña</a>
             </p>
             <p class="text-base text-blue-900">
                 <a href="/auth/registro" class="font-medium hover:underline">Pre Registro</a>

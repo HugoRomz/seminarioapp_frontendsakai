@@ -46,14 +46,13 @@ onMounted(getCarreras(), getCursosPeriodos());
 
 const handleSubmit = async (formData) => {
     try {
-        console.log('Datos enviados al pre-registrarse:', formData);
         const { data } = await AuthAPI.register(formData);
         toast.open({
             message: data.msg,
             type: 'success'
         });
         reset('preregisterform');
-        router.push({ name: 'home' });
+        router.push({ name: 'Login' });
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
