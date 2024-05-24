@@ -45,7 +45,6 @@ const loadCursos = async () => {
     try {
         const response = await catalogoApi.findCursos();
         cursosTable.value = response.data;
-        console.log(cursosTable.value);
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
@@ -73,6 +72,7 @@ const findDocumentos = async () => {
     try {
         const response = await catalogoApi.findDocumentos();
         dataDocumentos.value = response.data;
+        console.log(dataDocumentos.value);
     } catch (error) {
         console.error('Error al obtener los documentos:', error);
     }
