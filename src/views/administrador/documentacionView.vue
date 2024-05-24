@@ -17,10 +17,6 @@ const agregarComentario = ref(false);
 const verComentario = ref(false);
 const dataComentarioModal = ref({});
 
-const alumno = ref({
-    esEgresado: false
-});
-
 const loadUsers = async () => {
     loading.value = true;
     try {
@@ -40,7 +36,7 @@ onMounted(() => {
 const aceptarDocumentos = async (data) => {
     loading.value = true;
     try {
-        const response = await DocumentosApi.updateDocumentoStatus(data);
+        await DocumentosApi.updateDocumentoStatus(data);
 
         toast.open({
             message: 'Documento revisado exitosamente',
@@ -86,14 +82,14 @@ const aceptarDocUsuario = async (data) => {
             message: response.data.msg,
             type: 'success'
         });
-        loadUsers(); 
+        loadUsers();
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
             type: 'error'
         });
     } finally {
-        isAccepting.value = false; 
+        isAccepting.value = false;
     }
 };
 
@@ -104,7 +100,7 @@ const verComentarioModal = (data) => {
 
 const documentosPendientes = (user) => {
     if (!user.doc_alumnos_estados) return false;
-    return user.doc_alumnos_estados.some((doc) => doc.status === 'PENDIENTE');
+    return user.doc_alumnos_estados.some((doc) => doc.status === 'PENDIENTE' && doc.url_file);
 };
 
 const documentosRevisados = (user) => {
@@ -120,6 +116,17 @@ const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     };
+};
+
+const getFullUrl = (fileName) => {
+    const baseUrl = import.meta.env.VITE_FILES_URL;
+    return fileName ? `${baseUrl}/Alumnos/${fileName}` : null;
+};
+
+const openFilePreview = (url) => {
+    if (url) {
+        window.open(url, '_blank', 'width=1124,height=688');
+    }
 };
 
 initFilters();
@@ -200,9 +207,9 @@ const clearFilter = () => {
                                 </Column>
                                 <Column header="Visualizar" headerStyle="width:4rem">
                                     <template #body="slotProps">
-                                        <router-link :to="slotProps.data.url_file || null" target="_blank" rel="noopener" v-if="slotProps.data.url_file" @click.native="slotProps.data.url_file">
+                                        <a @click="openFilePreview(getFullUrl(slotProps.data.url_file))" v-if="slotProps.data.url_file">
                                             <Button icon="pi pi-search" />
-                                        </router-link>
+                                        </a>
                                         <Button icon="pi pi-search" :disabled="true" v-else />
                                     </template>
                                 </Column>
@@ -210,8 +217,7 @@ const clearFilter = () => {
                                     <template #body="slotProps">
                                         <div class="flex flex-row justify-content-center">
                                             <!-- Botón de Aceptar -->
-                                            <Button v-if="slotProps.data.status === 'PENDIENTE'" label="Aceptar" class="p-button-success mr-1" @click="aceptarDocumentos(slotProps.data)" />
-                                            <!-- <Button v-if="slotProps.data.status === 'PENDIENTE'" label="Aceptar" class="p-button-success mr-1" @click="aceptarDocumentos(slotProps.data)" :disabled="!slotProps.data.url_file" /> -->
+                                            <Button v-if="slotProps.data.status === 'PENDIENTE'" label="Aceptar" class="p-button-success mr-1" @click="aceptarDocumentos(slotProps.data)" :disabled="!slotProps.data.url_file" />
                                             <!-- Botón de Rechazar -->
                                             <Button v-if="slotProps.data.status === 'PENDIENTE'" label="Rechazar" class="p-button-danger mr-1" @click="agregarComentarioModal(slotProps.data)" />
                                             <!-- Botón de Ver Comentario -->
