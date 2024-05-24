@@ -165,6 +165,7 @@ const clearFilter = () => {
                     <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
                         <template #body="{ data }">
                             <Tag v-if="data.status === 'PENDIENTE'" severity="warning" value="Pendiente" />
+                            <Tag v-if="data.status === 'ACTIVO'" severity="success" value="Revisado" />
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
                             <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
@@ -177,7 +178,7 @@ const clearFilter = () => {
                     </Column>
                     <Column header="Acciones" bodyStyle="text-align:center" style="min-width: 10rem">
                         <template #body="{ data }">
-                            <Button @click="aceptarDocUsuario(data)" :disabled="!documentosRevisados(data)" class="p-button-success mr-2 mb-2">Aceptar</Button>
+                            <Button @click="aceptarDocUsuario(data)" :disabled="data.status === 'ACTIVO' || !documentosRevisados(data)" class="p-button-success mr-2 mb-2">Aceptar</Button>
                         </template>
                     </Column>
                     <template #expansion="slotProps">
