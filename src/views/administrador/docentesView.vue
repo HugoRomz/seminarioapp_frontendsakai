@@ -214,10 +214,17 @@ const clearFilter = () => {
                         <label for="usuario_id">ID</label>
                         <InputText id="usuario_id" :disabled="isEditMode" v-model.trim="docente.usuario_id" />
                     </div>
-                    <div class="field">
-                        <label for="matricula">Numero de Plaza</label>
-                        <InputText id="matricula" v-model.trim="docente.num_plaza" required="true" :invalid="submitted && !docente.num_plaza" />
-                        <small class="p-invalid" v-if="submitted && !docente.num_plaza">El numero de plaza es requerida.</small>
+                    <div class="formgrid grid">
+                        <div class="field col">
+                            <label for="num_plaza">Numero de Plaza</label>
+                            <InputText id="num_plaza" v-model.trim="docente.num_plaza" required="true" :invalid="submitted && !docente.num_plaza" />
+                            <small class="p-invalid" v-if="submitted && !docente.num_plaza">El numero de plaza es requerida.</small>
+                        </div>
+                        <div class="field col">
+                            <label for="curp">CURP</label>
+                            <InputText id="curp" v-model.trim="docente.curp" required="true" :invalid="submitted && !docente.curp" />
+                            <small class="p-invalid" v-if="submitted && !docente.curp">El numero de plaza es requerida.</small>
+                        </div>
                     </div>
                     <div class="formgrid grid">
                         <div class="field col">
