@@ -25,15 +25,15 @@ const router = createRouter({
                 {
                     path: '/admin/documentacionAlumnos',
                     name: 'documentacionAdmin',
-                    component: () => import('@/views/administrador/documentacionView.vue'),
+                    component: () => import('@/views/administrador/documentacionAlumnosView.vue'),
                     meta: { roles: ['Administrador'] }
                 },
-                // {
-                //     path: '/admin/documentacionDocentes',
-                //     name: 'documentacionAdmin',
-                //     component: () => import('@/views/administrador/documentacionView.vue'),
-                //     meta: { roles: ['Administrador'] }
-                // },
+                {
+                    path: '/admin/documentacionDocentes',
+                    name: 'documentacionDocentesAdmin',
+                    component: () => import('@/views/administrador/documentacionDocentesView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
                 {
                     path: '/admin/alumnos',
                     name: 'alumnosAdmin',
