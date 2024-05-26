@@ -82,5 +82,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    loadAlumnos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/seminario/alumnos', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

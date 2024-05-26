@@ -304,10 +304,7 @@ const clearFilter = () => {
                 </Dialog>
 
                 <Dialog v-model:visible="periodoModal" :style="{ width: '450px' }" header="Periodo" :modal="true" class="p-fluid">
-                    <div class="field">
-                        <label for="periodo">Fecha de Inicio</label>
-                        <Calendar :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaInicio" :minDate="new Date()"></Calendar>
-                    </div>
+                    <Calendar :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaInicio" :minDate="new Date(new Date().setDate(new Date().getDate() - 14))"> </Calendar>
                     <div class="field">
                         <label for="periodo">Fecha de Cierre</label>
                         <Calendar :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaCierre" :minDate="periodoForm.fechaInicio"></Calendar>

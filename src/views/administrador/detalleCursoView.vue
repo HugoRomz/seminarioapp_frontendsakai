@@ -1,16 +1,22 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, inject, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+
+const toast = inject('toast');
 
 import SeminarioApi from '../../api/SeminarioApi.js';
 import Spinner from '../../components/Spinner.vue';
 
 const route = useRoute();
 const cursoId = ref(route.params.id);
+const alumnosdata = ref([]);
 
 const cursoData = ref({});
 const editModulo = ref(false);
 const moduloData = ref({});
+
+const alumnoModal = ref(false);
+const alumnosForm = ref({ usuario_id: [] });
 
 const loading = ref(false);
 
@@ -38,6 +44,22 @@ const loadCurso = async () => {
     }
 };
 
+const loadAlumnos = async () => {
+    loading.value = true;
+    try {
+        const response = await SeminarioApi.loadAlumnos();
+        alumnosdata.value = response.data;
+        console.log(response.data);
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+onMounted(loadCurso(), loadAlumnos());
 const openEditModulo = (data) => {
     moduloData.value = { ...data };
     editModulo.value = true;
@@ -50,7 +72,9 @@ const EditarModulo = async () => {
     console.log(moduloData.value);
 };
 
-onMounted(loadCurso);
+const openModalAlumno = () => {
+    alumnoModal.value = true;
+};
 </script>
 
 <template>
@@ -63,7 +87,7 @@ onMounted(loadCurso);
             <h5>{{ cursoData.curso.carrera.nombre_carrera }}</h5>
             <Toolbar class="mb-4">
                 <template v-slot:start>
-                    <div class="my-2"><Button label="Agregar Alumnos" icon="pi pi-users" class="mr-2" severity="primary" @click="console.log('Alumnos')" /></div>
+                    <div class="my-2"><Button label="Agregar Alumnos" icon="pi pi-users" class="mr-2" severity="primary" @click="openModalAlumno" /></div>
                 </template>
 
                 <template v-slot:end>
@@ -114,6 +138,30 @@ onMounted(loadCurso);
         <div class="field">
             <label for="docente">Docente</label>
             <InputText id="docente" v-model.trim="moduloData.usuario.nombre" required="true" />
+        </div>
+
+        <template #footer>
+            <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
+            <Button label="Guardar" icon="pi pi-check" text="" @click="EditarModulo" />
+        </template>
+    </Dialog>
+
+    <Dialog v-model:visible="alumnoModal" header="Asignar Alumnos" :modal="true" class="p-fluid" style="min-width: 25%">
+        <div class="field">
+            <label for="materia">Selecciona los alumnos</label>
+            <MultiSelect v-model="alumnosForm.usuario_id" :options="alumnosdata" optionLabel="usuario_id" placeholder="Selecciona los alumnos" :filter="true">
+                <template #value="slotProps">
+                    <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
+                        <div>{{ option.usuario.nombre }}</div>
+                    </div>
+                    <template v-if="!slotProps.value || slotProps.value.length === 0">
+                        <div class="p-1">Selecciona los alumnos</div>
+                    </template>
+                </template>
+                <template #option="slotProps">
+                    <div>{{ slotProps.option.usuario.nombre + ' ' + slotProps.option.usuario.apellido_p + ' ' + slotProps.option.usuario.apellido_m }}</div>
+                </template>
+            </MultiSelect>
         </div>
 
         <template #footer>
