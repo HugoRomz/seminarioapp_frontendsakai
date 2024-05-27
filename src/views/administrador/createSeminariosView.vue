@@ -16,9 +16,14 @@ const expandedRows = ref([]);
 
 const dataDocumentos = ref([]);
 const modalDocumentos = ref(false);
+const modalDocumentosInfo = ref(false);
 const formDataDocumentos = ref([]);
 
 const selectionLimit = ref(1);
+
+const egresados = ref([]);
+const alumnos = ref([]);
+const docentes = ref([]);
 
 const DocumentosDataFor = ref([
     {
@@ -72,7 +77,6 @@ const findDocumentos = async () => {
     try {
         const response = await catalogoApi.findDocumentos();
         dataDocumentos.value = response.data;
-        console.log(dataDocumentos.value);
     } catch (error) {
         console.error('Error al obtener los documentos:', error);
     }
@@ -100,7 +104,6 @@ const showModalDocumentos = (data) => {
         nombre_curso: data.nombre_curso,
         documento_id: []
     }));
-    console.log(formDataDocumentos.value);
 };
 
 const saveCurso = async () => {
@@ -157,6 +160,7 @@ const saveAsignarDocumentos = async () => {
             type: 'success'
         });
         modalDocumentos.value = false;
+        loadCursos();
     } catch (error) {
         toast.open({
             message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
@@ -192,6 +196,14 @@ watch(
         }
     }
 );
+
+const showModalDocumentosInfo = (dataAlumno, dataDocente) => {
+    egresados.value = dataAlumno.filter((alumno) => alumno.egresado);
+    alumnos.value = dataAlumno.filter((alumno) => !alumno.egresado);
+    docentes.value = dataDocente;
+
+    modalDocumentosInfo.value = true;
+};
 </script>
 <template>
     <Spinner v-if="isAccepting" />
@@ -255,8 +267,19 @@ watch(
 
                     <Column headerStyle="min-width:10rem;" header="Acciones">
                         <template #body="{ data }">
-                            <Button icon="pi pi-file" class="mr-2" label="Asignar Documentos" severity="warning" rounded @click="showModalDocumentos(data)" />
-                            <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editCursos(data)" />
+                            <div class="grid">
+                                <div class="col">
+                                    <div v-if="data.det_doc_alumnos.length === 0 && data.det_doc_docentes.length === 0">
+                                        <Button icon="pi pi-file" class="mr-2" label="Asignar Documentos" severity="warning" rounded @click="showModalDocumentos(data)" />
+                                    </div>
+                                    <div v-else>
+                                        <Button icon="pi pi-file" class="mr-2" label="Ver Documentos" severity="warning" rounded @click="showModalDocumentosInfo(data.det_doc_alumnos, data.det_doc_docentes)" />
+                                    </div>
+                                </div>
+                                <div class="col-fixed">
+                                    <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editCursos(data)" />
+                                </div>
+                            </div>
                         </template>
                     </Column>
 
@@ -366,6 +389,43 @@ watch(
                             </template>
                         </StepperPanel>
                     </Stepper>
+                </Dialog>
+                <Dialog v-model:visible="modalDocumentosInfo" class="w-full md:w-6" header="Documentos Asignados al curso" :modal="true">
+                    <TabView>
+                        <TabPanel header="Alumnos">
+                            <DataTable :value="alumnos" tableStyle="min-width: 100%" showGridlines>
+                                <Column field="det_alumno_id" header="ID"></Column>
+                                <Column field="documento.nombre_documento" header="Name"></Column>
+                                <Column headerStyle="width:4rem">
+                                    <template #body>
+                                        <Button icon="pi pi-search" @click="$router.push('documentos')" disabled />
+                                    </template>
+                                </Column>
+                            </DataTable>
+                        </TabPanel>
+                        <TabPanel header="Egresados">
+                            <DataTable :value="egresados" tableStyle="min-width: 100%" showGridlines>
+                                <Column field="det_alumno_id" header="ID"></Column>
+                                <Column field="documento.nombre_documento" header="Name"></Column>
+                                <Column headerStyle="width:4rem">
+                                    <template #body>
+                                        <Button icon="pi pi-search" @click="$router.push('documentos')" disabled />
+                                    </template>
+                                </Column>
+                            </DataTable>
+                        </TabPanel>
+                        <TabPanel header="Docentes">
+                            <DataTable :value="docentes" tableStyle="min-width: 100%" showGridlines>
+                                <Column field="det_docente_id" header="ID"></Column>
+                                <Column field="documento.nombre_documento" header="Name"></Column>
+                                <Column headerStyle="width:4rem">
+                                    <template #body>
+                                        <Button icon="pi pi-search" @click="$router.push('documentos')" disabled />
+                                    </template>
+                                </Column>
+                            </DataTable>
+                        </TabPanel>
+                    </TabView>
                 </Dialog>
             </div>
         </div>
