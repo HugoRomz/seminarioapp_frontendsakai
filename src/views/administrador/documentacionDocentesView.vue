@@ -20,8 +20,9 @@ const dataComentarioModal = ref({});
 const loadUsers = async () => {
     loading.value = true;
     try {
-        const response = await DocumentosApi.allUserAlumnos();
+        const response = await DocumentosApi.allUserDocentes();
         users.value = response.data;
+        console.log(users.value);
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
@@ -36,7 +37,7 @@ onMounted(() => {
 const aceptarDocumentos = async (data) => {
     loading.value = true;
     try {
-        await DocumentosApi.updateDocumentoStatus(data);
+        await DocumentosApi.updateDocumentoStatusDocente(data);
 
         toast.open({
             message: 'Documento revisado exitosamente',
@@ -59,7 +60,7 @@ const agregarComentarioModal = (dataComentario) => {
 const agregarComentarios = async (dataComentario) => {
     loadingSpinner.value = true;
     try {
-        const response = await DocumentosApi.agregarComentario(dataComentario);
+        const response = await DocumentosApi.agregarComentariosDocente(dataComentario);
         toast.open({
             message: response.data.msg,
             type: 'success'
@@ -77,7 +78,7 @@ const agregarComentarios = async (dataComentario) => {
 const aceptarDocUsuario = async (data) => {
     isAccepting.value = true;
     try {
-        const response = await DocumentosApi.aceptarDocUsuario(data);
+        const response = await DocumentosApi.aceptarDocUsuarioDocente(data);
         toast.open({
             message: response.data.msg,
             type: 'success'
@@ -99,13 +100,13 @@ const verComentarioModal = (data) => {
 };
 
 const documentosPendientes = (user) => {
-    if (!user.doc_alumnos_estados) return false;
-    return user.doc_alumnos_estados.some((doc) => doc.status === 'PENDIENTE' && doc.url_file);
+    if (!user.doc_docente_estados) return false;
+    return user.doc_docente_estados.some((doc) => doc.status === 'PENDIENTE' && doc.url_file);
 };
 
 const documentosRevisados = (user) => {
-    if (!user.doc_alumnos_estados) return false;
-    return user.doc_alumnos_estados.every((doc) => doc.status === 'REVISADO');
+    if (!user.doc_docente_estados) return false;
+    return user.doc_docente_estados.every((doc) => doc.status === 'REVISADO');
 };
 
 const onRowToggle = (event) => {
@@ -150,7 +151,7 @@ const clearFilter = () => {
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} alumnos"
+                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} docentes"
                     :expandedRows="expandedRows"
                     @rowToggle="onRowToggle"
                 >
@@ -193,10 +194,10 @@ const clearFilter = () => {
                             <h5>
                                 Detalle del Usuario - <strong>{{ slotProps.data.nombre }} {{ slotProps.data.apellido_p }} {{ slotProps.data.apellido_m }}</strong> - <strong>{{ slotProps.data.curp }}</strong>
                             </h5>
-                            <DataTable :value="slotProps.data.doc_alumnos_estados">
+                            <DataTable :value="slotProps.data.doc_docente_estados">
                                 <Column field="nombre_documento" header="Nombre del documento" :sortable="true">
                                     <template #body="slotProps">
-                                        {{ slotProps.data.det_doc_alumno.documento.nombre_documento }}
+                                        {{ slotProps.data.det_doc_docente.documento.nombre_documento }}
                                     </template>
                                 </Column>
                                 <Column field="status" header="Estado del documento" :sortable="true">
@@ -244,7 +245,7 @@ const clearFilter = () => {
 
                 <Dialog v-model:visible="verComentario" :style="{ width: '450px' }" :modal="true">
                     <h5>
-                        Documento: <strong>{{ dataComentarioModal.det_doc_alumno.documento.nombre_documento }}</strong>
+                        Documento: <strong>{{ dataComentarioModal.det_doc_docente.documento.nombre_documento }}</strong>
                     </h5>
                     <div class="flex flex-column align-items-center justify-content-center">
                         <i class="pi pi-info-circle mt-1" style="font-size: 2rem" />

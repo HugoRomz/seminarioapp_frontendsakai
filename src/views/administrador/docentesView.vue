@@ -188,13 +188,8 @@ const clearFilter = () => {
                     <Column field="email_usuario" header="Email" :sortable="true"></Column>
                     <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
                         <template #body="{ data }">
-                            <i
-                                class="pi"
-                                :class="{
-                                    'pi-check-circle text-green-500': data.status === 'ACTIVO',
-                                    'pi-times-circle text-red-500': data.status !== 'ACTIVO'
-                                }"
-                            ></i>
+                            <Tag v-if="data.status === 'PENDIENTE'" severity="warning" value="Pendiente" />
+                            <Tag v-if="data.status === 'ACTIVO'" severity="success" value="Activo" />
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
                             <!-- Aquí puedes mantener el componente de filtro existente -->
