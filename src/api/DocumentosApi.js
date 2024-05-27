@@ -10,6 +10,14 @@ export default {
             }
         });
     },
+    allUserDocentes() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/documentos/docentes', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
     userCurso() {
         const token = localStorage.getItem('AUTH_TOKEN');
         if (!token) {
@@ -63,5 +71,33 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
-    }
+    },
+    
+    agregarComentariosDocente(dataComentario) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/documentos/comentariosDocente/${dataComentario.docente_estado_id}`, dataComentario, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    updateDocumentoStatusDocente(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/documentos/actualizarEstadoDocente/${data.docente_estado_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    aceptarDocUsuarioDocente(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post(`/documentos/aceptarDocUsuarioDocente/${data.docente_estado_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
 };
+
+
