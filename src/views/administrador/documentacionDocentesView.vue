@@ -121,7 +121,7 @@ const initFilters = () => {
 
 const getFullUrl = (fileName) => {
     const baseUrl = import.meta.env.VITE_FILES_URL;
-    return fileName ? `${baseUrl}/Alumnos/${fileName}` : null;
+    return fileName ? `${baseUrl}/Docentes/${fileName}` : null;
 };
 
 const openFilePreview = (url) => {

@@ -72,7 +72,6 @@ export default {
             }
         });
     },
-    
     agregarComentariosDocente(dataComentario) {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.put(`/documentos/comentariosDocente/${dataComentario.docente_estado_id}`, dataComentario, {
@@ -98,6 +97,24 @@ export default {
             }
         });
     },
+
+    getCursoDocumentosDocente(userId) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        if (!token) {
+            return Promise.reject('No authenticated');
+        }
+        return api.get(`/documentos/cursoDocumentoDocente/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    subirDocumentosDocente(formData) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/documentos/subirDocDocente', formData, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    }
 };
-
-

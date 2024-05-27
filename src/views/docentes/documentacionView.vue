@@ -14,7 +14,7 @@ const loadDocumentos = async () => {
     try {
         const response = await DocumentoApi.userCurso();
         users.value = response.data;
-        const response2 = await DocumentoApi.getCursoDocumentos(users.value.usuario_id);
+        const response2 = await DocumentoApi.getCursoDocumentosDocente(users.value.usuario_id);
         cursoDocumentos.value = response2.data;
     } catch (error) {
         console.error('Error al obtener los datos:', error);
@@ -32,7 +32,7 @@ const subirArchivos = async (event, documento) => {
         const formData = new FormData();
         formData.append('documento', file);
         formData.append('documentoInfo', JSON.stringify(documento));
-        await DocumentoApi.subirDocumentos(formData);
+        await DocumentoApi.subirDocumentosDocente(formData);
         toast.open({
             message: 'Archivo subido correctamente',
             type: 'success'
@@ -51,7 +51,7 @@ const subirArchivos = async (event, documento) => {
 
 const getFullUrl = (fileName) => {
     const baseUrl = import.meta.env.VITE_FILES_URL;
-    return fileName ? `${baseUrl}/Alumnos/${fileName}` : null;
+    return fileName ? `${baseUrl}/Docentes/${fileName}` : null;
 };
 
 const openFilePreview = (url) => {
@@ -74,8 +74,8 @@ const openFilePreview = (url) => {
     <Message v-if="cursoDocumentos.filter((doc) => doc.status === 'RECHAZADO').length > 0" severity="error" :closable="false">
         Documentos que han sido rechazados:
         <ul>
-            <li v-for="doc in cursoDocumentos.filter((doc) => doc.status === 'RECHAZADO')" :key="doc.det_doc_alumno.documento.nombre_documento">
-                {{ doc.det_doc_alumno.documento.nombre_documento }}
+            <li v-for="doc in cursoDocumentos.filter((doc) => doc.status === 'RECHAZADO')" :key="doc.det_doc_docente.documento.nombre_documento">
+                {{ doc.det_doc_docente.documento.nombre_documento }}
             </li>
         </ul>
         Por favor, sube nuevos archivos para estos documentos.
@@ -86,7 +86,7 @@ const openFilePreview = (url) => {
         <div v-for="(documento, index) in cursoDocumentos" :key="index" class="col-12 lg:col">
             <Card class="min-h-full">
                 <template #title
-                    >{{ documento.det_doc_alumno.documento.nombre_documento }}
+                    >{{ documento.det_doc_docente.documento.nombre_documento }}
                     <Message v-if="!documento.url_file"> El documento debe ser subido en formato PDF y no debe exceder 1 MB. </Message>
                 </template>
                 <template #content>
