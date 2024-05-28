@@ -98,5 +98,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    editModulo(modulo_id, dataModulo) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/seminario/modulo/${modulo_id}`, dataModulo, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

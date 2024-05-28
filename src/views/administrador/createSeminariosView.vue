@@ -325,7 +325,7 @@ const showModalDocumentosInfo = (dataAlumno, dataDocente) => {
                         <InputText id="nombre_curso" v-model.trim="cursosEdit.nombre_curso" required="true" :invalid="submitted && !cursosEdit.nombre_curso" />
                         <small class="p-invalid" v-if="submitted && !cursosEdit.nombre_curso">El numero de nombre carrera es requerida.</small>
                     </div>
-                    <div class="field">
+                    <div class="field" v-if="!isEditMode">
                         <label for="selectionLimit">Número máximo de materias</label>
                         <InputNumber id="selectionLimit" v-model.number="selectionLimit" :min="1" placeholder="Selecciona el número máximo de materias" />
                     </div>

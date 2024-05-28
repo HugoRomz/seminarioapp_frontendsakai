@@ -148,6 +148,24 @@ const savePeriodo = async () => {
         loadingSpinner.value = false;
     }
 };
+const validateSaveCurso = () => {
+    // Verificar si hay campos vacíos en los formDataModulos
+    let camposVacios = false;
+    formDataModulos.value.forEach((modulo) => {
+        if (!modulo.fecha_inicio || !modulo.fecha_cierre || !modulo.docente) {
+            camposVacios = true;
+        }
+    });
+
+    if (camposVacios) {
+        toast.open({
+            message: 'Por favor, llena todos los campos.',
+            type: 'error'
+        });
+    } else {
+        saveAceptarCurso();
+    }
+};
 
 const saveAceptarCurso = async () => {
     loadingSpinner.value = true;
@@ -401,7 +419,7 @@ const clearFilter = () => {
                                     <Button v-if="index > 0" label="Regresar" icon="pi pi-arrow-left" @click="prevCallback" />
                                     <Button v-else label="Regresar" icon="pi pi-arrow-left" disabled />
                                     <Button v-if="index < dataModulos.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" />
-                                    <Button v-else label="Guardar" icon="pi pi-check" iconPos="right" @click="saveAceptarCurso()" />
+                                    <Button v-else label="Guardar" icon="pi pi-check" iconPos="right" @click="validateSaveCurso()" />
                                 </div>
                             </template>
                         </StepperPanel>

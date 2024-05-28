@@ -22,7 +22,7 @@ const loading = ref(false);
 
 const formatDate = (date) => {
     const d = new Date(date);
-    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+    return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
 };
 
 const loadCurso = async () => {
@@ -68,7 +68,23 @@ const hideDialog = () => {
     editModulo.value = false;
 };
 const EditarModulo = async () => {
-    console.log(moduloData.value);
+    try {
+        loading.value = true;
+        const response = await SeminarioApi.editModulo(moduloData.value.modulo_id, moduloData.value);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        hideDialog();
+        loadCurso();
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
 };
 
 const openModalAlumno = () => {
@@ -137,13 +153,11 @@ const asignarAlumnos = async () => {
     </div>
 
     <Dialog v-model:visible="editModulo" header="Editar Modulo" :modal="true" class="p-fluid">
-        <div class="field">
-            <label for="modulo_id">ID Modulo</label>
-            <InputText id="modulo_id" v-model.trim="moduloData.modulo_id" />
-        </div>
+        <InputText id="modulo_id" v-model.trim="moduloData.modulo_id" hidden />
+
         <div class="field">
             <label for="nombre_modulo">Nombre del modulo</label>
-            <InputText id="nombre_modulo" v-model.trim="moduloData.nombre_modulo" required="true" />
+            <InputText id="nombre_modulo" v-model.trim="moduloData.nombre_modulo" required="true" disabled />
         </div>
         <div class="field">
             <label for="fecha_inicio">Fecha de Inicio</label>
@@ -153,10 +167,10 @@ const asignarAlumnos = async () => {
             <label for="fecha_cierre">Fecha de Cierre</label>
             <Calendar id="fecha_cierre" v-model.trim="moduloData.fecha_cierre" required="true" />
         </div>
-        <div class="field">
+        <!-- <div class="field">
             <label for="docente">Docente</label>
             <InputText id="docente" v-model.trim="moduloData.usuario.nombre" required="true" />
-        </div>
+        </div> -->
 
         <template #footer>
             <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
