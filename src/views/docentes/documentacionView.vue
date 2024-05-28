@@ -63,56 +63,66 @@ const openFilePreview = (url) => {
 
 <template>
     <Spinner v-if="loading" />
-    <Message severity="warn" :closable="false">
-        <!-- Verificar si users existe antes de acceder a su propiedad status -->
-        {{
-            users && users.status === 'ACTIVO'
-                ? 'Tus documentos ya han sido aceptados. ¡Gracias por tu colaboración!'
-                : 'Por favor, tenga en cuenta que todos los documentos que sean enviados estarán sujetos a revisión antes de ser aceptados. Agradecemos su paciencia y colaboración en este proceso.'
-        }}
-    </Message>
-    <Message v-if="cursoDocumentos.filter((doc) => doc.status === 'RECHAZADO').length > 0" severity="error" :closable="false">
-        Documentos que han sido rechazados:
-        <ul>
-            <li v-for="doc in cursoDocumentos.filter((doc) => doc.status === 'RECHAZADO')" :key="doc.det_doc_docente.documento.nombre_documento">
-                {{ doc.det_doc_docente.documento.nombre_documento }}
-            </li>
-        </ul>
-        Por favor, sube nuevos archivos para estos documentos.
-    </Message>
+    <div v-if="cursoDocumentos && cursoDocumentos.length !== 0">
+        <Message severity="warn" :closable="false">
+            <!-- Verificar si users existe antes de acceder a su propiedad status -->
+            {{
+                users && users.status === 'ACTIVO'
+                    ? 'Tus documentos ya han sido aceptados. ¡Gracias por tu colaboración!'
+                    : 'Por favor, tenga en cuenta que todos los documentos que sean enviados estarán sujetos a revisión antes de ser aceptados. Agradecemos su paciencia y colaboración en este proceso.'
+            }}
+        </Message>
+        <Message v-if="cursoDocumentos.filter((doc) => doc.status === 'RECHAZADO').length > 0" severity="error" :closable="false">
+            Documentos que han sido rechazados:
+            <ul>
+                <li v-for="doc in cursoDocumentos.filter((doc) => doc.status === 'RECHAZADO')" :key="doc.det_doc_docente.documento.nombre_documento">
+                    {{ doc.det_doc_docente.documento.nombre_documento }}
+                </li>
+            </ul>
+            Por favor, sube nuevos archivos para estos documentos.
+        </Message>
 
-    <!-- <Message v-if="documento.status === 'RECHAZADO'" severity="error" :closable="false">Tienes un documento que ha sido rechazado. Por favor, sube un nuevo archivo. </Message> -->
-    <div class="grid">
-        <div v-for="(documento, index) in cursoDocumentos" :key="index" class="col-12 lg:col">
-            <Card class="min-h-full">
-                <template #title
-                    >{{ documento.det_doc_docente.documento.nombre_documento }}
-                    <Message v-if="!documento.url_file"> El documento debe ser subido en formato PDF y no debe exceder 1 MB. </Message>
-                </template>
-                <template #content>
-                    <FileUpload
-                        name="documento"
-                        @uploader="subirArchivos($event, documento)"
-                        :accept="'application/pdf'"
-                        :multiple="false"
-                        :maxFileSize="1000000"
-                        :fileLimit="1"
-                        :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
-                        customUpload
-                        :disabled="!!documento.url_file"
-                    >
-                        <template #empty>
-                            <div class="flex align-items-center justify-content-center flex-column">
-                                <i class="pi pi-cloud-upload border-2 border-circle p-5 text-8xl text-400 border-400" />
-                                <p class="mt-4 mb-0 text-center">{{ documento.url_file ? 'Archivo subido' : 'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.' }}</p>
-                            </div>
-                        </template>
-                    </FileUpload>
-                </template>
-                <template #footer>
-                    <Button v-if="documento.url_file" @click="openFilePreview(getFullUrl(documento.url_file))" class="w-full" label="Ver documento" icon="pi pi-eye" iconPos="right" />
-                </template>
-            </Card>
+        <!-- <Message v-if="documento.status === 'RECHAZADO'" severity="error" :closable="false">Tienes un documento que ha sido rechazado. Por favor, sube un nuevo archivo. </Message> -->
+        <div class="grid">
+            <div v-for="(documento, index) in cursoDocumentos" :key="index" class="col-12 lg:col">
+                <Card class="min-h-full">
+                    <template #title
+                        >{{ documento.det_doc_docente.documento.nombre_documento }}
+                        <Message v-if="!documento.url_file"> El documento debe ser subido en formato PDF y no debe exceder 1 MB. </Message>
+                    </template>
+                    <template #content>
+                        <FileUpload
+                            name="documento"
+                            @uploader="subirArchivos($event, documento)"
+                            :accept="'application/pdf'"
+                            :multiple="false"
+                            :maxFileSize="1000000"
+                            :fileLimit="1"
+                            :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
+                            customUpload
+                            :disabled="!!documento.url_file"
+                        >
+                            <template #empty>
+                                <div class="flex align-items-center justify-content-center flex-column">
+                                    <i class="pi pi-cloud-upload border-2 border-circle p-5 text-8xl text-400 border-400" />
+                                    <p class="mt-4 mb-0 text-center">{{ documento.url_file ? 'Archivo subido' : 'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.' }}</p>
+                                </div>
+                            </template>
+                        </FileUpload>
+                    </template>
+                    <template #footer>
+                        <Button v-if="documento.url_file" @click="openFilePreview(getFullUrl(documento.url_file))" class="w-full" label="Ver documento" icon="pi pi-eye" iconPos="right" />
+                    </template>
+                </Card>
+            </div>
         </div>
+    </div>
+    <div v-else>
+        <card>
+            <template #title>Documentos</template>
+            <template #content>
+                <p>No hay documentos disponibles para este usuario</p>
+            </template>
+        </card>
     </div>
 </template>

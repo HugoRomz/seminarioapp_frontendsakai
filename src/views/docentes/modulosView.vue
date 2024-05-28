@@ -51,13 +51,20 @@ onMounted(loadModulo);
             <card>
                 <template #title>Lista de Alumnos</template>
                 <template #content>
-                    <DataTable :value="ModuloData" showGridlines>
-                        <Column field="modulo_id" header="Id Alumno"></Column>
-                        <Column field="modulo_id" header="Nombre Completo"></Column>
-                        <Column field="modulo_id" header="Calificacion"></Column>
+                    <DataTable :value="modulo.calificaciones" showGridlines>
+                        <Column :field="(rowData) => rowData.usuario.nombre + ' ' + rowData.usuario.apellido_p + ' ' + rowData.usuario.apellido_m" header="Nombre Completo"></Column>
+                        <Column field="calificacion" header="Calificacion"></Column>
                     </DataTable>
                 </template>
             </card>
         </div>
+    </div>
+    <div v-else>
+        <card>
+            <template #title>Módulos</template>
+            <template #content>
+                <p>No hay módulos disponibles para este usuario</p>
+            </template>
+        </card>
     </div>
 </template>

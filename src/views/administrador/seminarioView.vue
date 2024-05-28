@@ -258,6 +258,11 @@ const clearFilter = () => {
                             <Badge :value="data.preregistrosCount" size="large" severity="secondary"></Badge>
                         </template>
                     </Column>
+                    <!-- <Column field="aspirantes" header="Aspirantes" :sortable="true">
+                        <template #body="{ data }">
+                            <Badge :value="data.aspirantes" size="large" severity="secondary"></Badge>
+                        </template>
+                    </Column> -->
                     <Column field="status" header="Status" :sortable="true">
                         <template #body="{ data }">
                             <Tag v-if="data.status == 'Pendiente'" class="mr-2" severity="info" value="Pendiente"></Tag>

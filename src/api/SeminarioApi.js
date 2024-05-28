@@ -90,5 +90,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    asignarAlumnos(cursoId, alumnos) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post(`/seminario/asignarAlumnos/${cursoId}`, alumnos, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

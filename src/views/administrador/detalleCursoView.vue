@@ -49,7 +49,6 @@ const loadAlumnos = async () => {
     try {
         const response = await SeminarioApi.loadAlumnos();
         alumnosdata.value = response.data;
-        console.log(response.data);
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -74,6 +73,25 @@ const EditarModulo = async () => {
 
 const openModalAlumno = () => {
     alumnoModal.value = true;
+};
+const asignarAlumnos = async () => {
+    try {
+        loading.value = true;
+        const response = await SeminarioApi.asignarAlumnos(cursoId.value, alumnosForm.value);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        alumnoModal.value = false;
+        alumnosForm.value = { usuario_id: [] };
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
 };
 </script>
 
@@ -165,8 +183,8 @@ const openModalAlumno = () => {
         </div>
 
         <template #footer>
-            <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
-            <Button label="Guardar" icon="pi pi-check" text="" @click="EditarModulo" />
+            <Button label="Cancelar" icon="pi pi-times" text="" @click="alumnoModal = false" />
+            <Button label="Guardar" icon="pi pi-check" text="" @click="asignarAlumnos" />
         </template>
     </Dialog>
 </template>
