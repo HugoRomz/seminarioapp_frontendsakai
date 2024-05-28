@@ -26,5 +26,11 @@ export default {
     },
     recuperarcontrasena(data) {
         return api.post('/auth/recuperarcontrasena', data);
+    },
+    verificarContrasenaToken(token) {
+        return api.get(`/auth/recuperarcontrasena/${token}`);
+    },
+    updateContrasena(token,data) {
+        return api.put(`/auth/recuperarcontrasena/${token}`,data);
     }
 };
