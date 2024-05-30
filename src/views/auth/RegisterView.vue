@@ -66,7 +66,7 @@ const handleSubmit = async (formData) => {
     <Spinner v-if="loading" />
     <div v-if="carreras" class="surface-card p-4 mb-5 shadow-2 border-round-3xl w-auto">
         <div class="text-center mt-3 mb-5">
-            <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Pre Registro</h1>
+            <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Pre-Registro</h1>
         </div>
         <FormKit id="preregisterform" type="form" :actions="false" incomplete-message="No se pudo enviar, verifica los campos" @submit="handleSubmit">
             <FormKit

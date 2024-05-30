@@ -72,7 +72,7 @@ const handleIconClick = (node) => {
                 <a href="/auth/recuperarcontrasena" class="font-medium hover:underline">Recuperar contraseña</a>
             </p>
             <p class="text-base text-blue-900">
-                <a href="/auth/registro" class="font-medium hover:underline">Pre Registro</a>
+                <a href="/auth/registro" class="font-medium hover:underline">Pre-registro</a>
             </p>
         </div>
     </div>
