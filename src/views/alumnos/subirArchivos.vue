@@ -49,10 +49,10 @@ const subirArchivos = async (event, documento) => {
     }
 };
 
-const getFullUrl = (fileName) => {
-    const baseUrl = import.meta.env.VITE_FILES_URL;
-    return fileName ? `${baseUrl}/Alumnos/${fileName}` : null;
-};
+// const getFullUrl = (fileName) => {
+//     const baseUrl = import.meta.env.VITE_FILES_URL;
+//     return fileName ? `${baseUrl}/Alumnos/${fileName}` : null;
+// };
 
 const openFilePreview = (url) => {
     if (url) {
@@ -110,7 +110,7 @@ const openFilePreview = (url) => {
                     </FileUpload>
                 </template>
                 <template #footer>
-                    <Button v-if="documento.url_file" @click="openFilePreview(getFullUrl(documento.url_file))" class="w-full" label="Ver documento" icon="pi pi-eye" iconPos="right" />
+                    <Button v-if="documento.url_file" @click="openFilePreview(documento.url_file)" class="w-full" label="Ver documento" icon="pi pi-eye" iconPos="right" />
                 </template>
             </Card>
         </div>

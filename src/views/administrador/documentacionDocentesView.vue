@@ -119,10 +119,10 @@ const initFilters = () => {
     };
 };
 
-const getFullUrl = (fileName) => {
-    const baseUrl = import.meta.env.VITE_FILES_URL;
-    return fileName ? `${baseUrl}/Docentes/${fileName}` : null;
-};
+// const getFullUrl = (fileName) => {
+//     const baseUrl = import.meta.env.VITE_FILES_URL;
+//     return fileName ? `${baseUrl}/Docentes/${fileName}` : null;
+// };
 
 const openFilePreview = (url) => {
     if (url) {
@@ -209,7 +209,7 @@ const clearFilter = () => {
                                 </Column>
                                 <Column header="Visualizar" headerStyle="width:4rem">
                                     <template #body="slotProps">
-                                        <a @click="openFilePreview(getFullUrl(slotProps.data.url_file))" v-if="slotProps.data.url_file">
+                                        <a @click="openFilePreview(slotProps.data.url_file)" v-if="slotProps.data.url_file">
                                             <Button icon="pi pi-search" />
                                         </a>
                                         <Button icon="pi pi-search" :disabled="true" v-else />
