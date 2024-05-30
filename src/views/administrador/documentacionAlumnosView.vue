@@ -123,7 +123,7 @@ const initFilters = () => {
 
 const openFilePreview = (url) => {
     if (url) {
-        window.open(url, '_blank', 'width=1124,height=688');
+        window.open(url, '_blank', 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=1124,height=688');
     }
 };
 
