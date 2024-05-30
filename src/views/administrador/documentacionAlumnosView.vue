@@ -4,13 +4,11 @@ import { ref, inject, onMounted } from 'vue';
 import DocumentosApi from '../../api/DocumentosApi';
 import Spinner from '../../components/Spinner.vue';
 
-const isAccepting = ref(false);
 const toast = inject('toast');
 
 const users = ref(null);
 const filters = ref();
 const loading = ref(null);
-const loadingSpinner = ref(null);
 const dt = ref();
 const expandedRows = ref([]);
 const agregarComentario = ref(false);
@@ -57,7 +55,7 @@ const agregarComentarioModal = (dataComentario) => {
 };
 
 const agregarComentarios = async (dataComentario) => {
-    loadingSpinner.value = true;
+    loading.value = true;
     try {
         const response = await DocumentosApi.agregarComentario(dataComentario);
         toast.open({
@@ -68,14 +66,14 @@ const agregarComentarios = async (dataComentario) => {
     } catch (error) {
         console.error('Error al rechazar el documento:', error);
     } finally {
-        loadingSpinner.value = false;
+        loading.value = false;
         agregarComentario.value = false;
         dataComentarioModal.value = {}; // Limpia el modal después de agregar el comentario
     }
 };
 
 const aceptarDocUsuario = async (data) => {
-    isAccepting.value = true;
+    loading.value = true;
     try {
         const response = await DocumentosApi.aceptarDocUsuario(data);
         toast.open({
@@ -89,7 +87,7 @@ const aceptarDocUsuario = async (data) => {
             type: 'error'
         });
     } finally {
-        isAccepting.value = false;
+        loading.value = false;
     }
 };
 
@@ -162,6 +160,11 @@ const clearFilter = () => {
                                 <InputText v-model="filters['global'].value" placeholder="Búsqueda por palabra clave" style="width: 100%" />
                             </IconField>
                         </div>
+                    </template>
+                    <template #empty> No hay registros. </template>
+                    <template #loading> Cargando... por favor espera </template>
+                    <template #paginatorstart>
+                        <Button icon="pi pi-refresh" @click="loadUsers" />
                     </template>
                     <Column :expander="true" headerStyle="width: 3rem" />
                     <Column field="nombre" header="Nombre" :sortable="true"></Column>
