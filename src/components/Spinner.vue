@@ -1,7 +1,7 @@
 <script setup></script>
 
 <template>
-    <div>
+    <div class="spinner-overlay">
         <span class="loader"></span>
     </div>
 </template>
