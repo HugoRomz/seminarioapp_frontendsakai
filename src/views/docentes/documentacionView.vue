@@ -2,12 +2,12 @@
 import { ref, inject, onMounted } from 'vue';
 import DocumentoApi from '../../api/DocumentosApi.js';
 import Spinner from '../../components/Spinner.vue';
+
 const loading = ref(null);
-
 const toast = inject('toast');
-
 const users = ref(null);
 const cursoDocumentos = ref([]);
+const fileUploadRefs = ref([]);
 
 const loadDocumentos = async () => {
     loading.value = true;
@@ -22,13 +22,13 @@ const loadDocumentos = async () => {
         loading.value = false;
     }
 };
+
 onMounted(loadDocumentos);
 
-const subirArchivos = async (event, documento) => {
+const subirArchivos = async (event, documento, index) => {
     loading.value = true;
     try {
         const file = event.files[0];
-
         const formData = new FormData();
         formData.append('documento', file);
         formData.append('documentoInfo', JSON.stringify(documento));
@@ -37,7 +37,8 @@ const subirArchivos = async (event, documento) => {
             message: 'Archivo subido correctamente',
             type: 'success'
         });
-        loadDocumentos();
+        await loadDocumentos();
+        fileUploadRefs.value[index].clear(); // Limpiar el componente de carga de archivos
     } catch (error) {
         console.error('Error al subir archivo:', error);
         toast.open({
@@ -81,19 +82,18 @@ const openFilePreview = (url) => {
             </ul>
             Por favor, sube nuevos archivos para estos documentos.
         </Message>
-
-        <!-- <Message v-if="documento.status === 'RECHAZADO'" severity="error" :closable="false">Tienes un documento que ha sido rechazado. Por favor, sube un nuevo archivo. </Message> -->
         <div class="grid">
             <div v-for="(documento, index) in cursoDocumentos" :key="index" class="col-12 lg:col">
                 <Card class="min-h-full">
-                    <template #title
-                        >{{ documento.det_doc_docente.documento.nombre_documento }}
+                    <template #title>
+                        {{ documento.det_doc_docente.documento.nombre_documento }}
                         <Message v-if="!documento.url_file"> El documento debe ser subido en formato PDF y no debe exceder 1 MB. </Message>
                     </template>
                     <template #content>
                         <FileUpload
+                            ref="fileUploadRefs"
                             name="documento"
-                            @uploader="subirArchivos($event, documento)"
+                            @uploader="subirArchivos($event, documento, index)"
                             :accept="'application/pdf'"
                             :multiple="false"
                             :maxFileSize="1000000"
@@ -118,11 +118,11 @@ const openFilePreview = (url) => {
         </div>
     </div>
     <div v-else>
-        <card>
+        <Card>
             <template #title>Documentos</template>
             <template #content>
                 <p>No hay documentos disponibles para este usuario</p>
             </template>
-        </card>
+        </Card>
     </div>
 </template>

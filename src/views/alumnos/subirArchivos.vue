@@ -8,6 +8,7 @@ const toast = inject('toast');
 
 const users = ref(null);
 const cursoDocumentos = ref([]);
+const fileUploadRefs = ref([]);
 
 const loadDocumentos = async () => {
     loading.value = true;
@@ -24,7 +25,7 @@ const loadDocumentos = async () => {
 };
 onMounted(loadDocumentos);
 
-const subirArchivos = async (event, documento) => {
+const subirArchivos = async (event, documento, index) => {
     loading.value = true;
     try {
         const file = event.files[0];
@@ -38,6 +39,7 @@ const subirArchivos = async (event, documento) => {
             type: 'success'
         });
         loadDocumentos();
+        fileUploadRefs.value[index].clear();
     } catch (error) {
         console.error('Error al subir archivo:', error);
         toast.open({
@@ -91,8 +93,9 @@ const openFilePreview = (url) => {
                 </template>
                 <template #content>
                     <FileUpload
+                        ref="fileUploadRefs"
                         name="documento"
-                        @uploader="subirArchivos($event, documento)"
+                        @uploader="subirArchivos($event, documento, index)"
                         :accept="'application/pdf'"
                         :multiple="false"
                         :maxFileSize="1000000"
