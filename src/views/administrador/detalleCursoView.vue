@@ -21,8 +21,8 @@ const alumnosForm = ref({ usuario_id: [] });
 const loading = ref(false);
 
 const formatDate = (date) => {
-    const d = new Date(date);
-    return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(date).toLocaleDateString('es-ES', options);
 };
 
 const loadCurso = async () => {
@@ -111,42 +111,60 @@ const asignarAlumnos = async () => {
 };
 </script>
 
+<!--  {{ cursoData.curso.nombre_curso }}
+   {{ cursoData.periodo.descripcion }}
+{{ cursoData.curso.carrera.nombre_carrera }
+{{ modulo.fecha_inicio }}
+{{ modulo.fecha_cierre }}
+{{ modulo.usuario.nombre }} {{ modulo.usuario.apellido_p }} {{ modulo.usuario.apellido_m }}
+ {{ modulo.nombre_modulo }}
+  -->
 <template>
     <Spinner v-if="loading" />
     <div v-if="cursoData && Object.keys(cursoData).length !== 0">
         <div class="card">
-            <h1>
-                <strong> {{ cursoData.curso.nombre_curso }}</strong> <i class="text-lg">{{ cursoData.periodo.descripcion }}</i>
-            </h1>
-            <h5>{{ cursoData.curso.carrera.nombre_carrera }}</h5>
-            <Toolbar class="mb-4">
-                <template v-slot:start>
-                    <div class="my-2"><Button label="Agregar Alumnos" icon="pi pi-users" class="mr-2" severity="primary" @click="openModalAlumno" /></div>
-                </template>
-
-                <template v-slot:end>
-                    <div class="my-2"><Button label="Generador de constancias" icon="pi pi-print" class="mr-2" severity="primary" @click="console.log('Calificaciones')" /></div>
-                    <div class="my-2"><Button label="Generar Reportes" icon="pi pi-file-export" class="mr-2" severity="primary" @click="console.log('Reportes')" /></div>
-                </template>
-            </Toolbar>
-            <div class="grid mt-2">
-                <div v-for="modulo in cursoData.modulos" :key="modulo.modulo_id" class="col-12 md:col-6">
-                    <Card class="border-solid">
-                        <template #title>
-                            <h3 class="text-center">{{ modulo.nombre_modulo }}</h3>
-                        </template>
-                        <template #content>
-                            <p>Inicio: {{ modulo.fecha_inicio }}</p>
-                            <p>Cierre: {{ modulo.fecha_cierre }}</p>
-                            <p>Docente: {{ modulo.usuario.nombre }} {{ modulo.usuario.apellido_p }} {{ modulo.usuario.apellido_m }}</p>
-                        </template>
-                        <template #footer>
-                            <div class="flex flex-column md:flex-row gap-3 mt-1">
-                                <Button label="Generar Calificaciones" class="w-full" severity="success" raised />
-                                <Button label="Editar" class="w-full" severity="info" raised @click="openEditModulo(modulo)" />
+            <div class="grid">
+                <div class="col-12">
+                    <div class="w-full mx-auto">
+                        <div class="grid">
+                            <div class="col-12 md:col-7">
+                                <h1 class="text-5xl font-bold text-primary">{{ cursoData.curso.nombre_curso }}</h1>
+                                <div class="text-gray-700 font-medium text-lg">
+                                    <span>{{ cursoData.curso.carrera.nombre_carrera }}</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-gray-500">{{ cursoData.periodo.descripcion }} </span>
+                                </div>
                             </div>
-                        </template>
-                    </Card>
+                            <div class="col-12 flex flex-column align-items-center justify-content-end md:col-5 md:gap-2 md:flex-row">
+                                <Button @click="openModalAlumno" class="w-full mt-3 md:mt-0" label="Agregar alumnos" severity="success" />
+                                <Button class="w-full mt-3 md:mt-0" label="Generar constancias" severity="contrast" outlined />
+                                <Button class="w-full mt-3 md:mt-0" label="Generar reportes" severity="contrast" outlined />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="w-full mx-auto">
+                        <h2 class="text-3xl font-bold mb-5">Módulos del Curso</h2>
+                        <div class="grid p-2">
+                            <div v-for="modulo in cursoData.modulos" :key="modulo.modulo_id" class="col-12">
+                                <div class="card grid p-2 shadow-2">
+                                    <div class="col-12 md:col-6">
+                                        <h3 class="text-2xl font-bold mb-2">{{ modulo.nombre_modulo }}</h3>
+                                        <div class="text-gray-700 font-medium text-lg">
+                                            <span>{{ modulo.fecha_inicio }} ― {{ modulo.fecha_cierre }}</span>
+                                            <span class="mx-2">•</span>
+                                            <span class="text-gray-500">{{ modulo.usuario.nombre }} {{ modulo.usuario.apellido_p }} {{ modulo.usuario.apellido_m }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 flex flex-column align-items-center justify-content-end md:col-6 md:gap-2 md:flex-row">
+                                        <Button @click="openEditModulo(modulo)" class="w-full md:w-auto mt-3 md:mt-0" label="Editar Módulo" severity="success" />
+                                        <Button class="w-full md:w-auto mt-3 md:mt-0" label="Generar Calificaciones" severity="info" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
