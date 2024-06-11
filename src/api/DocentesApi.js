@@ -8,5 +8,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    updateCalificacion(id, data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/docentes/calificaciones/${id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

@@ -12,6 +12,8 @@ const loading = ref(false);
 const ModuloData = ref({});
 const filters = ref();
 
+const editingRows = ref();
+
 const formatDate = (date) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(date).toLocaleDateString('es-ES', options);
@@ -46,11 +48,27 @@ const clearFilter = () => {
     initFilters();
 };
 
-const onCellEditComplete = (event) => {
-    let { data, newValue, field } = event;
-    console.log(data);
-    console.log(newValue);
-    console.log(field);
+const onRowEditSave = async (event) => {
+    let { newData } = event;
+
+    try {
+        loading.value = true;
+        const userId = newData.calificacion_id;
+
+        const response = await DocenteApi.updateCalificacion(userId, newData);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        loadModulo();
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
 };
 </script>
 
@@ -58,7 +76,7 @@ const onCellEditComplete = (event) => {
     <Spinner v-if="loading" />
     <div v-if="ModuloData && Object.keys(ModuloData).length !== 0">
         <div class="card grid" v-for="(modulo, index) in ModuloData" :key="index">
-            <div class="col-12 md:col-5">
+            <div class="col-12 md:col-4">
                 <h2 class="font-bold">Información del Módulo</h2>
                 <div class="grid">
                     <div class="col-6">
@@ -83,28 +101,58 @@ const onCellEditComplete = (event) => {
                     </div>
                 </div>
             </div>
-            <div class="col-12 md:col-7">
-                <h2 class="font-bold">Estudiantes</h2>
+            <div class="col-12 md:col-8">
+                <h4 class="font-bold">Estudiantes del Módulo</h4>
                 <card>
                     <template #content>
-                        <DataTable :value="modulo.calificaciones" paginator :rows="7" :rowsPerPageOptions="[7, 14, 21]" editMode="cell" @cell-edit-complete="onCellEditComplete">
+                        <DataTable
+                            v-model:filters="filters"
+                            v-model:editingRows="editingRows"
+                            paginator
+                            sortField="calificacion_id"
+                            :sortOrder="-1"
+                            :rows="7"
+                            :rowsPerPageOptions="[7, 14, 21]"
+                            :value="modulo.calificaciones"
+                            editMode="row"
+                            dataKey="calificacion_id"
+                            @row-edit-save="onRowEditSave"
+                            scrollable
+                            scrollHeight="400px"
+                            :pt="{
+                                column: {
+                                    bodycell: ({ state }) => ({
+                                        style: state['d_editing'] && 'padding-top: 0.6rem; padding-bottom: 0.6rem'
+                                    })
+                                }
+                            }"
+                        >
                             <template #header>
                                 <div class="flex justify-content-between">
-                                    <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined @click="clearFilter()" />
+                                    <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
                                     <IconField iconPosition="left">
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+                                        <InputText v-model="filters['global'].value" placeholder="Búsqueda por palabra clave" />
                                     </IconField>
                                 </div>
                             </template>
-                            <Column sortable :field="(rowData) => rowData.usuario.nombre + ' ' + rowData.usuario.apellido_p + ' ' + rowData.usuario.apellido_m" header="Nombre Completo"></Column>
-                            <Column sortable field="calificacion" header="Calificación" :editable="true">
+                            <Column sortable field="calificacion_id" hidden> </Column>
+                            <Column sortable :field="(rowData) => rowData.usuario.nombre + ' ' + rowData.usuario.apellido_p + ' ' + rowData.usuario.apellido_m" header="Nombre Completo" style="min-width: 300px"></Column>
+                            <Column sortable field="calificacion" header="Calificación" :editable="true" style="min-width: 100px">
                                 <template #editor="{ data, field }">
                                     <InputNumber v-model="data[field]" :min="0" :max="8" mode="decimal" showButtons autofocus />
                                 </template>
                             </Column>
+                            <Column sortable field="calificacion_proyecto" header="Calificación Proyecto" :editable="true" style="min-width: 100px">
+                                <template #editor="{ data, field }">
+                                    <InputNumber v-model="data[field]" :min="0" :max="2" mode="decimal" showButtons autofocus />
+                                </template>
+                            </Column>
+                            <Column sortable field="calificacion_final" header="Promedio" style="min-width: 100px"> </Column>
+
+                            <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
                         </DataTable>
                     </template>
                 </card>
