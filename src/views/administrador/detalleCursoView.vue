@@ -202,14 +202,14 @@ const asignarAlumnos = async () => {
             <MultiSelect v-model="alumnosForm.usuario_id" :options="alumnosdata" optionLabel="usuario_id" placeholder="Selecciona los alumnos" :filter="true">
                 <template #value="slotProps">
                     <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
-                        <div>{{ option.usuario.nombre }}</div>
+                        <div>{{ option.nombre }}</div>
                     </div>
                     <template v-if="!slotProps.value || slotProps.value.length === 0">
                         <div class="p-1">Selecciona los alumnos</div>
                     </template>
                 </template>
                 <template #option="slotProps">
-                    <div>{{ slotProps.option.usuario.nombre + ' ' + slotProps.option.usuario.apellido_p + ' ' + slotProps.option.usuario.apellido_m }}</div>
+                    <div>{{ slotProps.option.nombre + ' ' + slotProps.option.apellido_p + ' ' + slotProps.option.apellido_m }}</div>
                 </template>
             </MultiSelect>
         </div>

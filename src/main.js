@@ -110,6 +110,7 @@ import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 
 import BlockViewer from '@/components/BlockViewer.vue';
+import Divider from 'primevue/divider';
 
 import '@/assets/styles.scss';
 
@@ -142,6 +143,7 @@ app.directive('styleclass', StyleClass);
 app.component('BlockViewer', BlockViewer);
 
 app.component('Stepper', Stepper);
+app.component('Divider', Divider);
 app.component('StepperPanel', StepperPanel);
 app.component('AutoComplete', AutoComplete);
 app.component('Avatar', Avatar);

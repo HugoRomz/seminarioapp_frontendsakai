@@ -61,8 +61,13 @@ const model = ref([
         items: [
             {
                 label: 'Subir Archivos',
-                icon: 'pi pi-file-plus',
+                icon: 'pi pi-cloud-upload',
                 to: '/alumnos/subirArchivos'
+            },
+            {
+                label: 'Calificaciones',
+                icon: 'pi pi-file-plus',
+                to: '/alumnos/modulos'
             }
         ],
         roles: ['Alumno']

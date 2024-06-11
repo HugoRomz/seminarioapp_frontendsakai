@@ -82,6 +82,12 @@ const router = createRouter({
                     component: () => import('@/views/alumnos/subirArchivos.vue'),
                     meta: { roles: ['Alumno'] }
                 },
+                {
+                    path: 'alumnos/modulos',
+                    name: 'modulosAlumnos',
+                    component: () => import('@/views/alumnos/moduloView.vue'),
+                    meta: { roles: ['Alumno'] }
+                },
                 // Rutas docentes
                 {
                     path: '/docentes/documentacion',
