@@ -32,6 +32,14 @@ export default {
             }
         });
     },
+    loadPeriodos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/user/periodo', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
     deleteAlumno(userId) {
         const token = localStorage.getItem('AUTH_TOKEN');
         // Asegúrate de que el `id` del usuario se incluye correctamente en la URL
