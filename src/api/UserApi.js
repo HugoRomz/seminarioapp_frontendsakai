@@ -24,9 +24,9 @@ export default {
     },
 
     // ALUMNOS
-    allUserAlumnos() {
+    allUserAlumnos(perido_id) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.get('/user/alumnos', {
+        return api.get(`/user/alumnos/${perido_id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
