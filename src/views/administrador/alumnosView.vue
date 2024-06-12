@@ -1,19 +1,18 @@
 <script setup>
+import { ref, inject, onMounted, watch } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
-import { ref, inject, onMounted } from 'vue';
 import UserApi from '../../api/UserApi';
 import Spinner from '../../components/Spinner.vue';
 
 const switchValue = ref(false);
-
 const isAccepting = ref(false);
 const toast = inject('toast');
-
-const users = ref(null);
+const users = ref([]);
+const selectedPeriodos = ref(null);
+const periodos = ref([]);
 const filters = ref();
-const loading = ref(null);
+const loading = ref(false);
 const dt = ref();
-
 const isEditMode = ref(false);
 
 const alumno = ref({
@@ -35,7 +34,34 @@ const loadUsers = async () => {
     }
 };
 
-onMounted(loadUsers);
+const loadPeriodos = async () => {
+    try {
+        const response = await UserApi.loadPeriodos();
+        periodos.value = response.data;
+    } catch (error) {
+        console.error('Error al obtener los periodos:', error);
+    }
+};
+
+const filterUsersByPeriod = () => {
+    if (selectedPeriodos.value && selectedPeriodos.value.value) {
+        const periodoId = selectedPeriodos.value.value.periodo_id;
+
+        const filteredUsers = users.value.filter((user) => user.cursos_periodo.periodo_id === periodoId);
+        return filteredUsers.length > 0 ? filteredUsers : [];
+    } else {
+        return [];
+    }
+};
+
+onMounted(async () => {
+    await loadPeriodos();
+    await loadUsers();
+});
+
+const handlePeriodChange = async (newValue, oldValue) => {
+    selectedPeriodos.value = newValue;
+};
 
 const displayMatricula = (data) => {
     if (data.alumno) {
@@ -48,8 +74,14 @@ const displayMatricula = (data) => {
             matricula: data.egresado.cod_egresado,
             calificacionFinal: data.egresado.calificacionFinal
         };
+    } else {
+        return {
+            matricula: 'N/A',
+            calificacionFinal: 'N/A'
+        };
     }
 };
+
 const openNew = () => {
     alumno.value = {};
     submitted.value = false;
@@ -108,9 +140,8 @@ const saveAlumno = async () => {
 
 const confirmDeleteProduct = (deleteAlumno) => {
     const alumnoData = { ...deleteAlumno };
-    // Verificar si el alumno es egresado
     if (deleteAlumno.egresado) {
-        alumnoData.matricula = deleteAlumno.egresado.cod_egresado; // Usar el código de egresado
+        alumnoData.matricula = deleteAlumno.egresado.cod_egresado;
         alumnoData.esEgresado = true;
     } else {
         alumnoData.matricula = deleteAlumno.alumno.matricula;
@@ -121,23 +152,18 @@ const confirmDeleteProduct = (deleteAlumno) => {
 };
 
 const editAlumno = (editAlumno) => {
-    const alumnoData = { ...editAlumno };
-    // Verificar si el alumno es egresado
+    alumno.value = { ...editAlumno };
     if (editAlumno.egresado) {
-        alumnoData.matricula = editAlumno.egresado.cod_egresado;
         switchValue.value = true;
     } else {
-        alumnoData.matricula = editAlumno.alumno.matricula;
         switchValue.value = false;
     }
-    alumno.value = alumnoData;
     alumnoModal.value = true;
     isEditMode.value = true;
 };
 
 const deleteAlumno = async () => {
     isAccepting.value = true;
-
     try {
         const response = await UserApi.deleteAlumno(alumno.value.usuario_id);
         toast.open({
@@ -146,7 +172,7 @@ const deleteAlumno = async () => {
         });
         deleteAlumnoModal.value = false;
         alumno.value = {};
-        await loadUsers(); // Recarga la lista de usuarios
+        await loadUsers();
     } catch (error) {
         toast.open({
             message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido al eliminar',
@@ -168,15 +194,23 @@ const initFilters = () => {
 };
 
 initFilters();
+
 const clearFilter = () => {
     initFilters();
 };
 </script>
+
 <template>
     <Spinner v-if="isAccepting" />
     <div class="grid">
         <div class="col-12">
             <div class="card">
+                <label for="descripcion">Periodo: </label>
+                <Dropdown id="period" v-model="selectedPeriodos" :options="periodos" optionLabel="descripcion" placeholder="Selecciona el periodo" @change="handlePeriodChange" :invalid="submitted && !selectedPeriodos" :filter="true">
+                    <template #option="{ option }">
+                        {{ option.descripcion }}
+                    </template>
+                </Dropdown>
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
@@ -189,71 +223,74 @@ const clearFilter = () => {
                     </template>
                 </Toolbar>
 
-                <DataTable
-                    ref="dt"
-                    :value="users"
-                    dataKey="id"
-                    :paginator="true"
-                    :rows="10"
-                    :filters="filters"
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} alumnos"
-                >
-                    <template #header>
-                        <div class="flex justify-content-between flex-column sm:flex-row">
-                            <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
-                            <IconField iconPosition="left">
-                                <InputIcon class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Búsqueda por palabra clave" style="width: 100%" />
-                            </IconField>
-                        </div>
-                    </template>
-                    <template #empty> No hay preregistros. </template>
-                    <template #loading> Cargando... por favor espera </template>
-                    <template #paginatorstart>
-                        <Button icon="pi pi-refresh" @click="loadUsers" />
-                    </template>
-                    <Column field="alumno.matricula" header="Matricula" :sortable="true">
-                        <template #body="{ data }">
-                            {{ displayMatricula(data).matricula }}
+                <div v-if="selectedPeriodos">
+                    <DataTable
+                        ref="dt"
+                        :value="filterUsersByPeriod()"
+                        dataKey="id"
+                        :paginator="true"
+                        :rows="10"
+                        :filters="filters"
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        :rowsPerPageOptions="[5, 10, 25]"
+                        currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} alumnos"
+                    >
+                        <template #header>
+                            <div class="flex justify-content-between flex-column sm:flex-row">
+                                <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
+                                <IconField iconPosition="left">
+                                    <InputIcon class="pi pi-search" />
+                                    <InputText v-model="filters['global'].value" placeholder="Búsqueda por palabra clave" style="width: 100%" />
+                                </IconField>
+                            </div>
                         </template>
-                    </Column>
-                    <Column field="curp" header="Curp" :sortable="true"></Column>
-                    <Column field="nombre" header="Nombre" :sortable="true"></Column>
-                    <Column field="apellido_p" header="Apellido Paterno" :sortable="true"></Column>
-                    <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>
-                    <Column field="telefono_usuario" header="Telefono" :sortable="true"></Column>
-                    <Column field="email_usuario" header="Email" :sortable="true"></Column>
-                    <Column field="alumno.calificacionFinal" header="Calificacion" :sortable="true">
-                        <template #body="{ data }">
-                            {{ displayMatricula(data).calificacionFinal }}
+                        <template #empty> No hay registros. </template>
+                        <template #loading> Cargando... por favor espera </template>
+                        <template #paginatorstart>
+                            <Button icon="pi pi-refresh" @click="loadUsers" />
                         </template>
-                    </Column>
-                    <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
-                        <template #body="{ data }">
-                            <i
-                                class="pi"
-                                :class="{
-                                    'pi-check-circle text-green-500': data.status === 'ACTIVO',
-                                    'pi-times-circle text-red-500': data.status !== 'ACTIVO'
-                                }"
-                            ></i>
-                        </template>
-                        <template #filter="{ filterModel, filterCallback }">
-                            <!-- Aquí puedes mantener el componente de filtro existente -->
-                            <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
-                        </template>
-                    </Column>
+                        <Column field="alumno.matricula" header="Matricula" :sortable="true">
+                            <template #body="{ data }">
+                                {{ displayMatricula(data).matricula }}
+                            </template>
+                        </Column>
+                        <Column field="curp" header="Curp" :sortable="true"></Column>
+                        <Column field="nombre" header="Nombre" :sortable="true"></Column>
+                        <Column field="apellido_p" header="Apellido Paterno" :sortable="true"></Column>
+                        <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>
+                        <Column field="telefono_usuario" header="Telefono" :sortable="true"></Column>
+                        <Column field="email_usuario" header="Email" :sortable="true"></Column>
+                        <Column field="alumno.calificacionFinal" header="Calificacion" :sortable="true">
+                            <template #body="{ data }">
+                                {{ displayMatricula(data).calificacionFinal }}
+                            </template>
+                        </Column>
+                        <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
+                            <template #body="{ data }">
+                                <i
+                                    class="pi"
+                                    :class="{
+                                        'pi-check-circle text-green-500': data.status === 'ACTIVO',
+                                        'pi-times-circle text-red-500': data.status !== 'ACTIVO'
+                                    }"
+                                ></i>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
+                            </template>
+                        </Column>
 
-                    <Column headerStyle="min-width:10rem;">
-                        <template #body="{ data }">
-                            <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editAlumno(data)" />
-                            <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteProduct(data)" />
-                        </template>
-                    </Column>
-                </DataTable>
-
+                        <Column headerStyle="min-width:10rem;">
+                            <template #body="{ data }">
+                                <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editAlumno(data)" />
+                                <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteProduct(data)" />
+                            </template>
+                        </Column>
+                    </DataTable>
+                </div>
+                <div v-else>
+                    <div class="card">Por favor, selecciona un periodo.</div>
+                </div>
                 <Dialog v-model:visible="alumnoModal" :header="isEditMode ? 'Datos del Alumno - Editar' : 'Datos del Alumno - Registrar'" :modal="true" class="p-fluid">
                     <div class="field" v-show="isEditMode">
                         <label for="usuario_id">ID</label>
