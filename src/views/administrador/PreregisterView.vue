@@ -10,7 +10,7 @@ import Spinner from '../../components/Spinner.vue';
 const isAccepting = ref(false);
 
 const toast = inject('toast');
-
+const expandedRowGroups = ref();
 const users = ref(null);
 const filters = ref();
 const loading = ref(null);
@@ -84,16 +84,67 @@ const exportCSV = () => {
 
 const initFilters = () => {
     filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        egresado: { value: null, matchMode: FilterMatchMode.EQUALS },
-        trabajando: { value: null, matchMode: FilterMatchMode.EQUALS },
-        checkSeminario: { value: null, matchMode: FilterMatchMode.EQUALS }
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     };
 };
 
 initFilters();
 const clearFilter = () => {
     initFilters();
+};
+
+const getRandomPastelColor = () => {
+    const pastelColors = [
+        '#ffd1dc',
+        '#ffb6c1',
+        '#ffa07a',
+        '#ffdead',
+        '#f0e68c',
+        '#98fb98',
+        '#afeeee',
+        '#add8e6',
+        '#b0e0e6',
+        '#e0ffff',
+        '#ffb6c1',
+        '#ffdead',
+        '#f0e68c',
+        '#98fb98',
+        '#afeeee',
+        '#add8e6',
+        '#b0e0e6',
+        '#e0ffff',
+        '#ffd1dc',
+        '#ffa07a',
+        '#ffb6c1',
+        '#ffdead',
+        '#f0e68c',
+        '#98fb98',
+        '#afeeee',
+        '#add8e6',
+        '#b0e0e6',
+        '#e0ffff',
+        '#ffd1dc',
+        '#ffa07a',
+        '#ffb6c1',
+        '#ffdead',
+        '#f0e68c',
+        '#98fb98',
+        '#afeeee',
+        '#add8e6',
+        '#b0e0e6',
+        '#e0ffff',
+        '#ffd1dc',
+        '#ffa07a',
+        '#ffb6c1',
+        '#ffdead',
+        '#f0e68c',
+        '#98fb98',
+        '#afeeee',
+        '#add8e6',
+        '#b0e0e6',
+        '#e0ffff'
+    ];
+    return pastelColors[Math.floor(Math.random() * pastelColors.length)];
 };
 </script>
 
@@ -103,7 +154,7 @@ const clearFilter = () => {
         <div class="col-12">
             <div class="card bg-white shadow-xl rounded-lg p-5 border border-gray-200">
                 <h5 class="text-xl font-bold mb-4 border-b border-gray-200 pb-2">TABLA DE PRE REGISTROS</h5>
-                <DataTable :value="users" paginator :rows="10" ref="dt" :rowsPerPageOptions="[5, 10, 20, 50]" v-model:filters="filters" filterDisplay="row" tableStyle="min-width: 50rem">
+                <DataTable v-model:expandedRowGroups="expandedRowGroups" v-model:filters="filters" :value="users" tableStyle="min-width: 50rem" expandableRowGroups rowGroupMode="subheader" groupRowsBy="nombres">
                     <template #header>
                         <div class="flex justify-content-between flex-column sm:flex-row">
                             <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
@@ -113,20 +164,31 @@ const clearFilter = () => {
                             </IconField>
                         </div>
                     </template>
+                    <template #groupheader="slotProps">
+                        <Avatar :label="slotProps ? slotProps.data.nombres.charAt(0) : ''" class="mr-2" size="large" :style="{ backgroundColor: getRandomPastelColor() }" shape="circle" />
+                        <span class="vertical-align-center ml-2 font-bold text-base">
+                            <span class="text-xl uppercase">{{ slotProps.data.id_estudiante }}</span>
+                            - {{ slotProps.data.nombres }} {{ slotProps.data.apellidos }} - {{ slotProps.data.curp }}
+                            <span class="font-normal">- {{ slotProps.data.cursos_periodo.curso.nombre_curso }}</span>
+                        </span>
+                    </template>
                     <template #empty> No hay preregistros. </template>
                     <template #loading> Cargando... por favor espera </template>
                     <template #paginatorstart>
-                        <Button icon="pi pi-refresh" @click="loadUsers" />
+                        <Button icon="pi pi-refresh" @click="loadSeminarios" />
                     </template>
                     <template #paginatorend>
                         <Button type="button" icon="pi pi-download" text @click="exportCSV($event)" />
                     </template>
-                    <Column field="id_estudiante" header="Matricula" :sortable="true"></Column>
-                    <Column field="nombres" header="Nombres" :sortable="true"></Column>
-                    <Column field="apellidos" header="Apellidos" :sortable="true"></Column>
-                    <Column field="telefono" header="Telefono" :sortable="true"></Column>
+                    <Column field="id_estudiante" hidden></Column>
+                    <!-- Columnas ocultas para que funcione el filtro por busqueda -->
+                    <Column field="nombres" hidden></Column>
+                    <Column field="apellidos" hidden></Column>
+                    <Column field="curp" hidden></Column>
+                    <Column field="cursos_periodo.curso.nombre_curso" hidden></Column>
+
                     <Column field="email_usuario" header="Email" :sortable="true"></Column>
-                    <Column field="curp" header="Curp" :sortable="true"></Column>
+                    <Column field="telefono" header="Telefono" :sortable="true" style="width: 10rem"></Column>
                     <Column field="nombre_carrera" header="Carrera" :sortable="true"></Column>
                     <Column field="anio_egreso" header="Año de Egreso" :sortable="true">
                         <template #body="{ data }">
@@ -140,9 +202,6 @@ const clearFilter = () => {
                         <template #body="{ data }">
                             <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.trabajando, 'pi-times-circle text-red-500': !data.trabajando }"></i>
                         </template>
-                        <template #filter="{ filterModel, filterCallback }">
-                            <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
-                        </template>
                     </Column>
                     <Column field="lugar_trabajo" header="Lugar de Trabajo" :sortable="true">
                         <template #body="{ data }">
@@ -152,24 +211,17 @@ const clearFilter = () => {
                             <template v-else> No está trabajando </template>
                         </template>
                     </Column>
-                    <Column field="cursos_periodo.curso.nombre_curso" header="Seminario" :sortable="true"></Column>
-                    <Column field="checkSeminario" header="¿Ingresar a otro seminario?" dataType="boolean" :sortable="true">
+                    <Column field="checkSeminario" header="¿Ingresar a otro seminario?" dataType="boolean" :sortable="true" style="width: 3rem">
                         <template #body="{ data }">
                             <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.checkSeminario, 'pi-times-circle text-red-500': !data.checkSeminario }"></i>
-                        </template>
-                        <template #filter="{ filterModel, filterCallback }">
-                            <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
                         </template>
                     </Column>
                     <Column field="egresado" header="Egresado" dataType="boolean" style="min-width: 8rem" :sortable="true">
                         <template #body="{ data }">
                             <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.egresado, 'pi-times-circle text-red-500': !data.egresado }"></i>
                         </template>
-                        <template #filter="{ filterModel, filterCallback }">
-                            <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
-                        </template>
                     </Column>
-                    <Column header="Acciones" bodyStyle="text-align:center" style="min-width: 10rem">
+                    <Column header="Acciones" bodyStyle="text-align:center" style="width: 16rem">
                         <template #body="{ data }">
                             <Button @click="aceptarUsuario(data)" class="p-button-success mr-2 mb-2">Aceptar</Button>
                             <ConfirmPopup></ConfirmPopup>
