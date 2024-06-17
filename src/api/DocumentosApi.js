@@ -2,9 +2,17 @@ import api from '@/lib/axios';
 
 export default {
     // ALUMNOS
-    allUserAlumnos() {
+    allUserAlumnos(perido_id) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.get('/documentos/alumnos', {
+        return api.get(`/documentos/alumnos/${perido_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    loadPeriodos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/documentos/periodo', {
             headers: {
                 Authorization: `Bearer ${token}`
             }
