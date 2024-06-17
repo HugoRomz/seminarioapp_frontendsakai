@@ -305,9 +305,6 @@ const clearFilter = () => {
                             </Column>
                         </DataTable>
                     </div>
-                    <div v-else>
-                        <div class="card">Por favor, selecciona un periodo.</div>
-                    </div>
                     <Dialog v-model:visible="alumnoModal" :header="isEditMode ? 'Datos del Alumno - Editar' : 'Datos del Alumno - Registrar'" :modal="true" class="p-fluid">
                         <div class="field" v-show="isEditMode">
                             <label for="usuario_id">ID</label>
