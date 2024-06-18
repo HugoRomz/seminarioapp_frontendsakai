@@ -24,7 +24,6 @@ const submitRecuperarContrasena = async (formData) => {
 
         router.push({ name: 'Login' });
     } catch (error) {
-        console.log(error);
         toast.open({
             message: error.response.data.msg,
             type: 'error'

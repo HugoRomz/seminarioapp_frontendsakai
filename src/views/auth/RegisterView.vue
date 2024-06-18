@@ -22,7 +22,10 @@ const getCarreras = async () => {
         const response = await AuthAPI.findCarreras();
         carreras.value = response.data.map((carrera) => ({ value: carrera.carrera_id, label: carrera.nombre_carrera }));
     } catch (error) {
-        console.log('Error al obtener los datos de carreras', error);
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
     } finally {
         loading.value = false;
     }
@@ -35,7 +38,10 @@ const getCursosPeriodos = async () => {
         const response = await AuthAPI.findCursosPeriodos();
         cursos.value = response.data;
     } catch (error) {
-        console.log('Error al obtener los datos de cursos', error);
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
     } finally {
         loading.value = false;
     }
@@ -64,7 +70,7 @@ const handleSubmit = async (formData) => {
 
 <template>
     <Spinner v-if="loading" />
-    <div v-if="carreras" class="surface-card p-4 mb-5 shadow-2 border-round-3xl w-auto">
+    <div v-if="cursos" class="surface-card p-4 mb-5 shadow-2 border-round-3xl w-auto">
         <div class="text-center mt-3 mb-5">
             <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Pre-Registro</h1>
         </div>
@@ -197,6 +203,18 @@ const handleSubmit = async (formData) => {
                 <a href="/auth/login" class="font-medium hover:underline">Regresar</a>
             </p>
         </div>
+    </div>
+    <div v-else>
+        <Card>
+            <template #title> No hay cursos disponibles </template>
+            <template #content>
+                <div class="space-y-3 text-center mt-5">
+                    <p class="text-base text-blue-600">
+                        <a href="/auth/login" class="font-medium hover:underline">Regresar</a>
+                    </p>
+                </div>
+            </template>
+        </Card>
     </div>
 </template>
 

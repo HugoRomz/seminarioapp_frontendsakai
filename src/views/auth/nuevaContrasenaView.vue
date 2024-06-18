@@ -1,6 +1,5 @@
 <script setup>
 import AuthAPI from '@/api/AuthAPI';
-import { reset } from '@formkit/vue';
 import { inject, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -18,7 +17,6 @@ const { token } = route.params;
 
 const validToken = ref(false);
 
-console.log(token);
 onMounted(async () => {
     try {
         const { data } = await AuthAPI.verificarContrasenaToken(token);
@@ -48,7 +46,6 @@ const submitNuevaContrasena = async ({ password }) => {
         });
     }
 };
-
 </script>
 
 <template>

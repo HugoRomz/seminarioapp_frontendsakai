@@ -89,7 +89,7 @@ const onRowEditSave = async (event) => {
                     </div>
                     <div class="col-6">
                         <p class="text-xl text-gray-400 font-medium m-0">Nombre del Curso</p>
-                        <p class="text-xl font-bold m-0">{{ modulo.cursos_periodo.periodo.descripcion }}</p>
+                        <p class="text-xl font-bold m-0">{{ modulo.cursos_periodo.curso.nombre_curso }}</p>
                     </div>
                     <div class="col-6">
                         <p class="text-xl text-gray-400 font-medium m-0">Fecha de Inicio</p>
