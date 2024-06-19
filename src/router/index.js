@@ -15,6 +15,11 @@ const router = createRouter({
                     name: 'home',
                     component: () => import('@/views/Home.vue')
                 },
+                {
+                    path: '/reportarErrores',
+                    name: 'errores',
+                    component: () => import('@/views/erroresView.vue')
+                },
                 // Rutas de Administrador
                 {
                     path: '/admin/preregister',
