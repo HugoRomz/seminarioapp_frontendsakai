@@ -68,7 +68,7 @@ const model = ref([
                 label: 'Calificaciones',
                 icon: 'pi pi-file-plus',
                 to: '/alumnos/modulos'
-            },
+            }
         ],
         roles: ['Alumno']
     },
@@ -84,7 +84,7 @@ const model = ref([
                 label: 'Módulos',
                 icon: 'pi pi-box',
                 to: '/docentes/modulos'
-            },
+            }
             // {
             //     label: 'Evidencias',
             //     icon: 'pi pi-file',
@@ -102,9 +102,9 @@ const model = ref([
         label: 'Otros',
         items: [
             {
-            label: 'Reportar Errores',
-            icon: 'pi pi-file',
-            to: '/reportarErrores'
+                label: 'Configuración',
+                icon: 'pi pi-cog',
+                to: '/configuracion'
             }
         ],
         roles: ['Administrador', 'Docente', 'Alumno', 'Asistente']
