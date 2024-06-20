@@ -106,5 +106,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    generarCalificaciones(modulo_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/generarCalificaciones/${modulo_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

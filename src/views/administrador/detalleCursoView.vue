@@ -109,6 +109,26 @@ const asignarAlumnos = async () => {
         loading.value = false;
     }
 };
+
+const generarCalificaciones = async (modulo_id, nombre_modulo) => {
+    try {
+        loading.value = true;
+        const response = await SeminarioApi.generarCalificaciones(modulo_id);
+        console.log(nombre_modulo);
+        console.log(response.data);
+        toast.open({
+            message: 'Calificaciones generadas',
+            type: 'success'
+        });
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
+};
 </script>
 
 <!--  {{ cursoData.curso.nombre_curso }}
@@ -159,7 +179,7 @@ const asignarAlumnos = async () => {
                                     </div>
                                     <div class="col-12 flex flex-column align-items-center justify-content-end md:col-6 md:gap-2 md:flex-row">
                                         <Button @click="openEditModulo(modulo)" class="w-full md:w-auto mt-3 md:mt-0" label="Editar Módulo" severity="success" />
-                                        <Button class="w-full md:w-auto mt-3 md:mt-0" label="Generar Calificaciones" severity="info" />
+                                        <Button @click="generarCalificaciones(modulo.modulo_id, modulo.nombre_modulo)" class="w-full md:w-auto mt-3 md:mt-0" label="Generar Calificaciones" severity="info" />
                                     </div>
                                 </div>
                             </div>
