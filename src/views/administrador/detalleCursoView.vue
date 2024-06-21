@@ -202,8 +202,8 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
             // Agregar logo inferior
             doc.addImage(logoInferior, 'JPEG', centroX, doc.internal.pageSize.height - 10, 150, 5);
 
-            // doc.save(`Calificaciones_${nombre_modulo}.pdf`);
-            doc.output('dataurlnewwindow');
+            doc.save(`Calificaciones_${nombre_modulo}.pdf`);
+           // doc.output('dataurlnewwindow');
             toast.open({
                 message: `Calificaciones generadas ${nombre_modulo}`,
                 type: 'success'
