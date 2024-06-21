@@ -2,8 +2,8 @@ import api from '@/lib/axios';
 
 export default {
     // TODOS LOS USUARIOS
-    all() {
-        return api.get('/user/preregister');
+    all(perido_id) {
+        return api.get(`/user/preregister/${perido_id}`);
     },
     create(data) {
         const token = localStorage.getItem('AUTH_TOKEN');

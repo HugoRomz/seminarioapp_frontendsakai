@@ -27,10 +27,8 @@ watch(selectedPeriodos, async (newValue) => {
 const loadUsers = async (periodoId) => {
     loading.value = true;
     try {
-        console.log(periodoId);
         const response = await DocumentosApi.allUserAlumnos(periodoId);
         users.value = response.data;
-        console.log(users.value);
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
