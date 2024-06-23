@@ -23,6 +23,10 @@ const moduloData = ref({});
 const alumnoModal = ref(false);
 const alumnosForm = ref({ usuario_id: [] });
 
+const constanciaModal = ref(false);
+const alumnosConstanciaData = ref([]);
+const alumnoModalConstancia = ref([]);
+
 const loading = ref(false);
 
 const formatDate = (date) => {
@@ -43,7 +47,10 @@ const loadCurso = async () => {
         });
         cursoData.value = { ...response.data, modulos };
     } catch (error) {
-        console.error(error);
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
     } finally {
         loading.value = false;
     }
@@ -52,7 +59,7 @@ const loadCurso = async () => {
 const loadAlumnos = async () => {
     loading.value = true;
     try {
-        const response = await SeminarioApi.loadAlumnos();
+        const response = await SeminarioApi.loadAlumnos(cursoId.value);
         alumnosdata.value = response.data;
     } catch (error) {
         toast.open({
@@ -125,11 +132,13 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
         if (caldata.length > 0) {
             const doc = new jsPDF();
 
-            doc.addImage(LogoSuperior, 'JPEG', 5, 5, 195, 15);
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const logoWidth = 195; // Adjust the width of the logo as needed
+            const logoX = (pageWidth - logoWidth) / 2;
+            doc.addImage(LogoSuperior, 'JPEG', logoX, 5, logoWidth, 15);
 
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            const pageWidth = doc.internal.pageSize.getWidth();
             const textWidth = (doc.getStringUnitWidth(data.curso.toUpperCase()) * doc.internal.getFontSize()) / doc.internal.scaleFactor;
             const textX = (pageWidth - textWidth) / 2;
             doc.text(data.curso.toUpperCase(), textX, 30);
@@ -203,7 +212,7 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
             doc.addImage(logoInferior, 'JPEG', centroX, doc.internal.pageSize.height - 10, 150, 5);
 
             doc.save(`Calificaciones_${nombre_modulo}.pdf`);
-           // doc.output('dataurlnewwindow');
+            // doc.output('dataurlnewwindow');
             toast.open({
                 message: `Calificaciones generadas ${nombre_modulo}`,
                 type: 'success'
@@ -219,16 +228,68 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
         loading.value = false;
     }
 };
+
+const showModalConstancia = async () => {
+    constanciaModal.value = true;
+    try {
+        loading.value = true;
+        const response = await SeminarioApi.obtenerAlumnosConstancias(cursoId.value);
+        alumnosConstanciaData.value = response.data;
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+
+const generarConstancias = async () => {
+    try {
+        alumnoModalConstancia.value.forEach((alumno) => {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const logoWidth = 195; // Adjust the width of the logo as needed
+            const logoX = (pageWidth - logoWidth) / 2;
+            doc.addImage(LogoSuperior, 'JPEG', logoX, 5, logoWidth, 15);
+
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+
+            doc.text(alumno.usuario.nombre.toUpperCase(), 20, 40);
+            doc.text(alumno.usuario.apellido_p.toUpperCase(), 50, 40);
+            doc.text(alumno.usuario.apellido_m.toUpperCase(), 80, 40);
+            doc.text((alumno.usuario.alumno ? alumno.usuario.alumno.matricula : alumno.usuario.egresado ? alumno.usuario.egresado.cod_egresado : 'SIN MATRICULA').toUpperCase(), 20, 45);
+            doc.text(`Calificación:${alumno.calificacion}`, 20, 50);
+            doc.text(`Calificación Proyecto:${alumno.calificacion_proyecto}`, 20, 55);
+            doc.text(`Calificación Final:${alumno.calificacion_final}`, 20, 60);
+
+            const textWidth = (doc.getStringUnitWidth('CONSTANCIA DE CURSO') * doc.internal.getFontSize()) / doc.internal.scaleFactor;
+            const textX = (pageWidth - textWidth) / 2;
+            doc.text('CONSTANCIA DE CURSO', textX, 30);
+
+            const centroX = doc.internal.pageSize.width / 2;
+            doc.addImage(logoInferior, 'JPEG', centroX - 75, doc.internal.pageSize.height - 10, 150, 5);
+
+            doc.output('dataurlnewwindow');
+            // doc.save(`Constancia_${alumno.usuario.nombre}_${alumno.usuario.apellido_p}_${alumno.usuario.apellido_m}.pdf`);
+        });
+        toast.open({
+            message: 'Constancias generadas correctamente',
+            type: 'success'
+        });
+        constanciaModal.value = false;
+        alumnoModalConstancia.value = [];
+    } catch (error) {
+        toast.open({
+            message: 'Error al generar constancias',
+            type: 'error'
+        });
+    }
+};
 </script>
 
-<!--  {{ cursoData.curso.nombre_curso }}
-   {{ cursoData.periodo.descripcion }}
-{{ cursoData.curso.carrera.nombre_carrera }
-{{ modulo.fecha_inicio }}
-{{ modulo.fecha_cierre }}
-{{ modulo.usuario.nombre }} {{ modulo.usuario.apellido_p }} {{ modulo.usuario.apellido_m }}
- {{ modulo.nombre_modulo }}
-  -->
 <template>
     <Spinner v-if="loading" />
     <div v-if="cursoData && Object.keys(cursoData).length !== 0">
@@ -247,8 +308,8 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
                             </div>
                             <div class="col-12 flex flex-column align-items-center justify-content-end md:col-5 md:gap-2 md:flex-row">
                                 <Button @click="openModalAlumno" class="w-full mt-3 md:mt-0" label="Agregar alumnos" severity="success" />
-                                <Button class="w-full mt-3 md:mt-0" label="Generar constancias" severity="contrast" outlined />
-                                <Button class="w-full mt-3 md:mt-0" label="Generar reportes" severity="contrast" outlined />
+                                <Button @click="showModalConstancia" class="w-full mt-3 md:mt-0" label="Generar constancias" severity="contrast" outlined />
+                                <Button class="w-full mt-3 md:mt-0" label="Generar reportes" severity="contrast" outlined disabled />
                             </div>
                         </div>
                     </div>
@@ -327,6 +388,27 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
         <template #footer>
             <Button label="Cancelar" icon="pi pi-times" text="" @click="alumnoModal = false" />
             <Button label="Guardar" icon="pi pi-check" text="" @click="asignarAlumnos" />
+        </template>
+    </Dialog>
+
+    <Dialog v-model:visible="constanciaModal" header="Generar Constancias" :modal="true" class="p-fluid w-full md:w-30rem">
+        <div class="field">
+            <label for="Alumnos">Selecciona los alumnos</label>
+            <MultiSelect v-model="alumnoModalConstancia" :options="alumnosConstanciaData" placeholder="Selecciona los alumnos para generar constancias" :filter="true">
+                <template #value="slotProps">
+                    <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
+                        <div>{{ option.usuario.nombre }} {{ option.usuario.apellido_p }} {{ option.usuario.apellido_m }}</div>
+                    </div>
+                </template>
+                <template #option="slotProps">
+                    <div>{{ slotProps.option.usuario.nombre }} {{ slotProps.option.usuario.apellido_p }} {{ slotProps.option.usuario.apellido_m }}</div>
+                </template>
+            </MultiSelect>
+        </div>
+
+        <template #footer>
+            <Button label="Cancelar" icon="pi pi-times" text="" @click="constanciaModal = false" />
+            <Button label="Generar" icon="pi pi-check" text="" @click="generarConstancias" />
         </template>
     </Dialog>
 </template>

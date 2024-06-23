@@ -83,9 +83,9 @@ export default {
             }
         });
     },
-    loadAlumnos() {
+    loadAlumnos(cursoId) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.get('/seminario/alumnos', {
+        return api.get(`/seminario/alumnos/${cursoId}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -110,6 +110,14 @@ export default {
     generarCalificaciones(modulo_id) {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.get(`/seminario/generarCalificaciones/${modulo_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    obtenerAlumnosConstancias(cursoId) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/obtenerAlumnosConstancias/${cursoId}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

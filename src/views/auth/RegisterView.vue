@@ -77,9 +77,9 @@ const handleSubmit = async (formData) => {
         <FormKit id="preregisterform" type="form" :actions="false" incomplete-message="No se pudo enviar, verifica los campos" @submit="handleSubmit">
             <FormKit
                 type="text"
-                label="Nombre completo:"
+                label="Nombre(s):"
                 name="nombres"
-                placeholder="Tu nombre completo"
+                placeholder="Nombre(s)"
                 validation="required|regex:/^[A-Za-záéíóúÁÉÍÓÚüÜ\s]+$/"
                 :validation-messages="{
                     required: 'El nombre es obligatorio',

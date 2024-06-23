@@ -16,6 +16,11 @@ const router = createRouter({
                     component: () => import('@/views/Home.vue')
                 },
                 {
+                    path: '/about',
+                    name: 'About',
+                    component: () => import('@/views/pages/AboutUs.vue')
+                },
+                {
                     path: '/configuracion',
                     name: 'configuracion',
                     component: () => import('@/views/configuracionView.vue')
@@ -156,11 +161,6 @@ const router = createRouter({
             path: '/:catchAll(.*)',
             name: '404',
             component: () => import('@/views/pages/NotFound.vue')
-        },
-        {
-            path: '/about',
-            name: 'About',
-            component: () => import('@/views/pages/AboutUs.vue')
         }
     ]
 });

@@ -276,11 +276,11 @@ const clearFilter = () => {
                             <Badge :value="data.preregistrosCount" size="large" severity="secondary"></Badge>
                         </template>
                     </Column>
-                    <!-- <Column field="aspirantes" header="Aspirantes" :sortable="true">
+                    <Column field="aspirantes" header="Aspirantes" :sortable="true">
                         <template #body="{ data }">
-                            <Badge :value="data.aspirantes" size="large" severity="secondary"></Badge>
+                            <Badge :value="data.usuariosCount" size="large" severity="secondary"></Badge>
                         </template>
-                    </Column> -->
+                    </Column>
                     <Column field="status" header="Status" :sortable="true">
                         <template #body="{ data }">
                             <Tag v-if="data.status == 'Pendiente'" class="mr-2" severity="info" value="Pendiente"></Tag>
@@ -327,10 +327,13 @@ const clearFilter = () => {
                 </Dialog>
 
                 <Dialog v-model:visible="periodoModal" :style="{ width: '450px' }" header="Periodo" :modal="true" class="p-fluid">
-                    <Calendar :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaInicio" :minDate="new Date(new Date().setDate(new Date().getDate() - 14))"> </Calendar>
                     <div class="field">
-                        <label for="periodo">Fecha de Cierre</label>
-                        <Calendar :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaCierre" :minDate="periodoForm.fechaInicio"></Calendar>
+                        <label for="fecha_inicio">Fecha de inicio</label>
+                        <Calendar id="fecha_inicio" :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaInicio" :minDate="new Date(new Date().setDate(new Date().getDate() - 14))"> </Calendar>
+                    </div>
+                    <div class="field">
+                        <label for="fecha_fin">Fecha de Cierre</label>
+                        <Calendar id="fecha_fin" :showIcon="true" :showButtonBar="true" v-model="periodoForm.fechaCierre" :minDate="periodoForm.fechaInicio"></Calendar>
                     </div>
                     <template #footer>
                         <Button label="Cancelar" icon="pi pi-times" text="" @click="(periodoModal = false), (periodoForm = {})" />

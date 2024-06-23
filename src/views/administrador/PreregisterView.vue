@@ -15,6 +15,7 @@ const filters = ref();
 const loading = ref(null);
 const selectedPeriodos = ref(null);
 const periodos = ref([]);
+const submitted = ref(false);
 
 watch(selectedPeriodos, async (newValue) => {
     if (newValue && newValue.value.periodo_id) {
@@ -27,7 +28,7 @@ const loadUsers = async (periodoId) => {
     isAccepting.value = true;
     try {
         const response = await UserApi.all(periodoId);
-        users.value = response.data.sort((a, b) => (a.status === true) ? -1 : 1);
+        users.value = response.data.sort((a) => (a.status === true ? -1 : 1));
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
@@ -120,10 +121,7 @@ const clearFilter = () => {
 };
 
 const getRandomPastelColor = () => {
-    const pastelColors = [
-        '#ffd1dc', '#ffb6c1', '#ffa07a', '#ffdead', '#f0e68c',
-        '#98fb98', '#afeeee', '#add8e6', '#b0e0e6', '#e0ffff',
-    ];
+    const pastelColors = ['#ffd1dc', '#ffb6c1', '#ffa07a', '#ffdead', '#f0e68c', '#98fb98', '#afeeee', '#add8e6', '#b0e0e6', '#e0ffff'];
     return pastelColors[Math.floor(Math.random() * pastelColors.length)];
 };
 </script>
