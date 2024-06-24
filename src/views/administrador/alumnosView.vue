@@ -31,8 +31,17 @@ const loadUsers = async (periodoId) => {
     try {
         const response = await UserApi.allUserAlumnos(periodoId);
         users.value = response.data;
+        if (users.value.length === 0) {
+            toast.open({
+                message: 'No hay alumnos registrados en este periodo',
+                type: 'info'
+            });
+        }
     } catch (error) {
-        console.error('Error al obtener los usuarios:', error);
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
     } finally {
         loading.value = false;
     }

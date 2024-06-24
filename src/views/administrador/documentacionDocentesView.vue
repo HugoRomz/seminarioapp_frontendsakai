@@ -20,9 +20,11 @@ const loadUsers = async () => {
     try {
         const response = await DocumentosApi.allUserDocentes();
         users.value = response.data;
-        console.log(users.value);
     } catch (error) {
-        console.error('Error al obtener los usuarios:', error);
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
     } finally {
         loading.value = false;
     }

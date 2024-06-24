@@ -29,6 +29,12 @@ const loadUsers = async (periodoId) => {
     try {
         const response = await UserApi.all(periodoId);
         users.value = response.data.sort((a) => (a.status === true ? -1 : 1));
+        if (response.data.length === 0) {
+            toast.open({
+                message: 'No hay preregistros en este periodo.',
+                type: 'info'
+            });
+        }
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
@@ -65,7 +71,8 @@ const aceptarUsuario = async (userData) => {
             message: response.data.msg,
             type: 'success'
         });
-        loadUsers(selectedPeriodos.value.periodo_id); // Recarga los usuarios después de aceptar uno
+
+        loadUsers(userData.cursos_periodo.periodo_id); // Recarga los usuarios después de aceptar uno
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -145,7 +152,18 @@ const getRandomPastelColor = () => {
             <div v-if="selectedPeriodos">
                 <div class="card bg-white shadow-xl rounded-lg p-5 border border-gray-200">
                     <h5 class="text-xl font-bold mb-4 border-b border-gray-200 pb-2">TABLA DE PRE REGISTROS</h5>
-                    <DataTable v-model:expandedRowGroups="expandedRowGroups" v-model:filters="filters" :value="users" tableStyle="min-width: 50rem" expandableRowGroups rowGroupMode="subheader" groupRowsBy="nombres">
+                    <DataTable
+                        v-model:expandedRowGroups="expandedRowGroups"
+                        v-model:filters="filters"
+                        :value="users"
+                        tableStyle="min-width: 50rem"
+                        expandableRowGroups
+                        rowGroupMode="subheader"
+                        groupRowsBy="nombres"
+                        paginator
+                        :rows="5"
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                    >
                         <template #header>
                             <div class="flex justify-content-between flex-column sm:flex-row">
                                 <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
@@ -166,7 +184,7 @@ const getRandomPastelColor = () => {
                         <template #empty> No hay preregistros. </template>
                         <template #loading> Cargando... por favor espera </template>
                         <template #paginatorstart>
-                            <Button icon="pi pi-refresh" @click="loadSeminarios" />
+                            <Button type="button" icon="pi pi-refresh" text @click="loadUsers(selectedPeriodos.value.periodo_id)" />
                         </template>
                         <template #paginatorend>
                             <Button type="button" icon="pi pi-download" text @click="exportCSV($event)" />

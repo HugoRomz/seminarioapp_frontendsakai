@@ -29,8 +29,17 @@ const loadUsers = async (periodoId) => {
     try {
         const response = await DocumentosApi.allUserAlumnos(periodoId);
         users.value = response.data;
+        if (users.value.length === 0) {
+            toast.open({
+                message: 'No hay alumnos registrados en este periodo',
+                type: 'info'
+            });
+        }
     } catch (error) {
-        console.error('Error al obtener los usuarios:', error);
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
     } finally {
         loading.value = false;
     }
@@ -41,7 +50,6 @@ const loadPeriodos = async () => {
     try {
         const response = await DocumentosApi.loadPeriodos();
         periodos.value = response.data;
-        console.log(periodos.value);
     } catch (error) {
         console.error('Error al obtener los periodos:', error);
     } finally {
