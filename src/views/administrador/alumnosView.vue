@@ -273,7 +273,7 @@ const clearFilter = () => {
                             <template #empty> No hay registros. </template>
                             <template #loading> Cargando... por favor espera </template>
                             <template #paginatorstart>
-                                <Button icon="pi pi-refresh" @click="loadUsers" />
+                                <Button icon="pi pi-refresh" @click="loadUsers(selectedPeriodos.value.periodo_id)" />
                             </template>
                             <Column field="alumno.matricula" header="Matricula" :sortable="true">
                                 <template #body="{ data }">

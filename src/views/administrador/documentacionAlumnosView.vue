@@ -65,7 +65,7 @@ const handlePeriodChange = async (newValue) => {
     selectedPeriodos.value = newValue;
 };
 
-const aceptarDocumentos = async (data) => {
+const aceptarDocumentos = async (data, periodo_id) => {
     loading.value = true;
     try {
         await DocumentosApi.updateDocumentoStatus(data);
@@ -75,7 +75,7 @@ const aceptarDocumentos = async (data) => {
             type: 'success'
         });
 
-        loadUsers();
+        loadUsers(periodo_id);
     } catch (error) {
         console.error('Error al actualizar el documento:', error);
     } finally {
@@ -88,7 +88,7 @@ const agregarComentarioModal = (dataComentario) => {
     agregarComentario.value = true;
 };
 
-const agregarComentarios = async (dataComentario) => {
+const agregarComentarios = async (dataComentario, periodo_id) => {
     loading.value = true;
     try {
         const response = await DocumentosApi.agregarComentario(dataComentario);
@@ -96,7 +96,7 @@ const agregarComentarios = async (dataComentario) => {
             message: response.data.msg,
             type: 'success'
         });
-        loadUsers();
+        loadUsers(periodo_id);
     } catch (error) {
         console.error('Error al rechazar el documento:', error);
     } finally {
@@ -106,7 +106,7 @@ const agregarComentarios = async (dataComentario) => {
     }
 };
 
-const aceptarDocUsuario = async (data) => {
+const aceptarDocUsuario = async (data, periodo_id) => {
     loading.value = true;
     try {
         const response = await DocumentosApi.aceptarDocUsuario(data);
@@ -114,7 +114,7 @@ const aceptarDocUsuario = async (data) => {
             message: response.data.msg,
             type: 'success'
         });
-        loadUsers();
+        loadUsers(periodo_id);
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -212,7 +212,7 @@ const clearFilter = () => {
                             <template #empty> No hay registros. </template>
                             <template #loading> Cargando... por favor espera </template>
                             <template #paginatorstart>
-                                <Button icon="pi pi-refresh" @click="loadUsers" />
+                                <Button icon="pi pi-refresh" @click="loadUsers(selectedPeriodos.value.periodo_id)" />
                             </template>
                             <Column :expander="true" headerStyle="width: 3rem" />
                             <Column field="nombre" header="Nombre" :sortable="true"></Column>
@@ -236,7 +236,7 @@ const clearFilter = () => {
                             </Column>
                             <Column header="Acciones" bodyStyle="text-align:center" style="min-width: 10rem">
                                 <template #body="{ data }">
-                                    <Button @click="aceptarDocUsuario(data)" :disabled="data.status === 'ACTIVO' || !documentosRevisados(data)" class="p-button-success mr-2 mb-2">Aceptar</Button>
+                                    <Button @click="aceptarDocUsuario(data, selectedPeriodos.value.periodo_id)" :disabled="data.status === 'ACTIVO' || !documentosRevisados(data)" class="p-button-success mr-2 mb-2">Aceptar</Button>
                                 </template>
                             </Column>
                             <template #expansion="slotProps">
@@ -269,7 +269,13 @@ const clearFilter = () => {
                                             <template #body="slotProps">
                                                 <div class="flex flex-row justify-content-center">
                                                     <!-- Botón de Aceptar -->
-                                                    <Button v-if="slotProps.data.status === 'PENDIENTE'" label="Aceptar" class="p-button-success mr-1" @click="aceptarDocumentos(slotProps.data)" :disabled="!slotProps.data.url_file" />
+                                                    <Button
+                                                        v-if="slotProps.data.status === 'PENDIENTE'"
+                                                        label="Aceptar"
+                                                        class="p-button-success mr-1"
+                                                        @click="aceptarDocumentos(slotProps.data, selectedPeriodos.value.periodo_id)"
+                                                        :disabled="!slotProps.data.url_file"
+                                                    />
                                                     <!-- Botón de Rechazar -->
                                                     <Button v-if="slotProps.data.status === 'PENDIENTE'" label="Rechazar" class="p-button-danger mr-1" @click="agregarComentarioModal(slotProps.data)" />
                                                     <!-- Botón de Ver Comentario -->
@@ -293,7 +299,7 @@ const clearFilter = () => {
                         </div>
                         <template #footer>
                             <Button label="No" icon="pi pi-times" text @click="(agregarComentario = false), (dataComentarioModal.comentarios = '')" />
-                            <Button label="Yes" icon="pi pi-check" text @click="agregarComentarios(dataComentarioModal)" />
+                            <Button label="Yes" icon="pi pi-check" text @click="agregarComentarios(dataComentarioModal, selectedPeriodos.value.periodo_id)" />
                         </template>
                     </Dialog>
 
