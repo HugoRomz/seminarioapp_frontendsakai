@@ -40,6 +40,8 @@ const subirArchivos = async (event, documento, index) => {
         });
         loadDocumentos();
         fileUploadRefs.value[index].clear();
+        // Reiniciar ventana
+        location.reload();
     } catch (error) {
         console.error('Error al subir archivo:', error);
         toast.open({
