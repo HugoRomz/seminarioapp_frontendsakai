@@ -11,9 +11,13 @@ import Spinner from '../../components/Spinner.vue';
 const loading = ref(false);
 
 const ModuloData = ref();
+const tipoEvidencias = ref([]);
 const filters = ref();
 
 const modalAltaEvidencia = ref(false);
+const evidenciasEdit = ref({});
+const isEditMode = ref(false);
+const submitted = ref(false);
 
 const formatDate = (date) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -27,7 +31,7 @@ const loadModulo = async () => {
         const response2 = await EvidenciasApi.getModulos(response.data.usuario_id);
         ModuloData.value = response2.data;
         ModuloData.value.forEach((modulo) => {
-            modulo.docente = response.data.nombre + ' ' + response.data.apellido_p + ' ' + response.data.apellido_m;
+            modulo.docente = `${response.data.nombre} ${response.data.apellido_p} ${response.data.apellido_m}`;
         });
     } catch (error) {
         toast.open({
@@ -40,18 +44,77 @@ const loadModulo = async () => {
 };
 
 const loadTipoEvidencias = async () => {
-    try {
-        const response = await EvidenciasApi.getTipoEvidencias();
-        console.log(response.data);
-        // customers.value = response.data;
-    } catch (error) {
-        console.error(error);
+    if (!tipoEvidencias.value.length) {
+        loading.value = true;
+        try {
+            const response = await EvidenciasApi.getTipoEvidencias();
+            tipoEvidencias.value = response.data;
+        } catch (error) {
+            console.error(error);
+        } finally {
+            loading.value = false;
+        }
     }
 };
 
 onMounted(() => {
-    loadTipoEvidencias(), loadModulo();
+    loadModulo();
 });
+
+const showModalEvidencias = (modulo_id) => {
+    loadTipoEvidencias();
+    evidenciasEdit.value = { modulo_id };
+    modalAltaEvidencia.value = true;
+    submitted.value = false;
+    isEditMode.value = false;
+};
+
+const editEvidencia = (data, nombre_modulo, modulo_id) => {
+    loadTipoEvidencias();
+    evidenciasEdit.value = {
+        ...data,
+        nombre_modulo,
+        modulo_id,
+        tipo_evidencia_id: data.tipo_evidencia.tipo_evidencia_id
+    };
+    modalAltaEvidencia.value = true;
+    isEditMode.value = true;
+    submitted.value = false;
+};
+
+const saveEvidencia = async () => {
+    submitted.value = true;
+    if (evidenciasEdit.value.nombre_evidencia && evidenciasEdit.value.fecha_entrega) {
+        loading.value = true;
+        try {
+            let response;
+            if (isEditMode.value) {
+                response = await EvidenciasApi.updateEvidencia(evidenciasEdit.value);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+            } else {
+                response = await EvidenciasApi.createEvidencia(evidenciasEdit.value);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+            }
+            modalAltaEvidencia.value = false;
+            evidenciasEdit.value = {};
+            isEditMode.value = false;
+            await loadModulo();
+        } catch (error) {
+            toast.open({
+                message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+                type: 'error'
+            });
+        } finally {
+            loading.value = false;
+        }
+    }
+};
 
 const initFilters = () => {
     filters.value = {
@@ -64,6 +127,7 @@ const clearFilter = () => {
     initFilters();
 };
 </script>
+
 <template>
     <Spinner v-if="loading" />
     <div v-if="ModuloData">
@@ -75,25 +139,25 @@ const clearFilter = () => {
                 <div class="grid">
                     <div class="col-12 lg:col-6 pb-0">
                         <div class="flex flex-column">
-                            <h3 className="text-xl font-bold mb-1">Nombre del Módulo</h3>
+                            <h3 class="text-xl font-bold mb-1">Nombre del Módulo</h3>
                             <p class="text-xl font-medium">{{ ModuloData[index].nombre_modulo }}</p>
                         </div>
                     </div>
                     <div class="col-12 lg:col-6 pb-0">
                         <div class="flex flex-column">
-                            <h3 className="text-xl font-bold mb-1">Periodo</h3>
+                            <h3 class="text-xl font-bold mb-1">Periodo</h3>
                             <p class="text-xl font-medium">{{ ModuloData[index].cursos_periodo.periodo.descripcion }}</p>
                         </div>
                     </div>
                     <div class="col-12 lg:col-6 pb-0">
                         <div class="flex flex-column">
-                            <h3 className="text-xl font-bold mb-1">Nombre del Curso</h3>
+                            <h3 class="text-xl font-bold mb-1">Nombre del Curso</h3>
                             <p class="text-xl font-medium">{{ ModuloData[index].cursos_periodo.curso.nombre_curso }}</p>
                         </div>
                     </div>
                     <div class="col-12 lg:col-6 pb-0">
                         <div class="flex flex-column">
-                            <h3 className="text-xl font-bold mb-1">Nombre del Docente</h3>
+                            <h3 class="text-xl font-bold mb-1">Nombre del Docente</h3>
                             <p class="text-xl font-medium">{{ ModuloData[index].docente }}</p>
                         </div>
                     </div>
@@ -104,7 +168,7 @@ const clearFilter = () => {
                         <h2 class="text-2xl font-bold m-0">Tabla de Evidencias</h2>
                     </template>
 
-                    <template #end> <Button label="Registrar Nueva Evidencia" icon="pi pi-plus" class="mr-2" severity="success" @click="modalAltaEvidencia = true" /></template>
+                    <template #end> <Button label="Registrar Nueva Evidencia" icon="pi pi-plus" class="mr-2" severity="success" @click="() => showModalEvidencias(ModuloData[index].modulo_id)" /></template>
                 </Toolbar>
                 <div class="card">
                     <DataTable
@@ -129,7 +193,7 @@ const clearFilter = () => {
                         </template>
                         <template #empty> No hay preregistros. </template>
                         <template #loading> Cargando... por favor espera </template>
-                        <template #paginatorstart> <Button icon="pi pi-refresh" @click="console.log('gola')" /> </template>
+                        <template #paginatorstart> <Button icon="pi pi-refresh" @click="loadModulo" /> </template>
                         <Column field="evidencia_id" header="ID" style="width: 5%"></Column>
                         <Column field="nombre_evidencia" header="Nombre" style="width: 15%"></Column>
                         <Column field="tipo_evidencia.nombre_tipo_ev" header="Tipo" style="width: 10%"></Column>
@@ -141,8 +205,8 @@ const clearFilter = () => {
                         </Column>
                         <Column header="OP">
                             <template #body="{ data }">
-                                <Button label="Ver Detalle" class="mr-2" severity="info" @click="modalAltaEvidencia = true" />
-                                <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="console.log(data)" />
+                                <Button label="Ver Detalle" class="mr-2" severity="info" @click="() => showModalEvidencias(ModuloData[index].modulo_id)" />
+                                <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="() => editEvidencia(data, ModuloData[index].nombre_modulo, ModuloData[index].modulo_id)" />
                             </template>
                         </Column>
                     </DataTable>
@@ -150,20 +214,44 @@ const clearFilter = () => {
             </template>
         </Card>
 
-        <Dialog v-model:visible="modalAltaEvidencia" modal header="Edit Profile" :style="{ width: '25rem' }">
-            <span class="p-text-secondary block mb-5">Update your information.</span>
-            <div class="flex align-items-center gap-3 mb-3">
-                <label for="username" class="font-semibold w-6rem">Username</label>
-                <InputText id="username" class="flex-auto" autocomplete="off" />
+        <Dialog class="p-fluid" v-model:visible="modalAltaEvidencia" :header="isEditMode ? 'Editar Evidencias' : 'Registrar Evidencias'" :modal="true" :style="{ width: '25rem' }">
+            <div v-if="isEditMode" class="field">
+                <label for="evidencia_id">ID Evidencia</label>
+                <InputText id="evidencia_id" :disabled="isEditMode" v-model.trim="evidenciasEdit.evidencia_id" />
             </div>
-            <div class="flex align-items-center gap-3 mb-5">
-                <label for="email" class="font-semibold w-6rem">Email</label>
-                <InputText id="email" class="flex-auto" autocomplete="off" />
+            <div v-if="isEditMode" class="field">
+                <label for="nombre_modulo">Módulo</label>
+                <InputText id="nombre_modulo" :disabled="isEditMode" v-model.trim="evidenciasEdit.nombre_modulo" />
             </div>
-            <div class="flex justify-content-end gap-2">
-                <Button type="button" label="Cancelar" severity="secondary" @click="modalAltaEvidencia = false"></Button>
-                <Button type="button" label="Guardar" @click="modalAltaEvidencia = false"></Button>
+            <div class="field">
+                <label for="nombre_evidencia">Nombre de la Evidencia</label>
+                <InputText id="nombre_evidencia" v-model.trim="evidenciasEdit.nombre_evidencia" />
+                <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.nombre_evidencia"> El nombre de la evidencia es requerido. </small>
             </div>
+            <div class="field">
+                <label for="nombre_tipo_ev"> Tipo de Evidencia </label>
+                <Dropdown
+                    filter
+                    id="nombre_tipo_ev"
+                    v-model.trim="evidenciasEdit.tipo_evidencia_id"
+                    :options="tipoEvidencias"
+                    optionLabel="nombre_tipo_ev"
+                    optionValue="tipo_evidencia_id"
+                    placeholder="Selecciona el tipo de evidencia"
+                    checkmark
+                    :highlightOnSelect="false"
+                />
+                <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.tipo_evidencia_id"> El tipo de evidencia es requerido. </small>
+            </div>
+            <div class="field">
+                <label for="fecha_entrega">Fecha de Entrega</label>
+                <Calendar id="fecha_entrega" v-model.trim="evidenciasEdit.fecha_entrega" showIcon iconDisplay="input" dateFormat="dd/mm/yy" />
+                <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.fecha_entrega"> La fecha de entrega es requerida. </small>
+            </div>
+            <template #footer>
+                <Button label="Cancelar" icon="pi pi-times" text="" @click="modalAltaEvidencia = false" />
+                <Button label="Guardar" icon="pi pi-check" text="" @click="saveEvidencia" />
+            </template>
         </Dialog>
     </div>
     <div v-else>
