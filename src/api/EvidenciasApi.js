@@ -17,17 +17,25 @@ export default {
             }
         });
     },
-    createEvidencia(data) {
+    createActividad(data) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.post(`/evidencias/evidencias`, data, {
+        return api.post(`/evidencias/actividad`, data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
     },
-    updateEvidencia(data) {
+    updateActividad(data) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.put(`/evidencias/evidencias`, data, {
+        return api.put(`/evidencias/actividad`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    getEvidencias(actividad_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/evidencias/${actividad_id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
