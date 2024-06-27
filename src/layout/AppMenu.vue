@@ -84,17 +84,17 @@ const model = ref([
                 label: 'Módulos',
                 icon: 'pi pi-box',
                 to: '/docentes/modulos'
+            },
+            {
+                label: 'Evidencias',
+                icon: 'pi pi-file',
+                to: '/docentes/evidencias'
+            },
+            {
+                label: 'Asesorias',
+                icon: 'pi pi-desktop',
+                to: '/docentes/asesorias'
             }
-            // {
-            //     label: 'Evidencias',
-            //     icon: 'pi pi-file',
-            //     to: '/docentes/evidencias'
-            // },
-            // {
-            //     label: 'Asesorias',
-            //     icon: 'pi pi-desktop',
-            //     to: '/docentes/asesorias'
-            // }
         ],
         roles: ['Docente']
     },

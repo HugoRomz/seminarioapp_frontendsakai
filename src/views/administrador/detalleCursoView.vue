@@ -64,7 +64,7 @@ const loadAlumnos = async () => {
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
-            type: 'error'
+            type: 'info'
         });
     } finally {
         loading.value = false;
