@@ -174,7 +174,7 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
                 { content: item.nombre, styles: { halign: 'left' } },
                 { content: item.cal_mod, styles: { halign: 'center' } },
                 { content: item.proy_cal, styles: { halign: 'right' } },
-                { content: item.cal_mod, styles: { halign: 'right' } }
+                { content: item.cal_fin, styles: { halign: 'right' } }
             ]);
 
             autoTable(doc, {
@@ -211,8 +211,8 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
             // Agregar logo inferior
             doc.addImage(logoInferior, 'JPEG', centroX, doc.internal.pageSize.height - 10, 150, 5);
 
-            doc.save(`Calificaciones_${nombre_modulo}.pdf`);
-            // doc.output('dataurlnewwindow');
+            // doc.save(`Calificaciones_${nombre_modulo}.pdf`);
+            doc.output('dataurlnewwindow');
             toast.open({
                 message: `Calificaciones generadas ${nombre_modulo}`,
                 type: 'success'

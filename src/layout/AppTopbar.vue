@@ -68,7 +68,9 @@ const isOutsideClicked = (event) => {
 <template>
     <div class="layout-topbar">
         <router-link to="/" class="layout-topbar-logo">
-            <span class="tracking-[0.3rem] text-3xl">SIGEST<strong class="text-xs tracking-normal">UNACH</strong></span>
+            <img src="@/assets/img/Escudoylogoazul.png" alt="unach-50" />
+            <span class="mx-2">|</span>
+            <span class="text-3xl">SIGEST<strong class="text-xs">UNACH</strong></span>
         </router-link>
 
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
