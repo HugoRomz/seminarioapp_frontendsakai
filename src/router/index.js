@@ -57,6 +57,12 @@ const router = createRouter({
                     meta: { roles: ['Administrador'] }
                 },
                 {
+                    path: '/admin/evidenciasDocentes',
+                    name: 'evidenciasDocentesAdmin',
+                    component: () => import('@/views/administrador/evidenciasDocentesView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
                     path: '/admin/seminarios',
                     name: 'seminario',
                     component: () => import('@/views/administrador/seminarioView.vue'),

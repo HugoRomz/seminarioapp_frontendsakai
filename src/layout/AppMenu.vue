@@ -52,6 +52,11 @@ const model = ref([
                 label: 'Docentes',
                 icon: 'pi pi-book',
                 to: '/admin/docentes'
+            },
+            {
+                label: 'Evidencias',
+                icon: 'pi pi-book',
+                to: '/admin/evidenciasDocentes'
             }
         ],
         roles: ['Administrador']
