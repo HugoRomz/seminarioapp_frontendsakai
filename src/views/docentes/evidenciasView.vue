@@ -7,6 +7,7 @@ const confirm = useConfirm();
 
 import EvidenciasApi from '../../api/EvidenciasApi';
 import AuthAPI from '../../api/AuthAPI.js';
+import configuracionApi from '../../api/configuracionApi';
 
 const toast = inject('toast');
 
@@ -299,6 +300,34 @@ const limpiarEvidencias = () => {
     FormDataEvidencias.delete('documento');
     FormDataEvidencias.delete('documentoInfo');
 };
+const downloadFile = async (url) => {
+    try {
+        const response = await configuracionApi.downloadFile(url);
+        const blob = await fetch(response.data.url).then((res) => res.blob());
+
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        link.href = blobUrl;
+        link.setAttribute('download', '');
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+        toast.open({
+            message: 'Descarga exitosa',
+            type: 'success'
+        });
+    } catch (error) {
+        toast.open({
+            message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+            type: 'error'
+        });
+    }
+};
 </script>
 
 <template>
@@ -518,12 +547,18 @@ const limpiarEvidencias = () => {
                     <Column field="evidencias_id" header="ID Evidencia" style="width: 5%"></Column>
                     <Column field="actividade.nombre_actividad" header="Nombre de la Actividad" style="width: 15%"></Column>
                     <Column field="descripcion" header="Descripción" style="width: 35%"></Column>
-                    <Column header="Visualizar" style="width: 15%">
+                    <Column header="Visualizar" style="width: 20%">
                         <template #body="{ data }">
-                            <a @click="openFilePreview(data.url_evidencia)" v-if="data.url_evidencia">
-                                <Button icon="pi pi-search" label="Ver Evidencia" />
-                            </a>
-                            <Button icon="pi pi-search" :disabled="true" v-else />
+                            <div class="flex gap-2">
+                                <a @click="openFilePreview(data.url_evidencia)" v-if="data.url_evidencia">
+                                    <Button icon="pi pi-search" label="Ver" class="w-full" />
+                                </a>
+                                <Button icon="pi pi-search" :disabled="true" v-else class="w-full" />
+                                <a @click="downloadFile(data.url_evidenciaPublic)" v-if="data.url_evidenciaPublic">
+                                    <Button icon="pi pi-download" label="Descargar" class="w-full" />
+                                </a>
+                            </div>
+                            <!-- Boton para descargar evidencia -->
                         </template>
                     </Column>
                     <Column header="">

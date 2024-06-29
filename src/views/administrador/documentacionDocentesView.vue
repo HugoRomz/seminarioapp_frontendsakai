@@ -2,6 +2,7 @@
 import { FilterMatchMode } from 'primevue/api';
 import { ref, inject, onMounted } from 'vue';
 import DocumentosApi from '../../api/DocumentosApi';
+import configuracionApi from '../../api/configuracionApi';
 import Spinner from '../../components/Spinner.vue';
 
 const toast = inject('toast');
@@ -135,6 +136,35 @@ initFilters();
 const clearFilter = () => {
     initFilters();
 };
+
+const downloadFile = async (url) => {
+    try {
+        const response = await configuracionApi.downloadFile(url);
+        const blob = await fetch(response.data.url).then((res) => res.blob());
+
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        link.href = blobUrl;
+        link.setAttribute('download', '');
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+        toast.open({
+            message: 'Descarga exitosa',
+            type: 'success'
+        });
+    } catch (error) {
+        toast.open({
+            message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+            type: 'error'
+        });
+    }
+};
 </script>
 
 <template>
@@ -214,10 +244,15 @@ const clearFilter = () => {
                                 </Column>
                                 <Column header="Visualizar" headerStyle="width:4rem">
                                     <template #body="slotProps">
-                                        <a @click="openFilePreview(slotProps.data.url_file)" v-if="slotProps.data.url_file">
-                                            <Button icon="pi pi-search" />
-                                        </a>
-                                        <Button icon="pi pi-search" :disabled="true" v-else />
+                                        <div class="flex flex-row gap-1">
+                                            <a @click="openFilePreview(slotProps.data.url_file)" v-if="slotProps.data.url_file">
+                                                <Button icon="pi pi-search" />
+                                            </a>
+                                            <Button icon="pi pi-search" :disabled="true" v-else />
+                                            <a @click="downloadFile(slotProps.data.url_filePublic)" v-if="slotProps.data.url_filePublic">
+                                                <Button icon="pi pi-download" />
+                                            </a>
+                                        </div>
                                     </template>
                                 </Column>
                                 <Column header="Acciones" headerStyle="width:8rem">
