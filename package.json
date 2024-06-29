@@ -11,6 +11,11 @@
     "dependencies": {
         "@formkit/themes": "^1.6.1",
         "@formkit/vue": "^1.6.0",
+        "@fullcalendar/core": "^6.1.14",
+        "@fullcalendar/daygrid": "^6.1.14",
+        "@fullcalendar/interaction": "^6.1.14",
+        "@fullcalendar/timegrid": "^6.1.14",
+        "@fullcalendar/vue3": "^6.1.14",
         "axios": "^1.6.7",
         "chart.js": "3.3.2",
         "date-fns": "^3.6.0",
