@@ -13,6 +13,7 @@
         "@formkit/vue": "^1.6.0",
         "axios": "^1.6.7",
         "chart.js": "3.3.2",
+        "date-fns": "^3.6.0",
         "jspdf": "^2.5.1",
         "jspdf-autotable": "^3.8.2",
         "pinia": "^2.1.7",

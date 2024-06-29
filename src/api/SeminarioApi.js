@@ -42,6 +42,14 @@ export default {
             }
         });
     },
+    loadModulos(perido_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/modulos/${perido_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
     altaCursos(dataCurso) {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.post('/seminario/altaCurso', dataCurso, {
@@ -50,7 +58,14 @@ export default {
             }
         });
     },
-
+    getEvidencias(actividad_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/${actividad_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
     getCursoById(id) {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.get(`/seminario/curso/${id}`, {
