@@ -1,6 +1,9 @@
 <script setup>
 import { ref, onMounted, inject } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
+import { useConfirm } from 'primevue/useconfirm';
+
+const confirm = useConfirm();
 
 import EvidenciasApi from '../../api/EvidenciasApi';
 import AuthAPI from '../../api/AuthAPI.js';
@@ -20,8 +23,11 @@ const isEditMode = ref(false);
 const submitted = ref(false);
 
 const modalEvidenciasAct = ref(false);
+const fileUploadRefs = ref(null);
 const EvidenciasData = ref([]);
 const evidenciasEdit = ref({});
+
+const FormDataEvidencias = new FormData();
 
 const formatDate = (date) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -69,6 +75,7 @@ const loadEvidenciasAct = async (actividad_id) => {
     try {
         const response = await EvidenciasApi.getEvidencias(actividad_id);
         EvidenciasData.value = response.data;
+        console.log(EvidenciasData.value);
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -140,6 +147,34 @@ const saveActividad = async () => {
     }
 };
 
+const deleteActividad = async (data) => {
+    const actividad_id = data.actividad_id;
+    confirm.require({
+        message: '¿Estás seguro de que deseas eliminar esta actividad?',
+        header: 'Confirmación de eliminación',
+        icon: 'pi pi-info-circle',
+        rejectLabel: 'Cancelar',
+        acceptLabel: 'Eliminar',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-danger',
+        accept: async () => {
+            try {
+                const response = await EvidenciasApi.deleteActividad(actividad_id);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+                loadModulo();
+            } catch (error) {
+                toast.open({
+                    message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+                    type: 'error'
+                });
+            }
+        }
+    });
+};
+
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -160,45 +195,115 @@ const openFilePreview = (url) => {
 const showModalEvidenciasAct = async (actividad_id) => {
     await loadEvidenciasAct(actividad_id);
     modalEvidenciasAct.value = true;
-    evidenciasEdit.value = {};
+    evidenciasEdit.value.actividad_id = actividad_id;
 };
 
 const editEvidencia = (data) => {
+    FormDataEvidencias.delete('documento');
+    FormDataEvidencias.delete('documentoInfo');
     evidenciasEdit.value = { ...data };
-    modalEvidenciasAct.value = true;
     isEditMode.value = true;
     submitted.value = false;
 };
 
-const subirArchivos = async (event, documento, index) => {
-    const formData = new FormData();
-    formData.append('documento', event.files[0]);
-    formData.append('evidencias_id', evidenciasEdit.value.evidencias_id);
-    formData.append('actividad_id', evidenciasEdit.value.actividad_id);
-    formData.append('descripcion', evidenciasEdit.value.descripcion);
+const SubirArchivo = async (event) => {
+    const file = event.files[0];
+    evidenciasEdit.value.url_evidencia = 'Documento';
+    fileUploadRefs.value.clear();
+    fileUploadRefs.value.uploadedFileCount = 0;
+    FormDataEvidencias.append('documento', file);
+    toast.open({
+        message: 'Archivo subido correctamente',
+        type: 'success'
+    });
+};
 
-    loading.value = true;
-    try {
-        const response = await EvidenciasApi.uploadFile(formData);
-        toast.open({
-            message: response.data.msg,
-            type: 'success'
-        });
-        await loadEvidenciasAct(evidenciasEdit.value.actividad_id);
-        evidenciasEdit.value = {};
-    } catch (error) {
-        toast.open({
-            message: error.response.data.msg,
-            type: 'error'
-        });
-    } finally {
-        loading.value = false;
+const saveEvidencias = async () => {
+    if (evidenciasEdit.value.evidencias_id == null) {
+        isEditMode.value = false;
     }
+
+    submitted.value = true;
+
+    if (evidenciasEdit.value.descripcion && evidenciasEdit.value.url_evidencia) {
+        loading.value = true;
+        try {
+            FormDataEvidencias.append('documentoInfo', JSON.stringify(evidenciasEdit.value));
+
+            let response;
+            if (isEditMode.value) {
+                response = await EvidenciasApi.createEvidencia(FormDataEvidencias);
+
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+            } else {
+                response = await EvidenciasApi.createEvidencia(FormDataEvidencias);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+            }
+            limpiarEvidencias();
+            isEditMode.value = false;
+            await loadEvidenciasAct(evidenciasEdit.value.actividad_id);
+        } catch (error) {
+            toast.open({
+                message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+                type: 'error'
+            });
+        } finally {
+            loading.value = false;
+        }
+    }
+};
+
+const deleteEvidencia = async (data) => {
+    const actividad_id = data.actividad_id;
+    confirm.require({
+        message: '¿Estás seguro de que deseas eliminar esta evidencia?',
+        header: 'Confirmación de eliminación',
+        icon: 'pi pi-info-circle',
+        rejectLabel: 'Cancelar',
+        acceptLabel: 'Eliminar',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-danger',
+        accept: async () => {
+            try {
+                const response = await EvidenciasApi.deleteEvidencia(data.evidencias_id);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+                loadEvidenciasAct(actividad_id);
+                loadModulo();
+            } catch (error) {
+                toast.open({
+                    message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+                    type: 'error'
+                });
+            }
+        }
+    });
+};
+
+const limpiarEvidencias = () => {
+    const actividad_id = evidenciasEdit.value.actividad_id;
+    evidenciasEdit.value = {};
+    evidenciasEdit.value.actividad_id = actividad_id;
+    submitted.value = false;
+    if (fileUploadRefs.value) {
+        fileUploadRefs.value.clear();
+    }
+    FormDataEvidencias.delete('documento');
+    FormDataEvidencias.delete('documentoInfo');
 };
 </script>
 
 <template>
     <Spinner v-if="loading" />
+    <ConfirmDialog></ConfirmDialog>
     <div v-if="ModuloData">
         <Card v-for="(modulo, index) in ModuloData" :key="index" class="mb-5">
             <template #title>
@@ -277,6 +382,7 @@ const subirArchivos = async (event, documento, index) => {
                                 <div class="text-center">
                                     <Button label="Ver Evidencias" class="mr-2" severity="info" @click="showModalEvidenciasAct(data.actividad_id)" />
                                     <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="() => editActividad(data, ModuloData[index].nombre_modulo, ModuloData[index].modulo_id)" />
+                                    <Button icon="pi pi-trash" class="mr-2" severity="danger" rounded @click="() => deleteActividad(data)" :disabled="!data.evidenciasCount == 0" />
                                 </div>
                             </template>
                         </Column>
@@ -336,41 +442,60 @@ const subirArchivos = async (event, documento, index) => {
             </template>
         </Dialog>
 
-        <Dialog class="p-fluid w-11 md:w-8" v-model:visible="modalEvidenciasAct" header="Evidencias de la Actividad" modal position="top">
+        <Dialog class="p-fluid w-10 md:w-8" v-model:visible="modalEvidenciasAct" header="Evidencias de la Actividad" modal position="top">
             <Fieldset class="mb-3" legend="Agregar una nueva Evidencia" :toggleable="true">
                 <Card class="p-fluid">
                     <template #content>
+                        <div class="field">
+                            <label for="actividad_id">ID Evidencia</label>
+                            <InputText id="actividad_id" v-model.trim="evidenciasEdit.evidencias_id" disabled />
+                        </div>
+                        <div class="field">
+                            <label for="actividad_id">ID Actividad</label>
+                            <InputText id="actividad_id" v-model.trim="evidenciasEdit.actividad_id" disabled />
+                        </div>
                         <div class="field">
                             <label for="">Descripción</label>
                             <Textarea id="descripcion" v-model.trim="evidenciasEdit.descripcion" rows="5" cols="30" />
                             <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.descripcion"> La descripcion de la evidencia es requerido. </small>
                         </div>
                         <div class="field">
-                            <label for=""></label>
+                            <label for="">
+                                Archivo
+                                <small class="text-red-700"> (Formato PDF o imagen)</small>
+                            </label>
                             <FileUpload
-                                name="documento"
-                                @uploader="subirArchivos($event, documento, index)"
+                                ref="fileUploadRefs"
+                                @uploader="SubirArchivo($event, documento, index)"
+                                accept="application/pdf, image/*"
                                 :multiple="false"
                                 :maxFileSize="1000000"
                                 :fileLimit="1"
                                 :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
                                 customUpload
-                                :disabled="!!evidenciasEdit.url_evidencia"
+                                v-model.trim="evidenciasEdit.url_evidencia"
+                                :showClearButton="evidenciasEdit.url_evidencia"
+                                :showChooseButton="!evidenciasEdit.url_evidencia"
+                                :chooseLabel="'Seleccionar archivo'"
+                                :cancelLabel="'Cancelar'"
+                                :clearLabel="'Eliminar'"
+                                :uploadLabel="'Subir'"
                             >
                                 <template #empty>
                                     <div class="flex align-items-center justify-content-center flex-column">
                                         <i class="pi pi-cloud-upload border-2 border-circle p-5 text-3xl text-400 border-400" />
                                         <p class="mt-4 mb-0 text-center">{{ evidenciasEdit.url_evidencia ? 'Archivo subido' : 'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.' }}</p>
-                                        <Button v-if="evidenciasEdit.url_evidencia" @click="openFilePreview(evidenciasEdit.url_evidencia)" class="w-5 mt-2" label="Ver archivo" />
+                                        <Button v-if="evidenciasEdit.url_evidencia && isEditMode" @click="openFilePreview(evidenciasEdit.url_evidencia)" class="w-5 mt-2" label="Ver archivo" />
                                     </div>
                                 </template>
                             </FileUpload>
+                            <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.url_evidencia"> La evidencia es requerida. </small>
                         </div>
                     </template>
                     <template #footer>
                         <div class="flex gap-3 mt-1">
-                            <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="evidenciasEdit = {}" />
-                            <Button label="Guardar" class="w-full" @click="console.log('hola')" />
+                            <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarEvidencias" />
+                            <Button label="Guardar" class="w-full" @click="saveEvidencias" />
                         </div>
                     </template>
                 </Card>
@@ -387,22 +512,13 @@ const subirArchivos = async (event, documento, index) => {
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} evidencias"
                     tableStyle="min-width: 50rem"
                 >
-                    <template #header>
-                        <div class="flex justify-content-between">
-                            <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
-                            <IconField iconPosition="left">
-                                <InputIcon class="pi pi-search" />
-                                <InputText class="mt-2 md:mt-0" v-model="filters['global'].value" placeholder="Búsqueda por palabra clave" />
-                            </IconField>
-                        </div>
-                    </template>
                     <template #empty> No hay registros. </template>
                     <template #loading> Cargando... por favor espera </template>
-                    <template #paginatorstart> <Button icon="pi pi-refresh" @click="loadEvidenciasAct" /> </template>
+
                     <Column field="evidencias_id" header="ID Evidencia" style="width: 5%"></Column>
                     <Column field="actividade.nombre_actividad" header="Nombre de la Actividad" style="width: 15%"></Column>
                     <Column field="descripcion" header="Descripción" style="width: 35%"></Column>
-                    <Column header="Visualizar" style="width: 10%">
+                    <Column header="Visualizar" style="width: 15%">
                         <template #body="{ data }">
                             <a @click="openFilePreview(data.url_evidencia)" v-if="data.url_evidencia">
                                 <Button icon="pi pi-search" label="Ver Evidencia" />
@@ -414,6 +530,7 @@ const subirArchivos = async (event, documento, index) => {
                         <template #body="{ data }">
                             <div class="text-center">
                                 <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editEvidencia(data)" />
+                                <Button icon="pi pi-trash" class="mr-2" severity="danger" rounded @click="deleteEvidencia(data)" />
                             </div>
                         </template>
                     </Column>
