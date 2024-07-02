@@ -27,6 +27,7 @@ const modalEvidenciasAct = ref(false);
 const fileUploadRefs = ref(null);
 const EvidenciasData = ref([]);
 const evidenciasEdit = ref({});
+const active = ref(0);
 
 const FormDataEvidencias = new FormData();
 
@@ -196,10 +197,12 @@ const openFilePreview = (url) => {
 const showModalEvidenciasAct = async (actividad_id) => {
     await loadEvidenciasAct(actividad_id);
     modalEvidenciasAct.value = true;
+    evidenciasEdit.value = {};
     evidenciasEdit.value.actividad_id = actividad_id;
 };
 
 const editEvidencia = (data) => {
+    active.value = 1;
     FormDataEvidencias.delete('documento');
     FormDataEvidencias.delete('documentoInfo');
     evidenciasEdit.value = { ...data };
@@ -249,6 +252,7 @@ const saveEvidencias = async () => {
             limpiarEvidencias();
             isEditMode.value = false;
             await loadEvidenciasAct(evidenciasEdit.value.actividad_id);
+            active.value = 0;
         } catch (error) {
             toast.open({
                 message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
@@ -299,6 +303,7 @@ const limpiarEvidencias = () => {
     }
     FormDataEvidencias.delete('documento');
     FormDataEvidencias.delete('documentoInfo');
+    isEditMode.value = false;
 };
 const downloadFile = async (url) => {
     try {
@@ -336,7 +341,7 @@ const downloadFile = async (url) => {
     <div v-if="ModuloData">
         <Card v-for="(modulo, index) in ModuloData" :key="index" class="mb-5">
             <template #title>
-                <h1 class="text-3xl font-bold mb-0">Evidencias del Módulo</h1>
+                <h1 class="text-3xl font-bold mb-0">Actividades de Aprendizaje del Módulo</h1>
             </template>
             <template #content>
                 <div class="grid">
@@ -371,7 +376,7 @@ const downloadFile = async (url) => {
                         <h2 class="text-2xl font-bold m-0">Tabla de Actividades</h2>
                     </template>
 
-                    <template #end> <Button label="Registrar Nueva Actividad" icon="pi pi-plus" class="mr-2" severity="success" @click="() => showModalActividades(ModuloData[index].modulo_id)" /></template>
+                    <template #end> <Button label="Registrar actividad de aprendizaje" icon="pi pi-plus" class="mr-2" severity="success" @click="() => showModalActividades(ModuloData[index].modulo_id)" /></template>
                 </Toolbar>
                 <div class="card">
                     <DataTable
@@ -433,16 +438,15 @@ const downloadFile = async (url) => {
 
             <div class="field">
                 <label for="nombre_actividad">Nombre de la Actividad</label>
-                <InputText id="nombre_actividad" v-model.trim="actividadesEdit.nombre_actividad" />
+                <InputText id="nombre_actividad" v-model.trim="actividadesEdit.nombre_actividad" placeholder="Ej: Proyecto Final" />
                 <small class="p-invalid text-red-700" v-if="submitted && !actividadesEdit.nombre_actividad"> El nombre de la actividad es requerido. </small>
             </div>
 
             <div class="field">
                 <label for="descripcion">Descripción</label>
-                <Textarea id="descripcion" v-model.trim="actividadesEdit.descripcion" rows="5" cols="30" />
-                <small class="p-invalid text-red-700" v-if="submitted && !actividadesEdit.descripcion"> La descripcion de la actividad es requerido. </small>
+                <Textarea id="descripcion" v-model.trim="actividadesEdit.descripcion" rows="5" cols="30" placeholder="Ej: Desarrollar una aplicación web que..." />
+                <small class="p-invalid text-red-700" v-if="submitted && !actividadesEdit.descripcion"> La descripción de la actividad es requerida. </small>
             </div>
-
             <div class="field">
                 <label for="nombre_tipo_ev"> Tipo </label>
                 <Dropdown
@@ -471,106 +475,111 @@ const downloadFile = async (url) => {
             </template>
         </Dialog>
 
-        <Dialog class="p-fluid w-10 md:w-8" v-model:visible="modalEvidenciasAct" header="Evidencias de la Actividad" modal position="top">
-            <Fieldset class="mb-3" legend="Agregar una nueva Evidencia" :toggleable="true">
-                <Card class="p-fluid">
-                    <template #content>
-                        <div class="field">
-                            <label for="actividad_id">ID Evidencia</label>
-                            <InputText id="actividad_id" v-model.trim="evidenciasEdit.evidencias_id" disabled />
-                        </div>
-                        <div class="field">
-                            <label for="actividad_id">ID Actividad</label>
-                            <InputText id="actividad_id" v-model.trim="evidenciasEdit.actividad_id" disabled />
-                        </div>
-                        <div class="field">
-                            <label for="">Descripción</label>
-                            <Textarea id="descripcion" v-model.trim="evidenciasEdit.descripcion" rows="5" cols="30" />
-                            <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.descripcion"> La descripcion de la evidencia es requerido. </small>
-                        </div>
-                        <div class="field">
-                            <label for="">
-                                Archivo
-                                <small class="text-red-700"> (Formato PDF o imagen)</small>
-                            </label>
-                            <FileUpload
-                                ref="fileUploadRefs"
-                                @uploader="SubirArchivo($event, documento, index)"
-                                accept="application/pdf, image/*"
-                                :multiple="false"
-                                :maxFileSize="1000000"
-                                :fileLimit="1"
-                                :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
-                                customUpload
-                                v-model.trim="evidenciasEdit.url_evidencia"
-                                :showClearButton="evidenciasEdit.url_evidencia"
-                                :showChooseButton="!evidenciasEdit.url_evidencia"
-                                :chooseLabel="'Seleccionar archivo'"
-                                :cancelLabel="'Cancelar'"
-                                :clearLabel="'Eliminar'"
-                                :uploadLabel="'Subir'"
-                            >
-                                <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column">
-                                        <i class="pi pi-cloud-upload border-2 border-circle p-5 text-3xl text-400 border-400" />
-                                        <p class="mt-4 mb-0 text-center">{{ evidenciasEdit.url_evidencia ? 'Archivo subido' : 'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.' }}</p>
-                                        <Button v-if="evidenciasEdit.url_evidencia && isEditMode" @click="openFilePreview(evidenciasEdit.url_evidencia)" class="w-5 mt-2" label="Ver archivo" />
+        <Dialog class="p-fluid w-10 md:w-8" v-model:visible="modalEvidenciasAct" header="Evidencias de la Actividad de Aprendizaje" modal position="top">
+            <TabView v-model:activeIndex="active">
+                <TabPanel header="Ver Evidencias">
+                    <div class="card">
+                        <DataTable
+                            :value="EvidenciasData"
+                            :paginator="true"
+                            :rows="10"
+                            :filters="filters"
+                            stripedRows
+                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                            :rowsPerPageOptions="[5, 10, 25]"
+                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} evidencias"
+                            tableStyle="min-width: 50rem"
+                        >
+                            <template #empty> No hay registros. </template>
+                            <template #loading> Cargando... por favor espera </template>
+
+                            <Column field="evidencias_id" header="ID Evidencia" style="width: 5%"></Column>
+                            <Column field="actividade.nombre_actividad" header="Nombre de la Actividad" style="width: 15%"></Column>
+                            <Column field="descripcion" header="Descripción de la Evidencia" style="width: 35%"></Column>
+                            <Column header="Visualizar" style="width: 20%">
+                                <template #body="{ data }">
+                                    <div class="flex gap-2">
+                                        <a @click="openFilePreview(data.url_evidencia)" v-if="data.url_evidencia">
+                                            <Button icon="pi pi-search" label="Ver" class="w-full" />
+                                        </a>
+                                        <Button icon="pi pi-search" :disabled="true" v-else class="w-full" />
+                                        <a @click="downloadFile(data.url_evidenciaPublic)" v-if="data.url_evidenciaPublic">
+                                            <Button icon="pi pi-download" label="Descargar" class="w-full" />
+                                        </a>
                                     </div>
                                 </template>
-                            </FileUpload>
-                            <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.url_evidencia"> La evidencia es requerida. </small>
-                        </div>
-                    </template>
-                    <template #footer>
-                        <div class="flex gap-3 mt-1">
-                            <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarEvidencias" />
-                            <Button label="Guardar" class="w-full" @click="saveEvidencias" />
-                        </div>
-                    </template>
-                </Card>
-            </Fieldset>
-            <div class="card">
-                <DataTable
-                    :value="EvidenciasData"
-                    :paginator="true"
-                    :rows="10"
-                    :filters="filters"
-                    stripedRows
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} evidencias"
-                    tableStyle="min-width: 50rem"
-                >
-                    <template #empty> No hay registros. </template>
-                    <template #loading> Cargando... por favor espera </template>
+                            </Column>
+                            <Column header="">
+                                <template #body="{ data }">
+                                    <div class="text-center">
+                                        <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editEvidencia(data)" />
+                                        <Button icon="pi pi-trash" class="mr-2" severity="danger" rounded @click="deleteEvidencia(data)" />
+                                    </div>
+                                </template>
+                            </Column>
+                        </DataTable>
+                    </div>
+                </TabPanel>
+                <TabPanel header="Insertar Evidencias">
+                    <Card class="p-fluid">
+                        <template #content>
+                            <div v-if="isEditMode" class="field">
+                                <label for="actividad_id">ID Evidencia</label>
+                                <InputText id="actividad_id" v-model.trim="evidenciasEdit.evidencias_id" disabled />
+                            </div>
+                            <div class="field">
+                                <label for="actividad_id">ID Actividad</label>
+                                <InputText id="actividad_id" v-model.trim="evidenciasEdit.actividad_id" disabled />
+                            </div>
+                            <div class="field">
+                                <label for="descripcion">Descripción de la Evidencia</label>
+                                <Textarea id="descripcion" v-model.trim="evidenciasEdit.descripcion" rows="5" cols="30" placeholder="Ej: Informe detallado del experimento realizado con resultados y conclusiones" />
+                                <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.descripcion"> La descripción de la evidencia es requerida. </small>
+                            </div>
 
-                    <Column field="evidencias_id" header="ID Evidencia" style="width: 5%"></Column>
-                    <Column field="actividade.nombre_actividad" header="Nombre de la Actividad" style="width: 15%"></Column>
-                    <Column field="descripcion" header="Descripción" style="width: 35%"></Column>
-                    <Column header="Visualizar" style="width: 20%">
-                        <template #body="{ data }">
-                            <div class="flex gap-2">
-                                <a @click="openFilePreview(data.url_evidencia)" v-if="data.url_evidencia">
-                                    <Button icon="pi pi-search" label="Ver" class="w-full" />
-                                </a>
-                                <Button icon="pi pi-search" :disabled="true" v-else class="w-full" />
-                                <a @click="downloadFile(data.url_evidenciaPublic)" v-if="data.url_evidenciaPublic">
-                                    <Button icon="pi pi-download" label="Descargar" class="w-full" />
-                                </a>
+                            <div class="field">
+                                <label for="">
+                                    Archivo
+                                    <small class="text-red-700"> (Formato PDF o imagen)</small>
+                                </label>
+                                <FileUpload
+                                    ref="fileUploadRefs"
+                                    @uploader="SubirArchivo($event, documento, index)"
+                                    accept="application/pdf, image/*"
+                                    :multiple="false"
+                                    :maxFileSize="1000000"
+                                    :fileLimit="1"
+                                    :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
+                                    customUpload
+                                    v-model.trim="evidenciasEdit.url_evidencia"
+                                    :showClearButton="evidenciasEdit.url_evidencia"
+                                    :showChooseButton="!evidenciasEdit.url_evidencia"
+                                    :chooseLabel="'Seleccionar archivo'"
+                                    :cancelLabel="'Cancelar'"
+                                    :clearLabel="'Eliminar'"
+                                    :uploadLabel="'Subir'"
+                                >
+                                    <template #empty>
+                                        <div class="flex align-items-center justify-content-center flex-column">
+                                            <i class="pi pi-cloud-upload border-2 border-circle p-5 text-3xl text-400 border-400" />
+                                            <p class="mt-4 mb-0 text-center">{{ evidenciasEdit.url_evidencia ? 'Archivo subido' : 'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.' }}</p>
+                                            <Button v-if="evidenciasEdit.url_evidencia && isEditMode" @click="openFilePreview(evidenciasEdit.url_evidencia)" class="w-5 mt-2" label="Ver archivo" />
+                                        </div>
+                                    </template>
+                                </FileUpload>
+                                <small class="p-invalid text-red-700" v-if="submitted && !evidenciasEdit.url_evidencia"> La evidencia es requerida. </small>
                             </div>
-                            <!-- Boton para descargar evidencia -->
                         </template>
-                    </Column>
-                    <Column header="">
-                        <template #body="{ data }">
-                            <div class="text-center">
-                                <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editEvidencia(data)" />
-                                <Button icon="pi pi-trash" class="mr-2" severity="danger" rounded @click="deleteEvidencia(data)" />
+                        <template #footer>
+                            <div class="flex gap-3 mt-1">
+                                <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarEvidencias" />
+                                <Button label="Guardar" class="w-full" @click="saveEvidencias" />
                             </div>
                         </template>
-                    </Column>
-                </DataTable>
-            </div>
+                    </Card>
+                </TabPanel>
+            </TabView>
+
             <template #footer>
                 <Button label="Cerrar" icon="pi pi-times" @click="modalEvidenciasAct = false" />
             </template>
