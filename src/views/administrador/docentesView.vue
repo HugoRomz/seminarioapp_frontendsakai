@@ -19,6 +19,14 @@ const deleteDocenteModal = ref(false);
 const docenteModal = ref(false);
 const submitted = ref(false);
 
+const editingStatus = ref(null);
+const statuses = ref([
+    { label: 'Disponible', value: 'DISPONIBLE' },
+    { label: 'Inactivo', value: 'INACTIVO' },
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Pendiente', value: 'PENDIENTE' }
+]);
+
 const loadUsers = async () => {
     loading.value = true;
     isAccepting.value = true;
@@ -89,10 +97,10 @@ const saveDocente = async () => {
     }
 };
 
-const confirmDeleteDocente = (editDocente) => {
-    docente.value = editDocente;
-    deleteDocenteModal.value = true;
-};
+// const confirmDeleteDocente = (editDocente) => {
+//     docente.value = editDocente;
+//     deleteDocenteModal.value = true;
+// };
 
 const editDocente = (editDocente) => {
     const docenteData = { ...editDocente, ...editDocente.docente };
@@ -133,6 +141,45 @@ const initFilters = () => {
     };
 };
 
+const onRowEditSaveStatus = async (event) => {
+    let { newData } = event;
+
+    try {
+        loading.value = true;
+        const { usuario_id, status } = newData;
+
+        const response = await UserApi.updateStatusDocente(usuario_id, status);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        await loadUsers();
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+
+const getStatusLabel = (status) => {
+    switch (status) {
+        case 'ACTIVO':
+            return 'success';
+        case 'INACTIVO':
+            return 'danger';
+        case 'DISPONIBLE':
+            return 'info';
+        case 'PENDIENTE':
+            return 'warning';
+
+        default:
+            return null;
+    }
+};
+
 initFilters();
 const clearFilter = () => {
     initFilters();
@@ -158,13 +205,18 @@ const clearFilter = () => {
                 <DataTable
                     ref="dt"
                     :value="users"
-                    dataKey="id"
+                    dataKey="usuario_id"
                     :paginator="true"
                     :rows="10"
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} docentes"
+                    v-model:editingRows="editingStatus"
+                    editMode="row"
+                    @row-edit-save="onRowEditSaveStatus"
+                    sortField="status"
+                    :sortOrder="1"
                 >
                     <template #header>
                         <div class="flex justify-content-between flex-column sm:flex-row">
@@ -186,20 +238,36 @@ const clearFilter = () => {
                     <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>
                     <Column field="telefono_usuario" header="Telefono" :sortable="true"></Column>
                     <Column field="email_usuario" header="Email" :sortable="true"></Column>
-                    <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
+                    <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true" :editable="true">
+                        <!-- 
+                        Disponible: El docente puede ser seleccionado 
+                        Inactivo: El docente no puede ser seleccionado
+                        Activo: El docente esta seleccionado en un curso
+                        Pendiente: El docente esta en espera de subir documentos
+                        -->
                         <template #body="{ data }">
-                            <Tag v-if="data.status === 'PENDIENTE'" severity="warning" value="Pendiente" />
-                            <Tag v-if="data.status === 'ACTIVO'" severity="success" value="Activo" />
+                            <Tag :value="data.status" :severity="getStatusLabel(data.status)" />
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <!-- Aquí puedes mantener el componente de filtro existente -->
                             <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
+                        </template>
+                        <template #editor="{ data, field }">
+                            <Dropdown v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value" placeholder="Select a Status">
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.value" :severity="getStatusLabel(slotProps.option.value)" />
+                                </template>
+                            </Dropdown>
+                        </template>
+                    </Column>
+                    <Column :rowEditor="true" bodyStyle="text-align:center">
+                        <template #roweditoriniticon>
+                            <i class="pi pi-cog"></i>
                         </template>
                     </Column>
                     <Column headerStyle="min-width:10rem;">
                         <template #body="{ data }">
-                            <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editDocente(data)" />
-                            <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteDocente(data)" />
+                            <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editDocente(data)" label="Editar" />
+                            <!-- <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteDocente(data)" /> -->
                         </template>
                     </Column>
                 </DataTable>
