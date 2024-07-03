@@ -95,12 +95,22 @@ export default {
     },
     updateDocente(data) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        // Asume que `data` contiene un campo `usuario_id` que es el identificador del alumno
-        // y que el endpoint del servidor para actualizar un alumno espera ese `usuario_id` en la URL.
         return api.put(`/user/docentes/${data.usuario_id}`, data, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    updateStatusDocente(id, status) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(
+            `/user/docentes/status/${id}`,
+            { status },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
     }
 };

@@ -60,7 +60,7 @@ export default {
     },
     getEvidencias(actividad_id) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.get(`/seminario/${actividad_id}`, {
+        return api.get(`/seminario/evidencias/${actividad_id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

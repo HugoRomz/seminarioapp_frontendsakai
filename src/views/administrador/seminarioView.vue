@@ -36,7 +36,10 @@ const loadSeminarios = async () => {
         const response = await SeminarioApi.findSeminarioActivo();
         cursosData.value = response.data;
     } catch (error) {
-        console.error('Error al obtener los usuarios:', error);
+        toast.open({
+            message: 'Error al obtener los seminarios.',
+            type: 'error'
+        });
     } finally {
         loadingSpinner.value = false;
     }
@@ -48,7 +51,10 @@ const loadPeriodos = async () => {
         const response = await SeminarioApi.loadPeriodos();
         periodos.value = response.data;
     } catch (error) {
-        console.error('Error al obtener los periodos:', error);
+        toast.open({
+            message: 'Error al obtener los periodos.',
+            type: 'error'
+        });
     } finally {
         loadingSpinner.value = false;
     }
@@ -61,7 +67,10 @@ const loadCursos = async () => {
             const response = await SeminarioApi.loadCursos();
             cursos.value = response.data;
         } catch (error) {
-            console.error('Error al obtener los cursos:', error);
+            toast.open({
+                message: 'Error al obtener los cursos.',
+                type: 'error'
+            });
         } finally {
             loadingSpinner.value = false;
         }
@@ -113,8 +122,16 @@ const openModalAceptarCurso = async (data) => {
     try {
         const response = await SeminarioApi.getMateriasCurso(data.curso_id);
         if (dataDocentes.value.length === 0) {
-            const responseDocentes = await SeminarioApi.getDocentes();
-            dataDocentes.value = responseDocentes.data;
+            try {
+                const responseDocentes = await SeminarioApi.getDocentes();
+                dataDocentes.value = responseDocentes.data;
+            } catch (error) {
+                aceptarCurso.value = false;
+                toast.open({
+                    message: 'No hay docentes disponibles.',
+                    type: 'info'
+                });
+            }
         }
         dataModulos.value = response.data;
         formDataModulos.value = dataModulos.value.map((modulo) => ({
@@ -278,7 +295,7 @@ const clearFilter = () => {
                     </Column>
                     <Column field="aspirantes" header="Aspirantes" :sortable="true">
                         <template #body="{ data }">
-                            <Badge :value="data.usuariosCount" size="large" severity="secondary"></Badge>
+                            <Badge :value="data.aspirantes" size="large" severity="secondary"></Badge>
                         </template>
                     </Column>
                     <Column field="status" header="Status" :sortable="true">
