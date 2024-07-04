@@ -307,7 +307,7 @@ const generarConstancias = async () => {
                                 </div>
                             </div>
                             <div class="col-12 flex flex-column align-items-center justify-content-end md:col-5 md:gap-2 md:flex-row">
-                                <Button @click="openModalAlumno" class="w-full mt-3 md:mt-0" label="Agregar alumnos" severity="success" />
+                                <Button @click="openModalAlumno" class="w-full mt-3 md:mt-0" label="Agregar alumnos" severity="success" :disabled="!alumnosdata || alumnosdata.length === 0" />
                                 <Button @click="showModalConstancia" class="w-full mt-3 md:mt-0" label="Generar constancias" severity="contrast" outlined />
                                 <Button class="w-full mt-3 md:mt-0" label="Generar reportes" severity="contrast" outlined disabled />
                             </div>
