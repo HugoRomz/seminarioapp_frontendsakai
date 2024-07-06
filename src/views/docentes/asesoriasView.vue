@@ -1,21 +1,11 @@
 <script setup>
-import { ref, onMounted, inject, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 import timeGridDay from '@fullcalendar/timegrid';
 import timeGridWeek from '@fullcalendar/timegrid';
-
-const toast = inject('toast');
-const showInfo = ref(false);
-
-import AuthAPI from '../../api/AuthAPI.js';
-
-const correos = ref([
-    { name: 'hugo.rosales98@unach.mx', code: '1' },
-    { name: 'carlos.martinez96@unach.mx', code: '2' }
-]);
 
 const handleEventClick = (info) => {
     showInfo.value = true;
@@ -30,6 +20,12 @@ const handleEventClick = (info) => {
     };
 };
 
+const CLIENT_ID = '612146203614-87qmd23rmhmhpquckabo7phb9p31379o.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyCJCBUZVPtsM-sB2JUu5wkA__9zW28Xyjg';
+const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'];
+const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+
+const showInfo = ref(false);
 const calendarOptions = ref({
     plugins: [dayGridPlugin, interactionPlugin, timeGridDay, timeGridWeek],
     initialView: 'dayGridMonth',
@@ -44,138 +40,95 @@ const calendarOptions = ref({
 });
 
 const selectedEvent = ref();
-
-import googleApi from '../../api/googleApi.js';
 const isGoogleAuthenticated = ref(false);
-const newEvent = ref({
-    summary: '',
-    description: '',
-    location: '',
-    start: '',
-    end: '',
-    attendees: [],
-    meetLink: ''
-});
 
-const loginWithGoogle = async () => {
-    try {
-        const data = await await AuthAPI.auth();
-        const usuario_id = data.data.usuario_id;
-        await googleApi.googleLogin(usuario_id);
-    } catch {
+function initClient() {
+    gapi.client
+        .init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: DISCOVERY_DOCS,
+            scope: SCOPES
+        })
+        .then(function () {
+            gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+            updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+        });
+}
+
+const handleAuthClick = () => {
+    gapi.auth2.getAuthInstance().signIn({
+        prompt: 'select_account'
+    });
+};
+
+const handleSignoutClick = () => {
+    gapi.auth2.getAuthInstance().signOut();
+};
+
+const updateSigninStatus = (isSignedIn) => {
+    if (isSignedIn) {
+        isGoogleAuthenticated.value = true;
+        fetchEvents();
+    } else {
         isGoogleAuthenticated.value = false;
     }
 };
 
+const fetchEvents = () => {
+    gapi.client.calendar.events
+        .list({
+            calendarId: 'primary',
+            timeMin: new Date().toISOString(),
+            showDeleted: false,
+            singleEvents: true,
+            maxResults: 10,
+            orderBy: 'startTime'
+        })
+        .then((response) => {
+            const events = response.result.items.map((event) => ({
+                id: event.id,
+                title: event.summary,
+                start: event.start.dateTime || event.start.date,
+                end: event.end.dateTime || event.end.date,
+                extendedProps: {
+                    description: event.description || '',
+                    location: event.location || '',
+                    meetLink: event.hangoutLink || '',
+                    attendees: event.attendees || []
+                }
+            }));
+            calendarOptions.value.events = events;
+        });
+};
+
 const formatStartDate = (date) => {
+    const eventDate = new Date(date);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const eventDate = new Date(date);
-    const eventDay = eventDate.getDate();
-    const eventMonth = eventDate.getMonth() + 1;
-    const eventYear = eventDate.getFullYear();
 
     if (eventDate.toDateString() === today.toDateString()) {
         return `Hoy, ${eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (eventDate.toDateString() === tomorrow.toDateString()) {
         return `Mañana, ${eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else {
-        return `${eventDay}-${eventMonth}-${eventYear} , ${eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        return `${eventDate.getDate()}-${eventDate.getMonth() + 1}-${eventDate.getFullYear()} , ${eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     }
 };
 
 const getEventTime = (event) => {
     const eventDate = new Date(event);
-    const eventTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return eventTime;
-};
-
-const fetchEvents = async () => {
-    try {
-        const response = await googleApi.getEvents();
-
-        const googleEvents = response.data.map((event) => ({
-            id: event.id,
-            title: event.summary,
-            start: event.start.dateTime || event.start.date,
-            end: event.end.dateTime || event.end.date,
-            extendedProps: {
-                description: event.description || '',
-                lugar: event.location || '',
-                organizador: event.organizer.email || '',
-                meetLink: event.conferenceData?.entryPoints[0]?.uri || '',
-                attendees: event.attendees || []
-            }
-        }));
-        calendarOptions.value.events = googleEvents;
-        isGoogleAuthenticated.value = true;
-    } catch {
-        isGoogleAuthenticated.value = false;
-    }
-};
-
-const createNewEvent = async () => {
-    try {
-        const response = await googleApi.createEvent(newEvent.value);
-
-        toast.open({
-            message: response.data.msg,
-            type: 'success'
-        });
-        await fetchEvents();
-        limpiarEventos();
-    } catch (error) {
-        toast.open({
-            message: error.response.data.msg,
-            type: 'error'
-        });
-    }
-};
-onMounted(fetchEvents);
-
-const limpiarEventos = () => {
-    newEvent.value = {
-        summary: '',
-        description: '',
-        location: '',
-        start: '',
-        end: '',
-        attendees: [],
-        meetLink: ''
-    };
-};
-
-watch(
-    () => newEvent.value.start,
-    (newStart) => {
-        if (newStart) {
-            newEvent.value.end = '';
-        }
-    }
-);
-
-const deleteEvent = async (eventId) => {
-    try {
-        const response = await googleApi.deleteEvent(eventId);
-        toast.open({
-            message: response.data.msg,
-            type: 'success'
-        });
-        await fetchEvents();
-        showInfo.value = false;
-    } catch (error) {
-        toast.open({
-            message: error.response.data.msg,
-            type: 'error'
-        });
-    }
+    return eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
 const openlink = (link) => {
     window.open(link, '_blank');
 };
+
+onMounted(() => {
+    gapi.load('client:auth2', initClient);
+});
 </script>
 
 <template>
@@ -184,7 +137,7 @@ const openlink = (link) => {
             <div class="grid">
                 <div class="col-12 lg:col-6">
                     <div v-if="!isGoogleAuthenticated">
-                        <Button severity="contrast" outlined class="border-1" @click="loginWithGoogle">
+                        <Button severity="contrast" outlined class="border-1" @click="handleAuthClick">
                             <svg width="25px" height="25px" viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
                                 <path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4" />
                                 <path
