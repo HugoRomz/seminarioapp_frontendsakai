@@ -17,7 +17,7 @@ const toast = inject('toast');
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 const API_KEY = import.meta.env.VITE_API_KEY;
 
-const DISCOVERY_DOC = 'https://www..com/discovery/v1/apis/calendar/v3/rest';
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
 const authorizeButton = ref(null);
