@@ -1,11 +1,42 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject, watch } from 'vue';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 import timeGridDay from '@fullcalendar/timegrid';
 import timeGridWeek from '@fullcalendar/timegrid';
+
+const correos = ref([
+    { name: 'hugo.rosales98@unach.mx', code: '1' },
+    { name: 'carlos.martinez96@unach.mx', code: '2' }
+]);
+
+const toast = inject('toast');
+
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+const DISCOVERY_DOC = import.meta.env.VITE_GOOGLE_DISCOVERY_DOC;
+const SCOPES = import.meta.env.VITE_SCOPES;
+
+const authorizeButton = ref(null);
+const signoutButton = ref(null);
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+
+const selectedEvent = ref();
+const showInfo = ref(false);
+const isGoogleAuthenticated = ref(false);
+const newEvent = ref({
+    summary: '',
+    description: '',
+    start: '',
+    end: '',
+    attendees: [],
+    meetLink: ''
+});
 
 const handleEventClick = (info) => {
     showInfo.value = true;
@@ -20,12 +51,6 @@ const handleEventClick = (info) => {
     };
 };
 
-const CLIENT_ID = '612146203614-87qmd23rmhmhpquckabo7phb9p31379o.apps.googleusercontent.com';
-const API_KEY = 'AIzaSyCJCBUZVPtsM-sB2JUu5wkA__9zW28Xyjg';
-const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'];
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
-
-const showInfo = ref(false);
 const calendarOptions = ref({
     plugins: [dayGridPlugin, interactionPlugin, timeGridDay, timeGridWeek],
     initialView: 'dayGridMonth',
@@ -39,53 +64,52 @@ const calendarOptions = ref({
     eventClick: handleEventClick
 });
 
-const selectedEvent = ref();
-const isGoogleAuthenticated = ref(false);
-
-function initClient() {
-    gapi.client
-        .init({
-            apiKey: API_KEY,
-            clientId: CLIENT_ID,
-            discoveryDocs: DISCOVERY_DOCS,
-            scope: SCOPES
-        })
-        .then(function () {
-            gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-            updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-        });
-}
-
-const handleAuthClick = () => {
-    gapi.auth2.getAuthInstance().signIn({
-        prompt: 'select_account'
-    });
-};
-
-const handleSignoutClick = () => {
-    gapi.auth2.getAuthInstance().signOut();
-};
-
-const updateSigninStatus = (isSignedIn) => {
-    if (isSignedIn) {
+const handleAuthClick = async () => {
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            throw resp;
+        }
+        // Save token to localStorage
+        localStorage.setItem('gapi_token', JSON.stringify(gapi.client.getToken()));
+        if (signoutButton.value) signoutButton.value.style.visibility = 'visible';
+        if (authorizeButton.value) authorizeButton.value.innerText = 'Refresh';
+        await listUpcomingEvents();
         isGoogleAuthenticated.value = true;
-        fetchEvents();
+    };
+
+    if (gapi.client.getToken() === null) {
+        tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
-        isGoogleAuthenticated.value = false;
+        tokenClient.requestAccessToken({ prompt: '' });
     }
 };
 
-const fetchEvents = () => {
-    gapi.client.calendar.events
-        .list({
+const handleSignoutClick = () => {
+    const token = gapi.client.getToken();
+    if (token !== null) {
+        google.accounts.oauth2.revoke(token.access_token, () => {
+            gapi.client.setToken('');
+            // Remove token from localStorage
+            localStorage.removeItem('gapi_token');
+
+            isGoogleAuthenticated.value = false;
+        });
+    }
+};
+
+const listUpcomingEvents = async () => {
+    let response;
+    try {
+        const request = {
             calendarId: 'primary',
             timeMin: new Date().toISOString(),
             showDeleted: false,
             singleEvents: true,
             maxResults: 10,
             orderBy: 'startTime'
-        })
-        .then((response) => {
+        };
+        response = await gapi.client.calendar.events.list(request);
+        if (response) {
             const events = response.result.items.map((event) => ({
                 id: event.id,
                 title: event.summary,
@@ -99,7 +123,79 @@ const fetchEvents = () => {
                 }
             }));
             calendarOptions.value.events = events;
-        });
+        }
+    } catch (err) {
+        console.log('Error listing events: ', err);
+        return;
+    }
+};
+
+const initializeGapiClient = async () => {
+    await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: [DISCOVERY_DOC]
+    });
+    gapiInited = true;
+    maybeEnableButtons();
+};
+
+const maybeEnableButtons = () => {
+    if (gapiInited && gisInited) {
+        const storedToken = localStorage.getItem('gapi_token');
+        if (storedToken) {
+            gapi.client.setToken(JSON.parse(storedToken));
+            listUpcomingEvents();
+            isGoogleAuthenticated.value = true;
+        }
+    }
+};
+
+const gapiLoaded = () => {
+    gapi.load('client', initializeGapiClient);
+};
+
+const gisLoaded = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: '' // defined later
+    });
+    gisInited = true;
+    maybeEnableButtons();
+};
+
+onMounted(async () => {
+    // Load gapi and gis scripts using async/await
+    try {
+        await loadScript('https://apis.google.com/js/api.js', gapiLoaded);
+        await loadScript('https://accounts.google.com/gsi/client', gisLoaded);
+    } catch (error) {
+        console.error('Error loading scripts: ', error);
+    }
+});
+
+watch(
+    () => newEvent.value.start,
+    (newStart) => {
+        if (newStart) {
+            newEvent.value.end = '';
+        }
+    }
+);
+
+const loadScript = (src, onload) => {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+            onload();
+            resolve();
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
 };
 
 const formatStartDate = (date) => {
@@ -126,9 +222,97 @@ const openlink = (link) => {
     window.open(link, '_blank');
 };
 
-onMounted(() => {
-    gapi.load('client:auth2', initClient);
-});
+const createNewEvent = async () => {
+    const event = {
+        summary: newEvent.value.summary,
+        description: newEvent.value.description,
+        start: {
+            dateTime: newEvent.value.start.toISOString(),
+            timeZone: 'America/Mexico_City'
+        },
+        end: {
+            dateTime: newEvent.value.end.toISOString(),
+            timeZone: 'America/Mexico_City'
+        },
+        attendees: newEvent.value.attendees.map((attendee) => ({ email: attendee.name })),
+        conferenceData: {
+            createRequest: {
+                requestId: '7qxalsvy0e', // Unique request ID for the API
+                conferenceSolutionKey: {
+                    type: 'hangoutsMeet'
+                }
+            }
+        },
+        reminders: {
+            useDefault: true
+        }
+    };
+
+    if (newEvent.value.meetLink) {
+        event.conferenceData = {
+            entryPoints: [
+                {
+                    entryPointType: 'video',
+                    uri: `https://meet.google.com/${newEvent.value.meetLink}`,
+                    label: 'Google Meet'
+                }
+            ],
+            conferenceSolution: {
+                key: {
+                    type: 'hangoutsMeet'
+                },
+                name: 'Google Meet',
+                iconUri: 'https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-512dp/logo_meet_2020q4_color_2x_web_512dp.png'
+            },
+            conferenceId: newEvent.value.meetLink.replace(/-/g, ''),
+            signature: 'sample_signature' // Agrega una firma adecuada si es necesario
+        };
+    }
+
+    try {
+        const response = await gapi.client.calendar.events.insert({
+            calendarId: 'primary',
+            resource: event,
+            conferenceDataVersion: 1
+        });
+        toast.open({
+            message: 'Se creo el evento correctamente',
+            type: 'success'
+        });
+        await listUpcomingEvents();
+        limpiarEventos();
+    } catch (err) {
+        console.log('Error creating event: ', err);
+    }
+};
+
+const deleteEvent = async (eventId) => {
+    try {
+        await gapi.client.calendar.events.delete({
+            calendarId: 'primary',
+            eventId: eventId
+        });
+        showInfo.value = false;
+        toast.open({
+            message: 'Se elimino el evento correctamente',
+            type: 'success'
+        });
+        await listUpcomingEvents();
+    } catch (err) {
+        console.log('Error deleting event: ', err);
+    }
+};
+
+const limpiarEventos = () => {
+    newEvent.value = {
+        summary: '',
+        description: '',
+        start: '',
+        end: '',
+        attendees: [],
+        meetLink: ''
+    };
+};
 </script>
 
 <template>
@@ -137,7 +321,7 @@ onMounted(() => {
             <div class="grid">
                 <div class="col-12 lg:col-6">
                     <div v-if="!isGoogleAuthenticated">
-                        <Button severity="contrast" outlined class="border-1" @click="handleAuthClick">
+                        <Button ref="authorizeButton" severity="contrast" outlined class="border-1" @click="handleAuthClick">
                             <svg width="25px" height="25px" viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
                                 <path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4" />
                                 <path
@@ -193,6 +377,11 @@ onMounted(() => {
                                 <Button label="Guardar" icon="pi pi-check" text="" @click="createNewEvent" />
                             </template>
                         </Card>
+                        <div class="w-full flex align-content-center justify-content-end">
+                            <Button ref="signoutButton" severity="contrast" outlined class="border-1 mt-5" @click="handleSignoutClick">
+                                <span class="ml-2 font-bold">Cerrar Sesión</span>
+                            </Button>
+                        </div>
                     </div>
                 </div>
                 <div class="col-12 lg:col-6">
