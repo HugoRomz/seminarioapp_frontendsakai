@@ -16,5 +16,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    getAsesorados(id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/docentes/asesorados/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

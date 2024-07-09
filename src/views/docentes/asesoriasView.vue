@@ -12,13 +12,19 @@ const correos = ref([
     { name: 'carlos.martinez96@unach.mx', code: '2' }
 ]);
 
+import Spinner from '../../components/Spinner.vue';
+const loading = ref(false);
+import DocenteApi from '../../api/DocentesApi.js';
+import AuthAPI from '../../api/AuthAPI.js';
+const asesorados = ref([]);
+
 const toast = inject('toast');
 
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 const API_KEY = import.meta.env.VITE_API_KEY;
 
-const DISCOVERY_DOC = import.meta.env.VITE_GOOGLE_DISCOVERY_DOC;
-const SCOPES = import.meta.env.VITE_SCOPES;
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
 const authorizeButton = ref(null);
 const signoutButton = ref(null);
@@ -164,25 +170,6 @@ const gisLoaded = () => {
     maybeEnableButtons();
 };
 
-onMounted(async () => {
-    // Load gapi and gis scripts using async/await
-    try {
-        await loadScript('https://apis.google.com/js/api.js', gapiLoaded);
-        await loadScript('https://accounts.google.com/gsi/client', gisLoaded);
-    } catch (error) {
-        console.error('Error loading scripts: ', error);
-    }
-});
-
-watch(
-    () => newEvent.value.start,
-    (newStart) => {
-        if (newStart) {
-            newEvent.value.end = '';
-        }
-    }
-);
-
 const loadScript = (src, onload) => {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -313,83 +300,159 @@ const limpiarEventos = () => {
         meetLink: ''
     };
 };
+
+const loadAsesorados = async () => {
+    loading.value = true;
+    try {
+        const response = await AuthAPI.auth();
+        const response2 = await DocenteApi.getAsesorados(response.data.usuario_id);
+        asesorados.value = response2.data;
+    } catch (error) {
+        console.error('Error loading asesorados: ', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(async () => {
+    // Load gapi and gis scripts using async/await
+    try {
+        await loadScript('https://apis.google.com/js/api.js', gapiLoaded);
+        await loadScript('https://accounts.google.com/gsi/client', gisLoaded);
+    } catch (error) {
+        console.error('Error loading scripts: ', error);
+    }
+    loadAsesorados();
+});
+
+watch(
+    () => newEvent.value.start,
+    (newStart) => {
+        if (newStart) {
+            newEvent.value.end = '';
+        }
+    }
+);
 </script>
 
 <template>
-    <Card>
-        <template #content>
-            <div class="grid">
-                <div class="col-12 lg:col-6">
-                    <div v-if="!isGoogleAuthenticated">
-                        <Button ref="authorizeButton" severity="contrast" outlined class="border-1" @click="handleAuthClick">
-                            <svg width="25px" height="25px" viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
-                                <path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4" />
-                                <path
-                                    d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
-                                    fill="#34A853"
-                                />
-                                <path
-                                    d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
-                                    fill="#FBBC05"
-                                />
-                                <path d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" fill="#EB4335" />
-                            </svg>
-                            <span class="ml-2 font-bold">Iniciar Sesión con Google </span>
-                        </Button>
-                    </div>
-                    <div v-else>
-                        <Card>
-                            <template #title> Crear Asesoria </template>
+    <Spinner v-if="loading" />
+    <div class="card">
+        <TabView>
+            <TabPanel header="Crear Asesorías">
+                <h2 class="text-2xl font-bold mb-2">Asesorías</h2>
 
-                            <template #content>
-                                <div class="p-fluid">
-                                    <div class="field">
-                                        <label for="titulo">Título</label>
-                                        <InputText v-model="newEvent.summary" placeholder="Título del evento" required />
+                <div class="grid">
+                    <div class="col-12 lg:col-6">
+                        <div v-if="!isGoogleAuthenticated">
+                            <Button ref="authorizeButton" severity="contrast" outlined class="border-1" @click="handleAuthClick">
+                                <svg width="25px" height="25px" viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
+                                    <path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4" />
+                                    <path
+                                        d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
+                                        fill="#34A853"
+                                    />
+                                    <path
+                                        d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
+                                        fill="#FBBC05"
+                                    />
+                                    <path
+                                        d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
+                                        fill="#EB4335"
+                                    />
+                                </svg>
+                                <span class="ml-2 font-bold">Iniciar Sesión con Google </span>
+                            </Button>
+                        </div>
+                        <div v-else>
+                            <Card>
+                                <template #title> Crear Asesoria </template>
+
+                                <template #content>
+                                    <div class="p-fluid">
+                                        <div class="field">
+                                            <label for="titulo">Título</label>
+                                            <InputText v-model="newEvent.summary" placeholder="Título del evento" required />
+                                        </div>
+                                        <div class="field">
+                                            <label for="descripcion">Descripción</label>
+                                            <Textarea v-model="newEvent.description" placeholder="Descripción" required />
+                                        </div>
+                                        <div class="field">
+                                            <label for="inicio">Inicio</label>
+                                            <Calendar v-model="newEvent.start" showTime hourFormat="12" required :minDate="new Date()" />
+                                        </div>
+                                        <div class="field">
+                                            <label for="final">Final</label>
+                                            <Calendar v-model="newEvent.end" showTime hourFormat="12" required :minDate="new Date(newEvent.start)" />
+                                        </div>
+                                        <div class="field">
+                                            <label for="correos">Correos</label>
+                                            <MultiSelect v-model="newEvent.attendees" :options="correos" optionLabel="name" placeholder="Selecciona participantes" :maxSelectedLabels="2" />
+                                        </div>
+                                        <div class="field">
+                                            <label for="meetlink">
+                                                Código de enlace a la reunión de Google Meet
+                                                <small class="text-red-700">(opcional)</small>
+                                            </label>
+                                            <InputMask id="basic" v-model="newEvent.meetLink" mask="***-***-***" placeholder="abc-dfg-hij" />
+                                        </div>
                                     </div>
-                                    <div class="field">
-                                        <label for="descripcion">Descripción</label>
-                                        <Textarea v-model="newEvent.description" placeholder="Descripción" required />
+                                </template>
+                                <template #footer>
+                                    <Button label="Limpiar" icon="pi pi-times" text="" @click="limpiarEventos" />
+                                    <Button label="Guardar" icon="pi pi-check" text="" @click="createNewEvent" />
+                                </template>
+                            </Card>
+                            <div class="w-full flex align-content-center justify-content-end">
+                                <Button ref="signoutButton" severity="contrast" outlined class="border-1 mt-5" @click="handleSignoutClick">
+                                    <span class="ml-2 font-bold">Cerrar Sesión</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 lg:col-6">
+                        <FullCalendar :options="calendarOptions" />
+                    </div>
+                </div>
+            </TabPanel>
+            <TabPanel header="Equipos">
+                <div class="w-full mx-auto">
+                    <h2 class="text-2xl font-bold mb-5">Equipos Asesorados</h2>
+                    <div class="grid p-2">
+                        <div v-for="asesoria in asesorados" :key="asesoria.id" class="col-12">
+                            <div class="card grid p-2 shadow-2">
+                                <div class="col-12 md:col-10">
+                                    <h3 class="text-2xl font-bold text-black-alpha-90 mb-2">Equipo {{}}</h3>
+                                    <div class="text-gray-700 font-bold text-lg mb-2">
+                                        <Avatar icon="pi pi-code" shape="circle" />
+                                        <span class="ml-2">Proyecto</span>
+                                        <span class="mx-2">•</span>
+                                        <span class="text-gray-500 font-medium">{{ asesoria.Proyectos[0]?.nombre_proyecto }}</span>
                                     </div>
-                                    <div class="field">
-                                        <label for="inicio">Inicio</label>
-                                        <Calendar v-model="newEvent.start" showTime hourFormat="12" required :minDate="new Date()" />
+                                    <div class="text-gray-700 font-bold text-lg mb-2">
+                                        <Avatar icon="pi pi-book" shape="circle" />
+                                        <span class="ml-2">Tesina</span>
+                                        <span class="mx-2">•</span>
+                                        <span class="text-gray-500 font-medium"> {{ asesoria.nombre_tesina }}</span>
                                     </div>
-                                    <div class="field">
-                                        <label for="final">Final</label>
-                                        <Calendar v-model="newEvent.end" showTime hourFormat="12" required :minDate="new Date(newEvent.start)" />
-                                    </div>
-                                    <div class="field">
-                                        <label for="correos">Correos</label>
-                                        <MultiSelect v-model="newEvent.attendees" :options="correos" optionLabel="name" placeholder="Selecciona participantes" :maxSelectedLabels="2" />
-                                    </div>
-                                    <div class="field">
-                                        <label for="meetlink">
-                                            Código de enlace a la reunión de Google Meet
-                                            <small class="text-red-700">(opcional)</small>
-                                        </label>
-                                        <InputMask id="basic" v-model="newEvent.meetLink" mask="***-***-***" placeholder="abc-dfg-hij" />
+                                    <div class="text-gray-700 font-bold text-lg mb-2">
+                                        <Avatar icon="pi pi-users" shape="circle" />
+                                        <span class="ml-2">Integrantes</span>
+                                        <span class="text-gray-500 font-medium" v-for="alumno in asesoria.Alumnos" :key="alumno.id"> • {{ alumno.nombre }} {{ alumno.apellido_p }}</span>
                                     </div>
                                 </div>
-                            </template>
-                            <template #footer>
-                                <Button label="Limpiar" icon="pi pi-times" text="" @click="limpiarEventos" />
-                                <Button label="Guardar" icon="pi pi-check" text="" @click="createNewEvent" />
-                            </template>
-                        </Card>
-                        <div class="w-full flex align-content-center justify-content-end">
-                            <Button ref="signoutButton" severity="contrast" outlined class="border-1 mt-5" @click="handleSignoutClick">
-                                <span class="ml-2 font-bold">Cerrar Sesión</span>
-                            </Button>
+                                <div class="col-12 flex flex-column align-items-center justify-content-center md:col-2 md:gap-2">
+                                    <Button @click="openlink(asesoria.url_documento)" class="w-full mt-2" label="Ver Enlace del Proyecto" severity="contrast" outlined :disabled="!asesoria.Proyectos[0]?.url_documento" />
+                                    <Button @click="console.log(asesoria.url_documento)" class="w-full mt-2" label="Descargar Tesina" severity="contrast" outlined :disabled="!asesoria.url_documento" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-12 lg:col-6">
-                    <FullCalendar :options="calendarOptions" />
-                </div>
-            </div>
-        </template>
-    </Card>
+            </TabPanel>
+        </TabView>
+    </div>
 
     <Dialog v-model:visible="showInfo" modal :header="selectedEvent?.title" class="w-full md:w-3" position="top">
         <template #header>
