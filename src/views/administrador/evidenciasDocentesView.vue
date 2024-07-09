@@ -72,7 +72,6 @@ const loadEvidencias = async (actividad_id) => {
     try {
         const response = await SeminarioApi.getEvidencias(actividad_id);
         EvidenciasData.value = response.data;
-        console.log(EvidenciasData.value);
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
