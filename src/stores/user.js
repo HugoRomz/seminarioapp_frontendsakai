@@ -11,6 +11,7 @@ export const useUser = defineStore('user', () => {
 
     function logout() {
         localStorage.removeItem('AUTH_TOKEN');
+        localStorage.removeItem('gapi_token');
         user.value = {};
         router.push({ name: 'Login' });
     }

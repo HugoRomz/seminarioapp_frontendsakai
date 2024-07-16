@@ -91,6 +91,11 @@ const router = createRouter({
                     name: 'detalleCurso',
                     component: () => import('@/views/administrador/detalleCursoView.vue')
                 },
+                {
+                    path: '/admin/detalleCursoFinalizado/:id',
+                    name: 'detalleCursoFinalizado',
+                    component: () => import('@/views/administrador/detalleCursoFinalizadoView.vue')
+                },
                 // Rutas de alumno
                 {
                     path: 'alumnos/subirArchivos',

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, inject, onMounted } from 'vue';
+import { FilterMatchMode } from 'primevue/api';
 import { useRoute } from 'vue-router';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -24,8 +25,10 @@ const alumnoModal = ref(false);
 const alumnosForm = ref({ usuario_id: [] });
 
 const constanciaModal = ref(false);
-const alumnosConstanciaData = ref([]);
 const alumnoModalConstancia = ref([]);
+
+const alumnosCursoData = ref([]);
+const filters = ref();
 
 const loading = ref(false);
 
@@ -70,7 +73,7 @@ const loadAlumnos = async () => {
         loading.value = false;
     }
 };
-onMounted(loadCurso(), loadAlumnos());
+
 const openEditModulo = (data) => {
     moduloData.value = { ...data };
     editModulo.value = true;
@@ -229,12 +232,11 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
     }
 };
 
-const showModalConstancia = async () => {
-    constanciaModal.value = true;
+const obtenerAlumnosCurso = async () => {
     try {
         loading.value = true;
         const response = await SeminarioApi.obtenerAlumnosConstancias(cursoId.value);
-        alumnosConstanciaData.value = response.data;
+        alumnosCursoData.value = response.data;
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -288,6 +290,39 @@ const generarConstancias = async () => {
         });
     }
 };
+
+onMounted(loadCurso(), loadAlumnos()), obtenerAlumnosCurso();
+
+const initFilters = () => {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    };
+};
+
+initFilters();
+
+const clearFilter = () => {
+    initFilters();
+};
+
+const displayMatricula = (data) => {
+    if (data.usuario.alumno) {
+        return {
+            matricula: data.usuario.alumno.matricula,
+            calificacionFinal: data.alumno.calificacionFinal
+        };
+    } else if (data.usuario.egresado) {
+        return {
+            matricula: data.usuario.egresado.cod_egresado,
+            calificacionFinal: data.usuario.egresado.calificacionFinal
+        };
+    } else {
+        return {
+            matricula: 'N/A',
+            calificacionFinal: 'N/A'
+        };
+    }
+};
 </script>
 
 <template>
@@ -308,7 +343,7 @@ const generarConstancias = async () => {
                             </div>
                             <div class="col-12 flex flex-column align-items-center justify-content-end md:col-5 md:gap-2 md:flex-row">
                                 <Button @click="openModalAlumno" class="w-full mt-3 md:mt-0" label="Agregar alumnos" severity="success" :disabled="!alumnosdata || alumnosdata.length === 0" />
-                                <Button @click="showModalConstancia" class="w-full mt-3 md:mt-0" label="Generar constancias" severity="contrast" outlined />
+                                <Button @click="constanciaModal = true" class="w-full mt-3 md:mt-0" label="Generar constancias" severity="contrast" outlined />
                                 <Button class="w-full mt-3 md:mt-0" label="Generar reportes" severity="contrast" outlined disabled />
                             </div>
                         </div>
@@ -335,6 +370,62 @@ const generarConstancias = async () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="w-full mx-auto">
+                        <h2 class="text-3xl font-bold mb-3">Alumnos del Curso</h2>
+                        <DataTable
+                            ref="dt"
+                            :value="alumnosCursoData"
+                            dataKey="id"
+                            :paginator="true"
+                            :rows="10"
+                            :filters="filters"
+                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                            :rowsPerPageOptions="[5, 10, 25]"
+                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} alumnos"
+                        >
+                            <template #header>
+                                <div class="flex justify-content-between flex-column sm:flex-row">
+                                    <Button type="button" icon="pi pi-filter-slash" label="Limpiar" outlined @click="clearFilter()" />
+                                    <IconField iconPosition="left">
+                                        <InputIcon class="pi pi-search" />
+                                        <InputText v-model="filters['global'].value" placeholder="Búsqueda por palabra clave" style="width: 100%" />
+                                    </IconField>
+                                </div>
+                            </template>
+                            <template #empty> No hay registros. </template>
+                            <template #loading> Cargando... por favor espera </template>
+                            <template #paginatorstart>
+                                <Button icon="pi pi-refresh" @click="loadUsers(selectedPeriodos.value.periodo_id)" />
+                            </template>
+                            <Column field="alumno.matricula" header="Matricula" :sortable="true">
+                                <template #body="{ data }">
+                                    {{ displayMatricula(data).matricula }}
+                                </template>
+                            </Column>
+                            <Column field="usuario.nombre" header="Nombre" :sortable="true"></Column>
+                            <Column field="usuario.apellido_p" header="Apellido Paterno" :sortable="true"></Column>
+                            <Column field="usuario.apellido_m" header="Apellido Materno" :sortable="true"></Column>
+                            <Column field="calificacion" header="Calificación Mód" :sortable="true"></Column>
+                            <Column field="calificacion_proyecto" header="Calificación Proy" :sortable="true"></Column>
+                            <Column field="calificacion_final" header="Calificación Final" :sortable="true"></Column>
+                            <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
+                                <template #body="{ data }">
+                                    <i
+                                        class="pi"
+                                        :class="{
+                                            'pi-check-circle text-green-500': data.usuario.status === 'ACTIVO',
+                                            'pi-times-circle text-red-500': data.usuario.status !== 'ACTIVO'
+                                        }"
+                                    ></i>
+                                </template>
+                                <template #filter="{ filterModel, filterCallback }">
+                                    <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
+                                </template>
+                            </Column>
+                        </DataTable>
                     </div>
                 </div>
             </div>
@@ -394,7 +485,7 @@ const generarConstancias = async () => {
     <Dialog v-model:visible="constanciaModal" header="Generar Constancias" :modal="true" class="p-fluid w-full md:w-30rem">
         <div class="field">
             <label for="Alumnos">Selecciona los alumnos</label>
-            <MultiSelect v-model="alumnoModalConstancia" :options="alumnosConstanciaData" placeholder="Selecciona los alumnos para generar constancias" :filter="true">
+            <MultiSelect v-model="alumnoModalConstancia" :options="alumnosCursoData" placeholder="Selecciona los alumnos para generar constancias" :filter="true">
                 <template #value="slotProps">
                     <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
                         <div>{{ option.usuario.nombre }} {{ option.usuario.apellido_p }} {{ option.usuario.apellido_m }}</div>

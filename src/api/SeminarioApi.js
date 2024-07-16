@@ -137,5 +137,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    obtenerTesinasyProyectos(cursoId) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/obtenerTesinasyProyectos/${cursoId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
