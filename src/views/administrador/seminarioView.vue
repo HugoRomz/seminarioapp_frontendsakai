@@ -313,7 +313,7 @@ const clearFilter = () => {
                                 <Button v-if="data.status == 'Pendiente'" label="Rechazar" class="mr-2" rounded severity="danger" @click="rechazarCursoModal(data)" />
                                 <Button v-if="data.status == 'Aceptado'" label="Ver detalle" class="mr-2" rounded severity="info" @click="router.push({ name: 'detalleCurso', params: { id: data.curso_periodo_id } })" />
                                 <Button v-if="data.status == 'Cancelado'" label="Ver motivo" class="mr-2" rounded severity="warning" @click="verMotivoModal(data)" />
-                                <Button v-if="data.status == 'Finalizado'" label="Ver reporte" class="mr-2" rounded severity="help" @click="console.log('Ver reporte Seminario')" />
+                                <Button v-if="data.status == 'Finalizado'" label="Ver reporte" class="mr-2" rounded severity="help" @click="router.push({ name: 'detalleCursoFinalizado', params: { id: data.curso_periodo_id } })" />
                             </div>
                         </template>
                     </Column>
