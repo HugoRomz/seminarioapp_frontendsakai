@@ -106,7 +106,7 @@ const router = createRouter({
                 },
                 {
                     path: 'alumnos/registrarTesina',
-                    name: 'registrarTesinaAlumnos',
+                    name: 'registrarTesina',
                     component: () => import('@/views/alumnos/registroTesinaView.vue'),
                     meta: { roles: ['Alumno'] }
                 },
