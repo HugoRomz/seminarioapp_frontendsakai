@@ -13,7 +13,8 @@ const showForm = ref(false);
 const showTable = ref(false);
 const showModal = ref(false);
 const showAllAcceptedModal = ref(false);
-const invite = ref(null);  // Change to null to handle the Yes/No selection
+const showRegisteredTesinasMessage = ref(false);
+const invite = ref(null);
 
 const RegTesina = ref({
     userId: null,
@@ -55,47 +56,79 @@ const getInvitationsForUser = async () => {
     }
 };
 
-const determineDisplayState = () => {
-    if (invitacionesRecibidas.value.length > 0) {
-        showModal.value = true;
-        showForm.value = false;
-        showTable.value = false;
-    } else if (invitaciones.value.length > 0) {
-        showForm.value = false;
-        showTable.value = true;
-    } else {
-        showForm.value = true;
-        showTable.value = true;
-    }
-};
-
 const getUserTesinas = async () => {
     try {
         const response = await TesinaApi.getTesinasByUser(RegTesina.value.userId);
-        console.log(response.data);
+        tesinas.value = response.data;
     } catch (error) {
         console.error('Error al obtener las tesinas del usuario:', error);
     }
 };
 
-onMounted(async () => {
-    await getUserData();
+const determineDisplayState = () => {
+    if (tesinas.value.length > 0) {
+        showRegisteredTesinasMessage.value = true;
+        showForm.value = false;
+        showTable.value = false;
+        showModal.value = false;
+        showAllAcceptedModal.value = false;
+    }
+    else if (invitacionesRecibidas.value.some(inv => inv.status === 'ACEPTADO')) {
+        showAllAcceptedModal.value = true;
+        showForm.value = false;
+        showTable.value = false;
+        showModal.value = false;
+    }
+    else if (invitacionesRecibidas.value.some(inv => inv.status === 'PENDIENTE')) {
+        showModal.value = true;
+        showForm.value = false;
+        showTable.value = false;
+    }
+    else if (invitaciones.value.length > 0) {
+        showTable.value = true;
+        showForm.value = false;
+        showModal.value = false;
+        showAllAcceptedModal.value = false;
+    }
+    else {
+        showForm.value = true;
+        showTable.value = true;
+        showModal.value = false;
+        showAllAcceptedModal.value = false;
+    }
+};
+
+const cargarData = async () => {
     await getUserInvitations();
     await getInvitationsForUser();
+    await getUserTesinas();
     determineDisplayState();
     loading.value = false;
-    await getUserTesinas();  
+};
+
+onMounted(async () => {
+    await getUserData();
+    cargarData();
 });
 
 const submitProject = async () => {
-    console.log(RegTesina.value);
+    loading.value = true;
     try {
+        if (RegTesina.value.invitado_email.length === 0 && invite.value === 'yes') {
+            toast.open({
+                message: 'Por favor ingresa al menos un correo de compañero.',
+                type: 'error'
+            });
+            return;
+        }
+
         if (RegTesina.value.invitado_email.length === 0) {
             const response = await TesinaApi.createTesina(RegTesina.value);
             toast.open({
                 message: 'Tesina registrada con éxito.',
                 type: 'success'
             });
+            cargarData();
         } else {
             const response = await TesinaApi.createInvitation(RegTesina.value);
             const { message, successfulInvitations, failedInvitations, pendingInvitations } = response.data;
@@ -121,8 +154,7 @@ const submitProject = async () => {
                 });
             }
 
-            await getUserInvitations();
-            determineDisplayState();
+            cargarData();
         }
     } catch (error) {
         toast.open({
@@ -130,11 +162,13 @@ const submitProject = async () => {
             type: 'error'
         });
         showForm.value = true;
+    } finally {
+        loading.value = false;
     }
 };
 
 const aceptarInvitacion = async (invitacionId) => {
-    console.log(invitacionId);
+    loading.value = true;
     try {
         const response = await TesinaApi.acceptInvitation(invitacionId);
         toast.open({
@@ -142,18 +176,19 @@ const aceptarInvitacion = async (invitacionId) => {
             type: 'success'
         });
         showModal.value = false;
-        await getUserInvitations();
-        await getInvitationsForUser();
-        determineDisplayState();
+        cargarData();
     } catch (error) {
         toast.open({
             message: 'Error al aceptar la invitación',
             type: 'error'
         });
+    } finally {
+        loading.value = false;
     }
 };
 
 const rechazarInvitacion = async (invitacionId) => {
+    loading.value = true;
     try {
         const response = await TesinaApi.rejectInvitation(invitacionId);
         toast.open({
@@ -161,14 +196,14 @@ const rechazarInvitacion = async (invitacionId) => {
             type: 'success'
         });
         showModal.value = false;
-        await getUserInvitations();
-        await getInvitationsForUser();
-        determineDisplayState();
+        cargarData();
     } catch (error) {
         toast.open({
             message: 'Error al rechazar la invitación',
             type: 'error'
         });
+    } finally {
+        loading.value = false;
     }
 };
 </script>
@@ -240,9 +275,14 @@ const rechazarInvitacion = async (invitacionId) => {
                     </div>
                 </template>
             </Card>
-            <Card v-if="showAllAcceptedModal" header="Tesinas Registradas" class="p-mb-4">
+            <Card v-if="showAllAcceptedModal" header="Tesinas Aceptadas" class="p-mb-4">
                 <template #content>
-                    <p>Has aceptado todas las invitaciones. A continuación se muestran tus tesinas registradas:</p>
+                    <p>Has aceptado la invitación. Espera a que la tesina se registre</p>
+                </template>
+            </Card>
+            <Card v-if="showRegisteredTesinasMessage" header="Tesinas Registradas" class="p-mb-4">
+                <template #content>
+                    <p>Tienes las siguientes tesinas registradas:</p>
                     <div v-for="tesina in tesinas" :key="tesina.tesina_id">
                         <p>{{ tesina.nombre_tesina }}</p>
                     </div>
