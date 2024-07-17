@@ -109,6 +109,12 @@ const router = createRouter({
                     component: () => import('@/views/alumnos/moduloView.vue'),
                     meta: { roles: ['Alumno'] }
                 },
+                {
+                    path: 'alumnos/registrarTesina',
+                    name: 'registrarTesina',
+                    component: () => import('@/views/alumnos/registroTesinaView.vue'),
+                    meta: { roles: ['Alumno'] }
+                },
                 // Rutas docentes
                 {
                     path: '/docentes/documentacion',

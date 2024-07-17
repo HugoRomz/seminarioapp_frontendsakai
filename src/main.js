@@ -108,6 +108,7 @@ import TreeSelect from 'primevue/treeselect';
 import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
+import Chips from 'primevue/chips';
 
 import BlockViewer from '@/components/BlockViewer.vue';
 import Divider from 'primevue/divider';
@@ -229,5 +230,6 @@ app.component('TreeSelect', TreeSelect);
 app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
+app.component('Chips', Chips);
 
 app.mount('#app');

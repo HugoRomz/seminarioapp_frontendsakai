@@ -73,6 +73,11 @@ const model = ref([
                 label: 'Calificaciones',
                 icon: 'pi pi-file-plus',
                 to: '/alumnos/modulos'
+            },
+            {
+                label: 'Registrar Tesina',
+                icon: 'pi pi-file-plus',
+                to: '/alumnos/registrarTesina'
             }
         ],
         roles: ['Alumno']
