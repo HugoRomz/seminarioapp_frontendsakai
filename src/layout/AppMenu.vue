@@ -75,7 +75,7 @@ const model = ref([
                 to: '/alumnos/modulos'
             },
             {
-                label: 'Registrar Tesina',
+                label: 'Tesina y Proyecto',
                 icon: 'pi pi-file-plus',
                 to: '/alumnos/registrarTesina'
             }
