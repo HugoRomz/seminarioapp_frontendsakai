@@ -130,6 +130,14 @@ export default {
             }
         });
     },
+    obtenerAlumnosCurso(cursoId) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/obtenerAlumnosCurso/${cursoId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
     obtenerAlumnosConstancias(cursoId) {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.get(`/seminario/obtenerAlumnosConstancias/${cursoId}`, {

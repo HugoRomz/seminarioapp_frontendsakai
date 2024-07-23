@@ -12,6 +12,7 @@ const toast = inject('toast');
 
 import SeminarioApi from '../../api/SeminarioApi.js';
 import Spinner from '../../components/Spinner.vue';
+import router from '../../router/index.js';
 
 const route = useRoute();
 const cursoId = ref(route.params.id);
@@ -235,7 +236,7 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
 const obtenerAlumnosCurso = async () => {
     try {
         loading.value = true;
-        const response = await SeminarioApi.obtenerAlumnosConstancias(cursoId.value);
+        const response = await SeminarioApi.obtenerAlumnosCurso(cursoId.value);
         alumnosCursoData.value = response.data;
     } catch (error) {
         toast.open({
@@ -248,47 +249,22 @@ const obtenerAlumnosCurso = async () => {
 };
 
 const generarConstancias = async () => {
-    try {
-        alumnoModalConstancia.value.forEach((alumno) => {
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const logoWidth = 195; // Adjust the width of the logo as needed
-            const logoX = (pageWidth - logoWidth) / 2;
-            doc.addImage(LogoSuperior, 'JPEG', logoX, 5, logoWidth, 15);
+    const data = {
+        Nombre: alumnoModalConstancia.value[0].nombre + ' ' + alumnoModalConstancia.value[0].apellido_p + ' ' + alumnoModalConstancia.value[0].apellido_m,
+        Curso: cursoData.value.curso.nombre_curso,
+        periodo: cursoData.value.periodo.descripcion,
+        matricula: alumnoModalConstancia.value[0].matricula,
+        calificaciones: alumnoModalConstancia.value[0].calificaciones,
+        promedioFinal: alumnoModalConstancia.value[0].promedioFinal,
+        modulos: cursoData.value.modulos.map((modulo) => modulo.nombre_modulo)
+    };
 
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
+    const url = router.resolve({
+        name: 'constanciaEstudios',
+        query: { alumno: JSON.stringify(data) }
+    }).href;
 
-            doc.text(alumno.usuario.nombre.toUpperCase(), 20, 40);
-            doc.text(alumno.usuario.apellido_p.toUpperCase(), 50, 40);
-            doc.text(alumno.usuario.apellido_m.toUpperCase(), 80, 40);
-            doc.text((alumno.usuario.alumno ? alumno.usuario.alumno.matricula : alumno.usuario.egresado ? alumno.usuario.egresado.cod_egresado : 'SIN MATRICULA').toUpperCase(), 20, 45);
-            doc.text(`Calificación:${alumno.calificacion}`, 20, 50);
-            doc.text(`Calificación Proyecto:${alumno.calificacion_proyecto}`, 20, 55);
-            doc.text(`Calificación Final:${alumno.calificacion_final}`, 20, 60);
-
-            const textWidth = (doc.getStringUnitWidth('CONSTANCIA DE CURSO') * doc.internal.getFontSize()) / doc.internal.scaleFactor;
-            const textX = (pageWidth - textWidth) / 2;
-            doc.text('CONSTANCIA DE CURSO', textX, 30);
-
-            const centroX = doc.internal.pageSize.width / 2;
-            doc.addImage(logoInferior, 'JPEG', centroX - 75, doc.internal.pageSize.height - 10, 150, 5);
-
-            doc.output('dataurlnewwindow');
-            // doc.save(`Constancia_${alumno.usuario.nombre}_${alumno.usuario.apellido_p}_${alumno.usuario.apellido_m}.pdf`);
-        });
-        toast.open({
-            message: 'Constancias generadas correctamente',
-            type: 'success'
-        });
-        constanciaModal.value = false;
-        alumnoModalConstancia.value = [];
-    } catch (error) {
-        toast.open({
-            message: 'Error al generar constancias',
-            type: 'error'
-        });
-    }
+    window.open(url, '_blank');
 };
 
 onMounted(loadCurso(), loadAlumnos()), obtenerAlumnosCurso();
@@ -303,25 +279,6 @@ initFilters();
 
 const clearFilter = () => {
     initFilters();
-};
-
-const displayMatricula = (data) => {
-    if (data.usuario.alumno) {
-        return {
-            matricula: data.usuario.alumno.matricula,
-            calificacionFinal: data.alumno.calificacionFinal
-        };
-    } else if (data.usuario.egresado) {
-        return {
-            matricula: data.usuario.egresado.cod_egresado,
-            calificacionFinal: data.usuario.egresado.calificacionFinal
-        };
-    } else {
-        return {
-            matricula: 'N/A',
-            calificacionFinal: 'N/A'
-        };
-    }
 };
 </script>
 
@@ -400,24 +357,19 @@ const displayMatricula = (data) => {
                             <template #paginatorstart>
                                 <Button icon="pi pi-refresh" @click="loadUsers(selectedPeriodos.value.periodo_id)" />
                             </template>
-                            <Column field="alumno.matricula" header="Matricula" :sortable="true">
-                                <template #body="{ data }">
-                                    {{ displayMatricula(data).matricula }}
-                                </template>
-                            </Column>
-                            <Column field="usuario.nombre" header="Nombre" :sortable="true"></Column>
-                            <Column field="usuario.apellido_p" header="Apellido Paterno" :sortable="true"></Column>
-                            <Column field="usuario.apellido_m" header="Apellido Materno" :sortable="true"></Column>
-                            <Column field="calificacion" header="Calificación Mód" :sortable="true"></Column>
-                            <Column field="calificacion_proyecto" header="Calificación Proy" :sortable="true"></Column>
-                            <Column field="calificacion_final" header="Calificación Final" :sortable="true"></Column>
+                            <Column field="matricula" header="Matricula" :sortable="true"> </Column>
+                            <Column field="nombre" header="Nombre" :sortable="true"></Column>
+                            <Column field="apellido_p" header="Apellido Paterno" :sortable="true"></Column>
+                            <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>
+                            <Column field="promedioFinal" header="Promedio" :sortable="true"></Column>
+
                             <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
                                 <template #body="{ data }">
                                     <i
                                         class="pi"
                                         :class="{
-                                            'pi-check-circle text-green-500': data.usuario.status === 'ACTIVO',
-                                            'pi-times-circle text-red-500': data.usuario.status !== 'ACTIVO'
+                                            'pi-check-circle text-green-500': data.status === 'ACTIVO',
+                                            'pi-times-circle text-red-500': data.status !== 'ACTIVO'
                                         }"
                                     ></i>
                                 </template>
@@ -488,11 +440,11 @@ const displayMatricula = (data) => {
             <MultiSelect v-model="alumnoModalConstancia" :options="alumnosCursoData" placeholder="Selecciona los alumnos para generar constancias" :filter="true">
                 <template #value="slotProps">
                     <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
-                        <div>{{ option.usuario.nombre }} {{ option.usuario.apellido_p }} {{ option.usuario.apellido_m }}</div>
+                        <div>{{ option.nombre }} {{ option.apellido_p }} {{ option.apellido_m }}</div>
                     </div>
                 </template>
                 <template #option="slotProps">
-                    <div>{{ slotProps.option.usuario.nombre }} {{ slotProps.option.usuario.apellido_p }} {{ slotProps.option.usuario.apellido_m }}</div>
+                    <div>{{ slotProps.option.nombre }} {{ slotProps.option.apellido_p }} {{ slotProps.option.apellido_m }}</div>
                 </template>
             </MultiSelect>
         </div>

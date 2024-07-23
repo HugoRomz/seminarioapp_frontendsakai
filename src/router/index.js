@@ -178,6 +178,19 @@ const router = createRouter({
             path: '/:catchAll(.*)',
             name: '404',
             component: () => import('@/views/pages/NotFound.vue')
+        },
+        // Rutas de impresion pdf
+        {
+            path: '/imprimir',
+            name: 'imprimirPDF',
+            children: [
+                {
+                    path: 'constanciaEstudios',
+                    name: 'constanciaEstudios',
+                    component: () => import('@/views/administrador/archivosPDF/hojaConstanciaDeEstudios.vue'),
+                    props: (route) => ({ alumno: JSON.parse(route.query.alumno) })
+                }
+            ]
         }
     ]
 });
