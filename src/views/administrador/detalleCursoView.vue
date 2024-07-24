@@ -2,11 +2,6 @@
 import { ref, inject, onMounted } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useRoute } from 'vue-router';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
-import LogoSuperior from '../../assets/img/LogoSuperior.js';
-import logoInferior from '../../assets/img/LogoInferior.js';
 
 const toast = inject('toast');
 
@@ -136,98 +131,30 @@ const generarCalificaciones = async (modulo_id, nombre_modulo) => {
     try {
         loading.value = true;
         const response = await SeminarioApi.generarCalificaciones(modulo_id);
-        const data = response.data;
-        const caldata = data.calificaciones;
+        const dataResponse = response.data;
+        const caldata = dataResponse.calificaciones;
 
         if (caldata.length > 0) {
-            const doc = new jsPDF();
+            const data = {
+                nombre_docente: dataResponse.docente,
+                nombre_modulo: nombre_modulo,
+                calificaciones: caldata,
+                Curso: cursoData.value.curso.nombre_curso,
+                periodo: cursoData.value.periodo.descripcion
+            };
+            const url = router.resolve({
+                name: 'hojaCalificaciones',
+                query: { alumnos: JSON.stringify(data) }
+            }).href;
 
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const logoWidth = 195; // Adjust the width of the logo as needed
-            const logoX = (pageWidth - logoWidth) / 2;
-            doc.addImage(LogoSuperior, 'JPEG', logoX, 5, logoWidth, 15);
+            const newWindow = window.open(url, '_blank');
 
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            const textWidth = (doc.getStringUnitWidth(data.curso.toUpperCase()) * doc.internal.getFontSize()) / doc.internal.scaleFactor;
-            const textX = (pageWidth - textWidth) / 2;
-            doc.text(data.curso.toUpperCase(), textX, 30);
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            const periodWidth = (doc.getStringUnitWidth(`CICLO:${data.periodo.toUpperCase()}`) * doc.internal.getFontSize()) / doc.internal.scaleFactor;
-            const periodX = (pageWidth - periodWidth) / 2;
-            doc.text(`CICLO:${data.periodo.toUpperCase()}`, periodX, 36);
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            const titleWidth = (doc.getStringUnitWidth('ACTA DE CALIFICACIONES') * doc.internal.getFontSize()) / doc.internal.scaleFactor;
-            const titleX = (pageWidth - titleWidth) / 2;
-            doc.text('ACTA DE CALIFICACIONES', titleX, 41);
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            const moduleWidth = (doc.getStringUnitWidth(`MODULO:${nombre_modulo.toUpperCase()}`) * doc.internal.getFontSize()) / doc.internal.scaleFactor;
-            const moduleX = (pageWidth - moduleWidth) / 2;
-            doc.text(`MODULO:${nombre_modulo.toUpperCase()}`, moduleX, 47);
-
-            doc.setFontSize(7);
-            doc.setFont('helvetica');
-            doc.setTextColor(128, 128, 128); // Set text color to gray
-            doc.text(`* Las calificaciones se otorgan en una escala del 1 al 10`, 23, 54);
-            doc.setTextColor(0, 0, 0); // Reset text color to black
-
-            const headers = [['N°', 'Matrícula', 'Nombre', 'Cal. Mod.', 'Proy. Fin.', 'Cal. Final']];
-            const rows = caldata.map((item, index) => [
-                { content: index + 1, styles: { halign: 'center' } },
-                { content: item.matricula.toUpperCase(), styles: { halign: 'center' } },
-                { content: item.nombre, styles: { halign: 'left' } },
-                { content: item.cal_mod, styles: { halign: 'center' } },
-                { content: item.proy_cal, styles: { halign: 'right' } },
-                { content: item.cal_fin, styles: { halign: 'right' } }
-            ]);
-
-            autoTable(doc, {
-                head: headers,
-                body: rows,
-                theme: 'plain',
-                styles: {
-                    lineColor: [0, 0, 0],
-                    lineWidth: 0.2
-                },
-                margin: { top: 55, right: 23, left: 23 },
-                didDrawPage: function (data) {
-                    if (data.pageCount > 1) {
-                        doc.text('Continuación...', 10, doc.internal.pageSize.height - 50);
-                    }
-                }
+            newWindow.addEventListener('load', () => {
+                newWindow.addEventListener('afterprint', () => {
+                    loading.value = false;
+                    newWindow.close();
+                });
             });
-
-            //nombre y firma del docente
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            const DocenteWidth = (doc.getStringUnitWidth(data.docente.toUpperCase()) * doc.internal.getFontSize()) / doc.internal.scaleFactor;
-            const DocenteX = (pageWidth - DocenteWidth) / 2;
-            doc.text(data.docente.toUpperCase(), DocenteX, doc.internal.pageSize.height - 40);
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            const firmaWidth = (doc.getStringUnitWidth('Firma del docente') * doc.internal.getFontSize()) / doc.internal.scaleFactor;
-            const firmaX = (pageWidth - firmaWidth) / 2;
-            doc.text('Firma del docente', firmaX, doc.internal.pageSize.height - 35);
-
-            const centroX = doc.internal.pageSize.width / 2 - 150 / 2;
-            // Agregar logo inferior
-            doc.addImage(logoInferior, 'JPEG', centroX, doc.internal.pageSize.height - 10, 150, 5);
-
-            // doc.save(`Calificaciones_${nombre_modulo}.pdf`);
-            doc.output('dataurlnewwindow');
-            toast.open({
-                message: `Calificaciones generadas ${nombre_modulo}`,
-                type: 'success'
-            });
-            return;
         }
     } catch (error) {
         toast.open({
