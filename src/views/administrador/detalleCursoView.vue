@@ -25,6 +25,11 @@ const moduloData = ref({});
 const alumnoModal = ref(false);
 const alumnosForm = ref({ usuario_id: [] });
 
+const selectedTipoConstancia = ref();
+const dataTipoConstancia = ref([
+    { name: 'Constancia con Calificaciones', code: '1' },
+    { name: 'Constancia de NO adeudo de parcialidades del Seminario de Titulación', code: '2' }
+]);
 const constanciaModal = ref(false);
 const alumnoModalConstancia = ref([]);
 
@@ -116,6 +121,7 @@ const asignarAlumnos = async () => {
         });
         alumnoModal.value = false;
         alumnosForm.value = { usuario_id: [] };
+        obtenerAlumnosCurso();
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -249,25 +255,63 @@ const obtenerAlumnosCurso = async () => {
 };
 
 const generarConstancias = async () => {
-    const data = {
-        Nombre: alumnoModalConstancia.value[0].nombre + ' ' + alumnoModalConstancia.value[0].apellido_p + ' ' + alumnoModalConstancia.value[0].apellido_m,
-        Curso: cursoData.value.curso.nombre_curso,
-        periodo: cursoData.value.periodo.descripcion,
-        matricula: alumnoModalConstancia.value[0].matricula,
-        calificaciones: alumnoModalConstancia.value[0].calificaciones,
-        promedioFinal: alumnoModalConstancia.value[0].promedioFinal,
-        modulos: cursoData.value.modulos.map((modulo) => modulo.nombre_modulo)
-    };
+    loading.value = true;
+    try {
+        const data = {
+            Nombre: alumnoModalConstancia.value[0].nombre + ' ' + alumnoModalConstancia.value[0].apellido_p + ' ' + alumnoModalConstancia.value[0].apellido_m,
+            Curso: cursoData.value.curso.nombre_curso,
+            periodo: cursoData.value.periodo.descripcion,
+            matricula: alumnoModalConstancia.value[0].matricula,
+            calificaciones: alumnoModalConstancia.value[0].calificaciones,
+            promedioFinal: alumnoModalConstancia.value[0].promedioFinal,
+            modulos: cursoData.value.modulos.map((modulo) => modulo.nombre_modulo)
+        };
 
-    const url = router.resolve({
-        name: 'constanciaEstudios',
-        query: { alumno: JSON.stringify(data) }
-    }).href;
+        const tipoConstancia = selectedTipoConstancia.value[0].code;
 
-    window.open(url, '_blank');
+        if (tipoConstancia === '1') {
+            const url = router.resolve({
+                name: 'constanciaEstudios',
+                query: { alumno: JSON.stringify(data) }
+            }).href;
+
+            const newWindow = window.open(url, '_blank');
+
+            newWindow.addEventListener('load', () => {
+                newWindow.addEventListener('afterprint', () => {
+                    loading.value = false;
+                    newWindow.close();
+                });
+            });
+        } else if (tipoConstancia === '2') {
+            const url = router.resolve({
+                name: 'constanciaNoAdeudo',
+                query: { alumno: JSON.stringify(data) }
+            }).href;
+
+            const newWindow = window.open(url, '_blank');
+
+            newWindow.addEventListener('load', () => {
+                newWindow.addEventListener('afterprint', () => {
+                    loading.value = false;
+                    newWindow.close();
+                });
+            });
+        }
+    } catch (error) {
+        toast.open({
+            message: error.response.data.msg,
+            type: 'error'
+        });
+        loading.value = false;
+    } finally {
+        constanciaModal.value = false;
+        selectedTipoConstancia.value = [];
+        alumnoModalConstancia.value = [];
+    }
 };
 
-onMounted(loadCurso(), loadAlumnos()), obtenerAlumnosCurso();
+onMounted(loadCurso(), loadAlumnos(), obtenerAlumnosCurso());
 
 const initFilters = () => {
     filters.value = {
@@ -434,10 +478,14 @@ const clearFilter = () => {
         </template>
     </Dialog>
 
-    <Dialog v-model:visible="constanciaModal" header="Generar Constancias" :modal="true" class="p-fluid w-full md:w-30rem">
+    <Dialog v-model:visible="constanciaModal" header="Generar Constancias" :modal="true" class="p-fluid w-full md:w-4">
         <div class="field">
-            <label for="Alumnos">Selecciona los alumnos</label>
-            <MultiSelect v-model="alumnoModalConstancia" :options="alumnosCursoData" placeholder="Selecciona los alumnos para generar constancias" :filter="true">
+            <label for="tipoConstancia">Tipo de Constancia</label>
+            <MultiSelect v-model="selectedTipoConstancia" display="chip" :options="dataTipoConstancia" optionLabel="name" :filter="true" placeholder="Selecciona el tipo de constancia" :selectionLimit="1" class="w-full" />
+        </div>
+        <div class="field">
+            <label for="alumnoModalConstancia">Selecciona los alumnos</label>
+            <MultiSelect v-model="alumnoModalConstancia" :options="alumnosCursoData" placeholder="Selecciona los alumnos para generar constancias" :filter="true" :selectionLimit="1">
                 <template #value="slotProps">
                     <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.id">
                         <div>{{ option.nombre }} {{ option.apellido_p }} {{ option.apellido_m }}</div>

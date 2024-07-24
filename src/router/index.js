@@ -189,6 +189,12 @@ const router = createRouter({
                     name: 'constanciaEstudios',
                     component: () => import('@/views/administrador/archivosPDF/hojaConstanciaDeEstudios.vue'),
                     props: (route) => ({ alumno: JSON.parse(route.query.alumno) })
+                },
+                {
+                    path: 'constanciaNoAdeudo',
+                    name: 'constanciaNoAdeudo',
+                    component: () => import('@/views/administrador/archivosPDF/hojaConstanciaNoAdeudo.vue'),
+                    props: (route) => ({ alumno: JSON.parse(route.query.alumno) })
                 }
             ]
         }
