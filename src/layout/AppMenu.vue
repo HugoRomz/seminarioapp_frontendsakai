@@ -55,7 +55,7 @@ const model = ref([
             },
             {
                 label: 'Evidencias',
-                icon: 'pi pi-book',
+                icon: 'pi pi-file',
                 to: '/admin/evidenciasDocentes'
             }
         ],
@@ -76,7 +76,7 @@ const model = ref([
             },
             {
                 label: 'Tesina y Proyecto',
-                icon: 'pi pi-file-plus',
+                icon: 'pi pi-clone',
                 to: '/alumnos/registrarTesina'
             }
         ],
@@ -107,6 +107,47 @@ const model = ref([
             }
         ],
         roles: ['Docente']
+    },
+    {
+        label: 'Catalogos',
+        items: [
+            {
+                label: 'Roles',
+                icon: 'pi pi-sliders-h',
+                to: '/admin/roles'
+            },
+            {
+                label: 'Usuarios',
+                icon: 'pi pi-users',
+                to: '/admin/usuarios'
+            },
+            {
+                label: 'Carreras',
+                icon: 'pi pi-graduation-cap',
+                to: '/admin/carreras'
+            },
+            {
+                label: 'Periodos',
+                icon: 'pi pi-calendar',
+                to: '/admin/periodos'
+            },
+            {
+                label: 'Materias',
+                icon: 'pi pi-bookmark',
+                to: '/admin/materias'
+            },
+            {
+                label: 'Tipo de Evidencias',
+                icon: 'pi pi-clone',
+                to: '/admin/tipoEvidencias'
+            },
+            {
+                label: 'Documentos',
+                icon: 'pi pi-clone',
+                to: '/admin/documentos'
+            }
+        ],
+        roles: ['Administrador']
     },
     {
         label: 'Otros',

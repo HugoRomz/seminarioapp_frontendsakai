@@ -89,12 +89,44 @@ const router = createRouter({
                 {
                     path: '/admin/detalleCurso/:id',
                     name: 'detalleCurso',
-                    component: () => import('@/views/administrador/detalleCursoView.vue')
+                    component: () => import('@/views/administrador/detalleCursoView.vue'),
+                    meta: { roles: ['Administrador'] }
                 },
                 {
                     path: '/admin/detalleCursoFinalizado/:id',
                     name: 'detalleCursoFinalizado',
-                    component: () => import('@/views/administrador/detalleCursoFinalizadoView.vue')
+                    component: () => import('@/views/administrador/detalleCursoFinalizadoView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/usuarios',
+                    name: 'usuariosView',
+                    component: () => import('@/views/administrador/usuariosView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/roles',
+                    name: 'rolesView',
+                    component: () => import('@/views/administrador/rolesView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/tipoEvidencias',
+                    name: 'tipoEvidenciaView',
+                    component: () => import('@/views/administrador/tipoEvidenciasView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/documentos',
+                    name: 'documentosView',
+                    component: () => import('@/views/administrador/documentosView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
+                    path: '/admin/periodos',
+                    name: 'periodosView',
+                    component: () => import('@/views/administrador/periodosView.vue'),
+                    meta: { roles: ['Administrador'] }
                 },
                 // Rutas de alumno
                 {
@@ -188,19 +220,22 @@ const router = createRouter({
                     path: 'constanciaEstudios',
                     name: 'constanciaEstudios',
                     component: () => import('@/views/administrador/archivosPDF/hojaConstanciaDeEstudios.vue'),
-                    props: (route) => ({ alumno: JSON.parse(route.query.alumno) })
+                    props: (route) => ({ alumno: JSON.parse(route.query.alumno) }),
+                    meta: { roles: ['Administrador'] }
                 },
                 {
                     path: 'constanciaNoAdeudo',
                     name: 'constanciaNoAdeudo',
                     component: () => import('@/views/administrador/archivosPDF/hojaConstanciaNoAdeudo.vue'),
-                    props: (route) => ({ alumno: JSON.parse(route.query.alumno) })
+                    props: (route) => ({ alumno: JSON.parse(route.query.alumno) }),
+                    meta: { roles: ['Administrador'] }
                 },
                 {
                     path: 'hojaCalificaciones',
                     name: 'hojaCalificaciones',
                     component: () => import('@/views/administrador/archivosPDF/hojaCalificaciones.vue'),
-                    props: (route) => ({ alumnos: JSON.parse(route.query.alumnos) })
+                    props: (route) => ({ alumnos: JSON.parse(route.query.alumnos) }),
+                    meta: { roles: ['Administrador'] }
                 }
             ]
         }
