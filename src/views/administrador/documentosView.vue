@@ -6,67 +6,75 @@ import Spinner from '../../components/Spinner.vue';
 
 const toast = inject('toast');
 
-const materias = ref(null);
+const documentos = ref(null);
 const filters = ref();
 const loading = ref(null);
 const dt = ref();
 
 const isEditMode = ref(false);
 
-const materiaEdit = ref({});
-const deleteMateriaModal = ref(false);
-const materiaModal = ref(false);
+const documentoEdit = ref({});
+const deleteDocumentoModal = ref(false);
+const documentoModal = ref(false);
 const submitted = ref(false);
 
-const loadMaterias = async () => {
+const destinatarios = ref([
+    { name: 'Alumno', code: 'alumno' },
+    { name: 'Docente', code: 'docente' }
+]);
+
+const loadDocumentos = async () => {
     loading.value = true;
     try {
-        const response = await catalogoApi.findMaterias();
-        materias.value = response.data;
+        const response = await catalogoApi.findDocumentos();
+        documentos.value = response.data;
     } catch (error) {
-        console.error('Error al obtener los usuarios:', error);
+        toast.open({
+            message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+            type: 'error'
+        });
     } finally {
         loading.value = false;
     }
 };
 
-onMounted(loadMaterias);
+onMounted(loadDocumentos);
 
 const openNew = () => {
-    materiaEdit.value = {};
+    documentoEdit.value = {};
     submitted.value = false;
-    materiaModal.value = true;
+    documentoModal.value = true;
     isEditMode.value = false;
 };
 
 const hideDialog = () => {
-    materiaModal.value = false;
+    documentoModal.value = false;
     submitted.value = false;
 };
 
-const saveMateria = async () => {
+const saveDocumento = async () => {
     submitted.value = true;
-    if (materiaEdit.value.nombre_materia.trim()) {
+    if (documentoEdit.value.nombre_documento.trim()) {
         loading.value = true;
         try {
             let response;
             if (isEditMode.value) {
-                response = await catalogoApi.updateMateria(materiaEdit.value);
+                response = await catalogoApi.updateDocumento(documentoEdit.value);
                 toast.open({
                     message: response.data.msg,
                     type: 'success'
                 });
             } else {
-                response = await catalogoApi.createMateria(materiaEdit.value);
+                response = await catalogoApi.createDocumento(documentoEdit.value);
                 toast.open({
                     message: response.data.msg,
                     type: 'success'
                 });
             }
-            materiaModal.value = false;
-            materiaEdit.value = {};
+            documentoModal.value = false;
+            documentoEdit.value = {};
             isEditMode.value = false;
-            await loadMaterias();
+            await loadDocumentos();
         } catch (error) {
             toast.open({
                 message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
@@ -84,30 +92,32 @@ const saveMateria = async () => {
     }
 };
 
-const confirmDeleteMateria = (editMateria) => {
-    materiaEdit.value = editMateria;
-    deleteMateriaModal.value = true;
+const confirmDeleteDocumento = (editDocumento) => {
+    documentoEdit.value = editDocumento;
+    deleteDocumentoModal.value = true;
 };
 
-const editMateria = (editMateria) => {
-    const materiasData = { ...editMateria };
-    materiaEdit.value = materiasData;
-    materiaModal.value = true;
+const editDocumento = (editDocumento) => {
+    documentoEdit.value = {
+        ...editDocumento,
+        destinatario: destinatarios.value.filter((d) => d.code === editDocumento.destinatario)
+    };
+    documentoModal.value = true;
     isEditMode.value = true;
 };
 
-const deleteMateria = async () => {
+const deleteDocumento = async () => {
     loading.value = true;
 
     try {
-        const response = await catalogoApi.deleteMateria(materiaEdit.value.materia_id);
+        const response = await catalogoApi.deleteDocumento(documentoEdit.value.documento_id);
         toast.open({
             message: response.data.msg,
             type: 'success'
         });
-        deleteMateriaModal.value = false;
-        materiaEdit.value = {};
-        await loadMaterias(); // Recarga la lista de usuarios
+        deleteDocumentoModal.value = false;
+        documentoEdit.value = {};
+        await loadDocumentos(); // Recarga la lista de usuarios
     } catch (error) {
         toast.open({
             message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido al eliminar',
@@ -138,7 +148,7 @@ const home = ref({
     route: '/'
 });
 
-const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/materias' }]);
+const items = ref([{ label: 'Catalogo' }, { label: 'Documentos', route: '/admin/documentos' }]);
 </script>
 <template>
     <Spinner v-if="loading" />
@@ -160,7 +170,7 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
                     <Toolbar class="mb-4">
                         <template v-slot:start>
                             <div class="my-2">
-                                <Button label="Nueva Materia" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                                <Button label="Nuevo Documento" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
                             </div>
                         </template>
 
@@ -172,14 +182,14 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
                     <div class="card">
                         <DataTable
                             ref="dt"
-                            :value="materias"
+                            :value="documentos"
                             dataKey="id"
                             :paginator="true"
                             :rows="10"
                             :filters="filters"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             :rowsPerPageOptions="[5, 10, 25]"
-                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} materias"
+                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} documentos"
                         >
                             <template #header>
                                 <div class="flex justify-content-between flex-column sm:flex-row">
@@ -193,20 +203,20 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
                             <template #empty> No hay registros. </template>
                             <template #loading> Cargando... por favor espera </template>
                             <template #paginatorstart>
-                                <Button icon="pi pi-refresh" @click="loadMaterias" />
+                                <Button icon="pi pi-refresh" @click="loadDocumentos" />
                             </template>
-                            <Column field="materia_id" header="ID Materia" :sortable="true"></Column>
-                            <Column field="nombre_materia" header="Nombre de la Materia" :sortable="true"></Column>
-                            <Column field="descripcion" header="Descripción"></Column>
-                            <Column field="creditos" header="Créditos" :sortable="true">
+                            <Column field="documento_id" header="ID Documento" :sortable="true"></Column>
+                            <Column field="nombre_documento" header="Nombre de la Documento" :sortable="true"></Column>
+
+                            <Column field="destinatario" header="Destinatario" :sortable="true">
                                 <template #body="{ data }">
-                                    <Badge :value="data.creditos" size="large" severity="secondary"></Badge>
+                                    <Tag class="mr-2" severity="contrast" :value="data.destinatario"></Tag>
                                 </template>
                             </Column>
                             <Column headerStyle="min-width:10rem;" header="Acciones">
                                 <template #body="{ data }">
-                                    <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editMateria(data)" />
-                                    <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteMateria(data)" />
+                                    <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editDocumento(data)" />
+                                    <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteDocumento(data)" />
                                 </template>
                             </Column>
                         </DataTable>
@@ -215,43 +225,39 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
             </Card>
         </div>
     </div>
-    <Dialog v-model:visible="materiaModal" :header="isEditMode ? 'Datos de la Materia - Editar' : 'Datos de la Materia - Registrar'" :modal="true" class="p-fluid">
+    <Dialog v-model:visible="documentoModal" :header="isEditMode ? 'Datos del Documento - Editar' : 'Datos del Documento - Registrar'" :modal="true" class="p-fluid">
         <div class="field" v-if="isEditMode">
-            <label for="materia_id">ID Materia</label>
-            <InputText id="materia_id" :disabled="isEditMode" v-model.trim="materiaEdit.materia_id" />
+            <label for="documento_id">ID Documento</label>
+            <InputText id="documento_id" :disabled="isEditMode" v-model.trim="documentoEdit.documento_id" />
         </div>
         <div class="field">
-            <label for="nombre_materia">Nombre de la Materia</label>
-            <InputText id="nombre_materia" v-model.trim="materiaEdit.nombre_materia" required="true" :invalid="submitted && !materiaEdit.nombre_materia" />
-            <small class="p-invalid" v-if="submitted && !materiaEdit.nombre_materia">El numero de nombre materia es requerida.</small>
+            <label for="nombre_documento">Nombre del Documento</label>
+            <InputText id="nombre_documento" v-model.trim="documentoEdit.nombre_documento" required="true" :invalid="submitted && !documentoEdit.nombre_documento" />
+            <small class="p-invalid" v-if="submitted && !documentoEdit.nombre_documento">El nombre del documento es requerido</small>
         </div>
         <div class="field">
-            <label for="descripcion">Descripción</label>
-            <Textarea id="descripcion" v-model.trim="materiaEdit.descripcion" />
-        </div>
-        <div class="field">
-            <label for="creditos">Créditos</label>
-            <InputNumber id="creditos" v-model.trim="materiaEdit.creditos" mode="decimal" :minFractionDigits="0" :maxFractionDigits="0" showButtons :min="0" />
+            <label for="destinatario">destinatario</label>
+            <MultiSelect v-model.trim="documentoEdit.destinatario" display="chip" :options="destinatarios" optionLabel="name" placeholder="Selecciona el destinatario" :selectionLimit="1" />
         </div>
 
         <!-- </ScrollPanel> -->
         <template #footer>
             <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
-            <Button label="Guardar" icon="pi pi-check" text="" @click="saveMateria" />
+            <Button label="Guardar" icon="pi pi-check" text="" @click="saveDocumento" />
         </template>
     </Dialog>
 
-    <Dialog v-model:visible="deleteMateriaModal" :style="{ width: '450px' }" header="Confirm" :modal="true">
+    <Dialog v-model:visible="deleteDocumentoModal" :style="{ width: '450px' }" header="Confirm" :modal="true">
         <div class="flex align-items-center justify-content-center">
             <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-            <span v-if="materiaEdit"
-                >¿Estás seguro que quieres eliminar a ID Materia: <b>{{ materiaEdit.materia_id }}</b
+            <span v-if="documentoEdit"
+                >¿Estás seguro que quieres eliminar a ID Documento: <b>{{ documentoEdit.documento_id }}</b
                 >?</span
             >
         </div>
         <template #footer>
-            <Button label="No" icon="pi pi-times" text @click="deleteMateriaModal = false" />
-            <Button label="Yes" icon="pi pi-check" text @click="deleteMateria" />
+            <Button label="No" icon="pi pi-times" text @click="deleteDocumentoModal = false" />
+            <Button label="Yes" icon="pi pi-check" text @click="deleteDocumento" />
         </template>
     </Dialog>
 </template>

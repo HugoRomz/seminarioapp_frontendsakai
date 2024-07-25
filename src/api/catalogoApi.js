@@ -67,6 +67,110 @@ export default {
             }
         });
     },
+
+    // Roles
+    findRoles() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/roles', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createRol(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/roles', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateRol(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/roles/${data.rol_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deleteRol(rol_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/catalogo/roles/${rol_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    // Periodos
+    findPeriodos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/periodos', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createPeriodo(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/periodos', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updatePeriodo(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/periodos/${data.periodo_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deletePeriodo(periodo_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/catalogo/periodos/${periodo_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    // Documentos
+    findDocumentos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/documentos', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createDocumento(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/documentos', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateDocumento(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/documentos/${data.documento_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deleteDocumento(documento_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/catalogo/documentos/${documento_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    // Cursos
     findCursos() {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.get('/catalogo/cursos', {
@@ -92,14 +196,7 @@ export default {
             }
         });
     },
-    findDocumentos() {
-        const token = localStorage.getItem('AUTH_TOKEN');
-        return api.get('/catalogo/documentos', {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-    },
+
     asignarDocumentos(data) {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.post('/catalogo/asginarDocumentos', data, {
