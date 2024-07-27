@@ -205,6 +205,11 @@ const rechazarInvitacion = async (invitacionId) => {
         loading.value = false;
     }
 };
+
+const formatFecha = (fecha) => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString();
+};
 </script>
 
 <template>
@@ -332,9 +337,57 @@ const rechazarInvitacion = async (invitacionId) => {
         <Message severity="info" v-if="showRegisteredTesinasMessage"> Ya estas registrado en una tesina </Message>
         <Card v-if="showRegisteredTesinasMessage">
             <template #content>
-                <div class="grid">
+                <div class="grid" v-for="tesina in tesinas" :key="tesina.id">
                     <div class="col-12">
-                        {{ tesinas }}
+                        <div class="grid">
+                            <div class="col-12 md:col-4">
+                                <h1 class="font-bold text-900 text-3xl my-0">Detalles</h1>
+                                <p class="text-500">Revisa y envía tu documento de tesis.</p>
+
+                                <div class="flex flex-column gap-3">
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Nombre de la Tesina</div>
+                                        <div class="text-900 text-lg">{{ tesina.nombre_tesina }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Área de la Tesina</div>
+                                        <div class="text-900 text-lg">{{ tesina.area_tesina }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Reseña de la Tesina</div>
+                                        <div class="text-900">{{ tesina.resenia_tesina }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Fecha de Registro</div>
+                                        <div class="text-900 text-lg">{{ formatFecha(tesina.fecha_registro) }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-lg">Status</div>
+                                        <div class="text-900 text-lg">
+                                            <Tag v-if="tesina.status == 'PENDIENTE'" class="mr-2" severity="warning" value="Pendiente"></Tag>
+                                            <Tag v-if="tesina.status == 'ACEPTADO'" class="mr-2" severity="success" value="Aceptado"></Tag>
+                                            <Tag v-if="tesina.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-4 flex justify-center">
+                                <Card class="flex justify-content-center">
+                                    <template #title>Portada de la tesina</template>
+                                    <template #content>
+                                        <Image src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg" alt="Image" width="400" preview />
+                                    </template>
+                                </Card>
+                            </div>
+                            <div class="col-12 md:col-4 flex justify-center">
+                                <Card class="flex justify-content-center">
+                                    <template #title>Captura de pantalla del proyecto</template>
+                                    <template #content>
+                                        <Image src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg" alt="Image" width="400" preview />
+                                    </template>
+                                </Card>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-6">
                         <div class="card">

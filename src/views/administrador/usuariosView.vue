@@ -246,8 +246,8 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Usuarios', route: '/admin/us
                             </Column>
                             <Column field="roles" header="Roles" :sortable="true">
                                 <template #body="{ data }">
-                                    <div v-for="rol in data.roles" :key="rol.rol_id">
-                                        <Tag style="background: var(--surface-700); color: var(--surface-0)" class="m-1">
+                                    <div class="flex flex-wrap gap-1">
+                                        <Tag v-for="rol in data.roles" :key="rol.rol_id" style="background: var(--surface-700); color: var(--surface-0)">
                                             <span style="font-size: 10px">{{ rol.nombre_rol }}</span>
                                         </Tag>
                                     </div>
