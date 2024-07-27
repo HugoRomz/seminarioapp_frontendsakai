@@ -238,5 +238,39 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+
+    // Usuarios
+    findUsuarios() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/usuarios', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createUsuario(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/usuarios', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateUsuario(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/usuarios/${data.usuario_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deleteUsuario(usuario_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/catalogo/usuarios/${usuario_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
