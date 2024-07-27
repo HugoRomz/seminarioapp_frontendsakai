@@ -170,6 +170,40 @@ export default {
         });
     },
 
+    // TIPO EVIDENCIAS
+    findTipoEvidencias() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/tipoEvidencias', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createTipoEvidencia(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/tipoEvidencias', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateTipoEvidencia(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/tipoEvidencias/${data.tipo_evidencia_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deleteTipoEvidencia(tipo_evidencia_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/catalogo/tipoEvidencias/${tipo_evidencia_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
     // Cursos
     findCursos() {
         const token = localStorage.getItem('AUTH_TOKEN');

@@ -6,23 +6,23 @@ import Spinner from '../../components/Spinner.vue';
 
 const toast = inject('toast');
 
-const materias = ref(null);
+const tipoEvidencias = ref(null);
 const filters = ref();
 const loading = ref(null);
 const dt = ref();
 
 const isEditMode = ref(false);
 
-const materiaEdit = ref({});
-const deleteMateriaModal = ref(false);
-const materiaModal = ref(false);
+const tipoEvidenciaEdit = ref({});
+const deleteTipoEvidenciaModal = ref(false);
+const tipoEvidenciaModal = ref(false);
 const submitted = ref(false);
 
-const loadMaterias = async () => {
+const loadTipoEvidencias = async () => {
     loading.value = true;
     try {
-        const response = await catalogoApi.findMaterias();
-        materias.value = response.data;
+        const response = await catalogoApi.findTipoEvidencias();
+        tipoEvidencias.value = response.data;
     } catch (error) {
         console.error('Error al obtener los usuarios:', error);
     } finally {
@@ -30,43 +30,43 @@ const loadMaterias = async () => {
     }
 };
 
-onMounted(loadMaterias);
+onMounted(loadTipoEvidencias);
 
 const openNew = () => {
-    materiaEdit.value = {};
+    tipoEvidenciaEdit.value = {};
     submitted.value = false;
-    materiaModal.value = true;
+    tipoEvidenciaModal.value = true;
     isEditMode.value = false;
 };
 
 const hideDialog = () => {
-    materiaModal.value = false;
+    tipoEvidenciaModal.value = false;
     submitted.value = false;
 };
 
-const saveMateria = async () => {
+const saveTipoEvidencia = async () => {
     submitted.value = true;
-    if (materiaEdit.value.nombre_materia.trim()) {
+    if (tipoEvidenciaEdit.value.nombre_tipo_ev.trim()) {
         loading.value = true;
         try {
             let response;
             if (isEditMode.value) {
-                response = await catalogoApi.updateMateria(materiaEdit.value);
+                response = await catalogoApi.updateTipoEvidencia(tipoEvidenciaEdit.value);
                 toast.open({
                     message: response.data.msg,
                     type: 'success'
                 });
             } else {
-                response = await catalogoApi.createMateria(materiaEdit.value);
+                response = await catalogoApi.createTipoEvidencia(tipoEvidenciaEdit.value);
                 toast.open({
                     message: response.data.msg,
                     type: 'success'
                 });
             }
-            materiaModal.value = false;
-            materiaEdit.value = {};
+            tipoEvidenciaModal.value = false;
+            tipoEvidenciaEdit.value = {};
             isEditMode.value = false;
-            await loadMaterias();
+            await loadTipoEvidencias();
         } catch (error) {
             toast.open({
                 message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
@@ -84,30 +84,30 @@ const saveMateria = async () => {
     }
 };
 
-const confirmDeleteMateria = (editMateria) => {
-    materiaEdit.value = editMateria;
-    deleteMateriaModal.value = true;
+const confirmDeleteTipoEvidencia = (editTipoEvidencia) => {
+    tipoEvidenciaEdit.value = editTipoEvidencia;
+    deleteTipoEvidenciaModal.value = true;
 };
 
-const editMateria = (editMateria) => {
-    const materiasData = { ...editMateria };
-    materiaEdit.value = materiasData;
-    materiaModal.value = true;
+const editTipoEvidencia = (editTipoEvidencia) => {
+    const tipoEvidenciasData = { ...editTipoEvidencia };
+    tipoEvidenciaEdit.value = tipoEvidenciasData;
+    tipoEvidenciaModal.value = true;
     isEditMode.value = true;
 };
 
-const deleteMateria = async () => {
+const deleteTipoEvidencia = async () => {
     loading.value = true;
 
     try {
-        const response = await catalogoApi.deleteMateria(materiaEdit.value.materia_id);
+        const response = await catalogoApi.deleteTipoEvidencia(tipoEvidenciaEdit.value.tipo_evidencia_id);
         toast.open({
             message: response.data.msg,
             type: 'success'
         });
-        deleteMateriaModal.value = false;
-        materiaEdit.value = {};
-        await loadMaterias(); // Recarga la lista de usuarios
+        deleteTipoEvidenciaModal.value = false;
+        tipoEvidenciaEdit.value = {};
+        await loadTipoEvidencias(); // Recarga la lista de usuarios
     } catch (error) {
         toast.open({
             message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido al eliminar',
@@ -138,7 +138,7 @@ const home = ref({
     route: '/'
 });
 
-const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/materias' }]);
+const items = ref([{ label: 'Catalogo' }, { label: 'Tipo de Evidencias', route: '/admin/tipoEvidencias' }]);
 </script>
 <template>
     <Spinner v-if="loading" />
@@ -160,7 +160,7 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
                     <Toolbar class="mb-4">
                         <template v-slot:start>
                             <div class="my-2">
-                                <Button label="Nueva Materia" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                                <Button label="Nuevo Tipo de Evidencia" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
                             </div>
                         </template>
 
@@ -172,14 +172,14 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
                     <div class="card">
                         <DataTable
                             ref="dt"
-                            :value="materias"
+                            :value="tipoEvidencias"
                             dataKey="id"
                             :paginator="true"
                             :rows="10"
                             :filters="filters"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             :rowsPerPageOptions="[5, 10, 25]"
-                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} materias"
+                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} tipoEvidencias"
                         >
                             <template #header>
                                 <div class="flex justify-content-between flex-column sm:flex-row">
@@ -193,20 +193,15 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
                             <template #empty> No hay registros. </template>
                             <template #loading> Cargando... por favor espera </template>
                             <template #paginatorstart>
-                                <Button icon="pi pi-refresh" @click="loadMaterias" />
+                                <Button icon="pi pi-refresh" @click="loadTipoEvidencias" />
                             </template>
-                            <Column field="materia_id" header="ID Materia" :sortable="true"></Column>
-                            <Column field="nombre_materia" header="Nombre de la Materia" :sortable="true"></Column>
+                            <Column field="tipo_evidencia_id" header="ID Tipo de Evidencia" :sortable="true"></Column>
+                            <Column field="nombre_tipo_ev" header="Nombre del Tipo de Evidencia" :sortable="true"></Column>
                             <Column field="descripcion" header="Descripción"></Column>
-                            <Column field="creditos" header="Créditos" :sortable="true">
-                                <template #body="{ data }">
-                                    <Badge :value="data.creditos" size="large" severity="secondary"></Badge>
-                                </template>
-                            </Column>
                             <Column headerStyle="min-width:10rem;" header="Acciones">
                                 <template #body="{ data }">
-                                    <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editMateria(data)" />
-                                    <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteMateria(data)" />
+                                    <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editTipoEvidencia(data)" />
+                                    <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteTipoEvidencia(data)" />
                                 </template>
                             </Column>
                         </DataTable>
@@ -215,43 +210,39 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
             </Card>
         </div>
     </div>
-    <Dialog v-model:visible="materiaModal" :header="isEditMode ? 'Datos de la Materia - Editar' : 'Datos de la Materia - Registrar'" :modal="true" class="p-fluid">
+    <Dialog v-model:visible="tipoEvidenciaModal" :header="isEditMode ? 'Datos del Tipo de Evidencia - Editar' : 'Datos del Tipo de Evidencia - Registrar'" :modal="true" class="p-fluid">
         <div class="field" v-if="isEditMode">
-            <label for="materia_id">ID Materia</label>
-            <InputText id="materia_id" :disabled="isEditMode" v-model.trim="materiaEdit.materia_id" />
+            <label for="tipo_evidencia_id">ID Tipo de Evidencia</label>
+            <InputText id="tipo_evidencia_id" :disabled="isEditMode" v-model.trim="tipoEvidenciaEdit.tipo_evidencia_id" />
         </div>
         <div class="field">
-            <label for="nombre_materia">Nombre de la Materia</label>
-            <InputText id="nombre_materia" v-model.trim="materiaEdit.nombre_materia" required="true" :invalid="submitted && !materiaEdit.nombre_materia" />
-            <small class="p-invalid" v-if="submitted && !materiaEdit.nombre_materia">El numero de nombre materia es requerida.</small>
+            <label for="nombre_tipo_ev">Nombre del Tipo de Evidencia</label>
+            <InputText id="nombre_tipo_ev" v-model.trim="tipoEvidenciaEdit.nombre_tipo_ev" required="true" :invalid="submitted && !tipoEvidenciaEdit.nombre_tipo_ev" />
+            <small class="p-invalid" v-if="submitted && !tipoEvidenciaEdit.nombre_tipo_ev">El nombre del tipo de evidencia es requerido. </small>
         </div>
         <div class="field">
             <label for="descripcion">Descripción</label>
-            <Textarea id="descripcion" v-model.trim="materiaEdit.descripcion" />
-        </div>
-        <div class="field">
-            <label for="creditos">Créditos</label>
-            <InputNumber id="creditos" v-model.trim="materiaEdit.creditos" mode="decimal" :minFractionDigits="0" :maxFractionDigits="0" showButtons :min="0" />
+            <Textarea id="descripcion" v-model.trim="tipoEvidenciaEdit.descripcion" />
         </div>
 
         <!-- </ScrollPanel> -->
         <template #footer>
             <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
-            <Button label="Guardar" icon="pi pi-check" text="" @click="saveMateria" />
+            <Button label="Guardar" icon="pi pi-check" text="" @click="saveTipoEvidencia" />
         </template>
     </Dialog>
 
-    <Dialog v-model:visible="deleteMateriaModal" :style="{ width: '450px' }" header="Confirm" :modal="true">
+    <Dialog v-model:visible="deleteTipoEvidenciaModal" :style="{ width: '450px' }" header="Confirm" :modal="true">
         <div class="flex align-items-center justify-content-center">
             <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-            <span v-if="materiaEdit"
-                >¿Estás seguro que quieres eliminar a ID Materia: <b>{{ materiaEdit.materia_id }}</b
+            <span v-if="tipoEvidenciaEdit"
+                >¿Estás seguro que quieres eliminar a ID Tipo de Evidencia: <b>{{ tipoEvidenciaEdit.tipo_evidencia_id }}</b
                 >?</span
             >
         </div>
         <template #footer>
-            <Button label="No" icon="pi pi-times" text @click="deleteMateriaModal = false" />
-            <Button label="Yes" icon="pi pi-check" text @click="deleteMateria" />
+            <Button label="No" icon="pi pi-times" text @click="deleteTipoEvidenciaModal = false" />
+            <Button label="Yes" icon="pi pi-check" text @click="deleteTipoEvidencia" />
         </template>
     </Dialog>
 </template>
