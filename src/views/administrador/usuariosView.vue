@@ -1,145 +1,95 @@
 <script setup>
-import { ref, inject, onMounted, watch } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
-import UserApi from '../../api/UserApi';
+import { ref, inject, onMounted } from 'vue';
+import catalogoApi from '../../api/catalogoApi.js';
 import Spinner from '../../components/Spinner.vue';
 
-const switchValue = ref(false);
 const toast = inject('toast');
-const users = ref([]);
-const selectedPeriodos = ref(null);
-const periodos = ref([]);
+
+const usuarios = ref(null);
 const filters = ref();
-const loading = ref(false);
+const loading = ref(null);
 const dt = ref();
+
 const isEditMode = ref(false);
 
-const alumno = ref({
-    esEgresado: false
-});
-const deleteAlumnoModal = ref(false);
-const alumnoModal = ref(false);
+const usuarioEdit = ref({});
+const deletUsuarioModal = ref(false);
+const usuarioModal = ref(false);
 const submitted = ref(false);
 
-watch(selectedPeriodos, async (newValue) => {
-    if (newValue && newValue.value.periodo_id) {
-        await loadUsers(newValue.value.periodo_id);
-    }
-});
-const loadUsers = async (periodoId) => {
+const statuses = ref([
+    { label: 'Disponible', value: 'DISPONIBLE' },
+    { label: 'Inactivo', value: 'INACTIVO' },
+    { label: 'Activo', value: 'ACTIVO' },
+    { label: 'Pendiente', value: 'PENDIENTE' }
+]);
+
+const loadUsuarios = async () => {
     loading.value = true;
     try {
-        const response = await UserApi.allUserAlumnos(periodoId);
-        users.value = response.data;
-        if (users.value.length === 0) {
-            toast.open({
-                message: 'No hay alumnos registrados en este periodo',
-                type: 'info'
-            });
-        }
+        const response = await catalogoApi.findUsuarios();
+        usuarios.value = response.data;
     } catch (error) {
-        toast.open({
-            message: error.response.data.msg,
-            type: 'error'
-        });
+        console.error('Error al obtener los usuarios:', error);
     } finally {
         loading.value = false;
     }
 };
 
-const loadPeriodos = async () => {
+const roles = ref([]);
+const loadRoles = async () => {
     loading.value = true;
     try {
-        const response = await UserApi.loadPeriodos();
-        periodos.value = response.data;
+        const response = await catalogoApi.findRoles();
+        roles.value = response.data;
     } catch (error) {
-        console.error('Error al obtener los periodos:', error);
+        console.error('Error al obtener los roles:', error);
     } finally {
         loading.value = false;
     }
 };
 
-onMounted(async () => {
-    await loadPeriodos();
-});
+onMounted(loadUsuarios);
 
-const handlePeriodChange = async (newValue) => {
-    selectedPeriodos.value = newValue;
-};
-
-const displayMatricula = (data) => {
-    if (data.alumno) {
-        return {
-            matricula: data.alumno.matricula,
-            calificacionFinal: data.alumno.calificacionFinal
-        };
-    } else if (data.egresado) {
-        return {
-            matricula: data.egresado.cod_egresado,
-            calificacionFinal: data.egresado.calificacionFinal
-        };
-    } else {
-        return {
-            matricula: 'N/A',
-            calificacionFinal: 'N/A'
-        };
+const openNew = () => {
+    usuarioEdit.value = {};
+    submitted.value = false;
+    usuarioModal.value = true;
+    isEditMode.value = false;
+    if (roles.value.length === 0) {
+        loadRoles();
     }
 };
-
-// const openNew = () => {
-//     alumno.value = {
-//         esEgresado: false,
-//         curp: '',
-//         alumno: {
-//             matricula: ''
-//         },
-//         egresado: {
-//             cod_egresado: ''
-//         },
-//         nombre: '',
-//         apellido_p: '',
-//         apellido_m: '',
-//         telefono_usuario: '',
-//         email_usuario: '',
-//         password: ''
-//     };
-//     submitted.value = false;
-//     alumnoModal.value = true;
-//     isEditMode.value = false;
-// };
 
 const hideDialog = () => {
-    alumnoModal.value = false;
+    usuarioModal.value = false;
     submitted.value = false;
 };
 
-const saveAlumno = async () => {
+const saveUsuario = async () => {
     submitted.value = true;
-    loading.value = true;
-    if (alumno.value.curp.trim() && alumno.value.nombre.trim() && alumno.value.apellido_p.trim() && alumno.value.apellido_m.trim() && alumno.value.telefono_usuario.trim() && alumno.value.email_usuario.trim() && alumno.value.password.trim()) {
+    if (usuarioEdit.value.nombre && usuarioEdit.value.apellido_p && usuarioEdit.value.apellido_m && usuarioEdit.value.email_usuario) {
         loading.value = true;
         try {
             let response;
-            alumno.value.esEgresado = switchValue.value;
             if (isEditMode.value) {
-                response = await UserApi.updateAlumno(alumno.value);
+                response = await catalogoApi.updateUsuario(usuarioEdit.value);
                 toast.open({
                     message: response.data.msg,
                     type: 'success'
                 });
             } else {
-                // response = await UserApi.createAlumno(alumno.value);
-
+                response = await catalogoApi.createUsuario(usuarioEdit.value);
                 toast.open({
                     message: response.data.msg,
                     type: 'success'
                 });
             }
-            alumnoModal.value = false; // Cierra el modal
-            alumno.value = {}; // Limpia el formulario
+            usuarioModal.value = false;
+            usuarioEdit.value = {};
             isEditMode.value = false;
-
-            await loadUsers(selectedPeriodos.value.value.periodo_id);
+            await loadUsuarios();
         } catch (error) {
             toast.open({
                 message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
@@ -152,46 +102,40 @@ const saveAlumno = async () => {
         loading.value = false;
         toast.open({
             message: 'Por favor, completa todos los campos requeridos.',
-            type: 'error'
+            type: 'warn'
         });
     }
 };
 
-const confirmDeleteProduct = (deleteAlumno) => {
-    const alumnoData = { ...deleteAlumno };
-    if (deleteAlumno.egresado) {
-        alumnoData.matricula = deleteAlumno.egresado.cod_egresado;
-        alumnoData.esEgresado = true;
-    } else {
-        alumnoData.matricula = deleteAlumno.alumno.matricula;
-        alumnoData.esEgresado = false;
-    }
-    alumno.value = alumnoData;
-    deleteAlumnoModal.value = true;
+const confirmDeleteUsuario = (editUsuario) => {
+    usuarioEdit.value = editUsuario;
+    deletUsuarioModal.value = true;
 };
 
-const editAlumno = (editAlumno) => {
-    alumno.value = { ...editAlumno };
-    if (editAlumno.egresado) {
-        switchValue.value = true;
-    } else {
-        switchValue.value = false;
+const editUsuario = (editUsuario) => {
+    if (roles.value.length === 0) {
+        loadRoles();
     }
-    alumnoModal.value = true;
+    usuarioEdit.value = {
+        ...editUsuario,
+        roles: editUsuario.roles.map((rol) => rol.rol_id)
+    };
+    usuarioModal.value = true;
     isEditMode.value = true;
 };
 
-const deleteAlumno = async () => {
+const deleteUsuario = async () => {
     loading.value = true;
+
     try {
-        const response = await UserApi.deleteAlumno(alumno.value.usuario_id);
+        const response = await catalogoApi.deleteUsuario(usuarioEdit.value.usuario_id);
         toast.open({
             message: response.data.msg,
             type: 'success'
         });
-        deleteAlumnoModal.value = false;
-        alumno.value = {};
-        await loadUsers(selectedPeriodos.value.value.periodo_id);
+        deletUsuarioModal.value = false;
+        usuarioEdit.value = {};
+        await loadUsuarios(); // Recarga la lista de usuarios
     } catch (error) {
         toast.open({
             message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido al eliminar',
@@ -213,53 +157,59 @@ const initFilters = () => {
 };
 
 initFilters();
-
 const clearFilter = () => {
     initFilters();
 };
-</script>
 
+const home = ref({
+    icon: 'pi pi-home',
+    route: '/'
+});
+
+const items = ref([{ label: 'Catalogo' }, { label: 'Usuarios', route: '/admin/usuarios' }]);
+</script>
 <template>
     <Spinner v-if="loading" />
     <div class="grid">
         <div class="col-12">
-            <card class="mb-4">
-                <template #content>
-                    <div class="flex align-items-center gap-2">
-                        <h2 class="m-0 mr-5 font-medium text-lg">Seleccione el periodo para ver los alumnos:</h2>
-                        <Dropdown id="period" v-model="selectedPeriodos" :options="periodos" optionLabel="descripcion" placeholder="Selecciona el periodo" @change="handlePeriodChange" :invalid="submitted && !selectedPeriodos" :filter="true">
-                            <template #option="{ option }">
-                                {{ option.descripcion }}
-                            </template>
-                        </Dropdown>
-                    </div>
+            <Card>
+                <template #title>
+                    <Breadcrumb :home="home" :model="items">
+                        <template #item="{ item }">
+                            <router-link v-if="item.route" :to="item.route">
+                                <span :class="[item.icon, 'text-color']" />
+                                <span class="text-primary font-semibold">{{ item.label }}</span>
+                            </router-link>
+                            <span v-else class="text-color">{{ item.label }}</span>
+                        </template>
+                    </Breadcrumb>
                 </template>
-            </card>
-            <div v-if="users && Object.keys(users).length !== 0">
-                <div class="card">
+                <template #content>
                     <Toolbar class="mb-4">
-                        <!-- <template v-slot:start>
+                        <template v-slot:start>
                             <div class="my-2">
-                                <Button label="Nuevo Alumno" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                                <Button label="Nueva Materia" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
                             </div>
-                        </template> -->
+                        </template>
 
                         <template v-slot:end>
                             <Button label="Exportar" icon="pi pi-upload" severity="help" @click="exportCSV($event)" />
                         </template>
                     </Toolbar>
 
-                    <div v-if="selectedPeriodos">
+                    <div class="card">
                         <DataTable
                             ref="dt"
-                            :value="users"
+                            :value="usuarios"
                             dataKey="id"
                             :paginator="true"
                             :rows="10"
                             :filters="filters"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             :rowsPerPageOptions="[5, 10, 25]"
-                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} alumnos"
+                            currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} usuarios"
+                            sortField="roles"
+                            :sortOrder="-1"
                         >
                             <template #header>
                                 <div class="flex justify-content-between flex-column sm:flex-row">
@@ -273,141 +223,115 @@ const clearFilter = () => {
                             <template #empty> No hay registros. </template>
                             <template #loading> Cargando... por favor espera </template>
                             <template #paginatorstart>
-                                <Button icon="pi pi-refresh" @click="loadUsers(selectedPeriodos.value.periodo_id)" />
+                                <Button icon="pi pi-refresh" @click="loadUsuarios" />
                             </template>
-                            <Column field="alumno.matricula" header="Matricula" :sortable="true">
-                                <template #body="{ data }">
-                                    {{ displayMatricula(data).matricula }}
-                                </template>
-                            </Column>
-                            <Column field="curp" header="Curp" :sortable="true"></Column>
                             <Column field="nombre" header="Nombre" :sortable="true"></Column>
                             <Column field="apellido_p" header="Apellido Paterno" :sortable="true"></Column>
                             <Column field="apellido_m" header="Apellido Materno" :sortable="true"></Column>
-                            <Column field="telefono_usuario" header="Telefono" :sortable="true"></Column>
-                            <Column field="email_usuario" header="Email" :sortable="true"></Column>
-                            <Column field="alumno.calificacionFinal" header="Calificacion" :sortable="true">
-                                <template #body="{ data }">
-                                    {{ displayMatricula(data).calificacionFinal }}
-                                </template>
-                            </Column>
+                            <Column field="curp" header="CURP" :sortable="true"></Column>
+                            <Column field="email_usuario" header="Descripción"></Column>
+                            <Column field="telefono_usuario" header="Teléfono" :sortable="true"></Column>
                             <Column field="status" header="Status" dataType="string" style="min-width: 8rem" :sortable="true">
                                 <template #body="{ data }">
-                                    <i
-                                        class="pi"
-                                        :class="{
-                                            'pi-check-circle text-green-500': data.status === 'ACTIVO',
-                                            'pi-times-circle text-red-500': data.status !== 'ACTIVO'
-                                        }"
-                                    ></i>
+                                    <Tag v-if="data.status == 'PENDIENTE'" class="mr-2" severity="info" value="Pendiente"></Tag>
+                                    <Tag v-if="data.status == 'ACTIVO'" class="mr-2" severity="success" value="Activo"></Tag>
+                                    <Tag v-if="data.status == 'DISPONIBLE'" class="mr-2" severity="success" value="Disponible"></Tag>
+                                    <Tag v-if="data.status == 'INACTIVO'" class="mr-2" severity="warning" value="Inactivo"></Tag>
+                                    <Tag v-if="data.status == 'FINALIZADO'" class="mr-2" severity="danger" value="Finalizado"></Tag>
+                                    <Tag v-if="data.status == ''" class="mr-2" severity="warning" value="Sin Status"></Tag>
                                 </template>
                                 <template #filter="{ filterModel, filterCallback }">
                                     <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
                                 </template>
                             </Column>
-
-                            <Column headerStyle="min-width:10rem;">
+                            <Column field="roles" header="Roles" :sortable="true">
                                 <template #body="{ data }">
-                                    <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editAlumno(data)" />
-                                    <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteProduct(data)" />
+                                    <div v-for="rol in data.roles" :key="rol.rol_id">
+                                        <Tag style="background: var(--surface-700); color: var(--surface-0)" class="m-1">
+                                            <span style="font-size: 10px">{{ rol.nombre_rol }}</span>
+                                        </Tag>
+                                    </div>
+                                </template>
+                            </Column>
+                            <Column headerStyle="min-width:10rem;" header="Acciones">
+                                <template #body="{ data }">
+                                    <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editUsuario(data)" />
+                                    <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteUsuario(data)" />
                                 </template>
                             </Column>
                         </DataTable>
                     </div>
-                    <Dialog v-model:visible="alumnoModal" :header="isEditMode ? 'Datos del Alumno - Editar' : 'Datos del Alumno - Registrar'" :modal="true" class="p-fluid">
-                        <div class="field" v-show="isEditMode">
-                            <label for="usuario_id">ID</label>
-                            <InputText id="usuario_id" :disabled="isEditMode" v-model.trim="alumno.usuario_id" />
-                        </div>
-                        <div class="formgrid grid">
-                            <div class="field col">
-                                <h6>¿Es egresado?</h6>
-                                <InputSwitch :disabled="isEditMode" v-model="switchValue" />
-                            </div>
-                            <div class="field col">
-                                <label for="curp">CURP</label>
-                                <InputText id="curp" v-model.trim="alumno.curp" required="true" :invalid="submitted && !alumno.curp" placeholder="XXXX999999XXXXXX99" />
-                                <small class="p-invalid" v-if="submitted && !alumno.curp">La CURP es requerida.</small>
-                            </div>
-                        </div>
-                        <div class="formgrid grid">
-                            <div class="field col" v-if="!switchValue">
-                                <label for="matricula">Matricula</label>
-                                <InputText id="matricula" v-model.trim="alumno.alumno.matricula" required="true" :invalid="submitted && !alumno.alumno.matricula" />
-                                <small class="p-invalid" v-if="submitted && !alumno.alumno.matricula">La matricula es requerida.</small>
-                            </div>
-                            <div class="field col" v-else-if="isEditMode">
-                                <label for="codigo_egresado"> Código egresado </label>
-                                <InputText id="codigo_egresado" v-model.trim="alumno.egresado.cod_egresado" required="true" :invalid="submitted && !alumno.egresado.cod_egresado" />
-                                <small class="p-invalid" v-if="submitted && !alumno.egresado.cod_egresado">El código de egresado es requerido.</small>
-                            </div>
-                        </div>
-                        <div class="formgrid grid">
-                            <div class="field col">
-                                <label for="nombre">Nombre Completo</label>
-                                <InputText id="nombre" v-model.trim="alumno.nombre" required="true" :invalid="submitted && !alumno.nombre" />
-                                <small class="p-invalid" v-if="submitted && !alumno.nombre">El nombre es requerido.</small>
-                            </div>
-                            <div class="field col">
-                                <label for="apellido_p">Apellido Paterno</label>
-                                <InputText id="apellido_p" v-model.trim="alumno.apellido_p" required="true" :invalid="submitted && !alumno.apellido_p" />
-                                <small class="p-invalid" v-if="submitted && !alumno.apellido_p">El apellido paterno es requerido.</small>
-                            </div>
-                        </div>
-                        <!-- <ScrollPanel :style="{ width: '95%', height: '450px' }"> -->
-                        <div class="formgrid grid">
-                            <div class="field col">
-                                <label for="apellido_m">Apellido Materno</label>
-                                <InputText id="apellido_m" v-model.trim="alumno.apellido_m" required="true" :invalid="submitted && !alumno.apellido_m" />
-                                <small class="p-invalid" v-if="submitted && !alumno.apellido_m">El apellido materno es requerido.</small>
-                            </div>
-                            <div class="field col">
-                                <label for="telefono_usuario">Telefono</label>
-                                <InputMask id="telefono_usuario" v-model.trim="alumno.telefono_usuario" required="true" :invalid="submitted && !alumno.telefono_usuario" mask="999-999-9999" placeholder="xxx-xxx-xxxx" />
-                                <small class="p-invalid" v-if="submitted && !alumno.telefono_usuario">El telefono es requerido.</small>
-                            </div>
-                        </div>
-                        <div class="formgrid grid">
-                            <div class="field col">
-                                <label for="email_usuario">Email</label>
-                                <InputText id="email_usuario" v-model.trim="alumno.email_usuario" required="true" :invalid="submitted && !alumno.email_usuario" />
-                                <small class="p-invalid" v-if="submitted && !alumno.email_usuario">El email es requerido.</small>
-                            </div>
-                            <div class="field col">
-                                <label for="password">Contraseña</label>
-                                <InputText type="password" id="password" v-model.trim="alumno.password" required="true" :invalid="submitted && !alumno.password" />
-                                <small class="p-invalid" v-if="submitted && !alumno.password">El password es requerido.</small>
-                            </div>
-                        </div>
-
-                        <!-- </ScrollPanel> -->
-                        <template #footer>
-                            <Button label="Cancel" icon="pi pi-times" text="" @click="hideDialog" />
-                            <Button label="Save" icon="pi pi-check" text="" @click="saveAlumno" />
-                        </template>
-                    </Dialog>
-
-                    <Dialog v-model:visible="deleteAlumnoModal" :style="{ width: '450px' }" header="Confirm" :modal="true">
-                        <div class="flex align-items-center justify-content-center">
-                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                            <span v-if="alumno"
-                                >¿Estás seguro que quieres eliminar a <b>{{ alumno.matricula }}</b
-                                >?</span
-                            >
-                        </div>
-                        <template #footer>
-                            <Button label="No" icon="pi pi-times" text @click="deleteAlumnoModal = false" />
-                            <Button label="Yes" icon="pi pi-check" text @click="deleteAlumno" />
-                        </template>
-                    </Dialog>
-                </div>
-            </div>
-            <div v-else>
-                <card>
-                    <template #title>Alumnos</template>
-                    <template #content> Selecciona un periodo para ver los alumnos. </template>
-                </card>
-            </div>
+                </template>
+            </Card>
         </div>
     </div>
+    <Dialog v-model:visible="usuarioModal" :header="isEditMode ? 'Datos del Usuario - Editar' : 'Datos del Usuario - Registrar'" :modal="true" class="p-fluid" :style="{ width: '450px' }">
+        <div class="field" v-if="isEditMode">
+            <label for="usuario_id">ID Usuario</label>
+            <InputText id="usuario_id" :disabled="isEditMode" v-model.trim="usuarioEdit.usuario_id" />
+        </div>
+        <div class="field">
+            <label for="nombre">Nombre del usuario</label>
+            <InputText id="nombre" v-model.trim="usuarioEdit.nombre" required="true" :invalid="submitted && !usuarioEdit.nombre" />
+            <small class="p-invalid" v-if="submitted && !usuarioEdit.nombre">El numero de nombre materia es requerida.</small>
+        </div>
+        <div class="field">
+            <label for="apellido_p">Apellido Paterno</label>
+            <InputText id="apellido_p" v-model.trim="usuarioEdit.apellido_p" required="true" :invalid="submitted && !usuarioEdit.apellido_p" />
+            <small class="p-invalid" v-if="submitted && !usuarioEdit.apellido_p">El numero de apellido paterno es requerida.</small>
+        </div>
+        <div class="field">
+            <label for="apellido_m">Apellido Materno</label>
+            <InputText id="apellido_m" v-model.trim="usuarioEdit.apellido_m" required="true" :invalid="submitted && !usuarioEdit.apellido_m" />
+            <small class="p-invalid" v-if="submitted && !usuarioEdit.apellido_m">El numero de apellido materno es requerida.</small>
+        </div>
+        <div class="field">
+            <label for="email_usuario">Email del usuario</label>
+            <InputText id="email_usuario" v-model.trim="usuarioEdit.email_usuario" required="true" :invalid="submitted && !usuarioEdit.email_usuario" />
+            <small class="p-invalid" v-if="submitted && !usuarioEdit.email_usuario">El numero de email usuario es requerida.</small>
+        </div>
+        <div class="field">
+            <label for="curp">CURP</label>
+            <InputText id="curp" v-model.trim="usuarioEdit.curp" required="true" :invalid="submitted && !usuarioEdit.curp" />
+            <small class="p-invalid" v-if="submitted && !usuarioEdit.curp">El numero de curp es requerida.</small>
+        </div>
+        <div class="field">
+            <label for="telefono_usuario">Teléfono del usuario</label>
+            <InputText id="telefono_usuario" v-model.trim="usuarioEdit.telefono_usuario" required="true" :invalid="submitted && !usuarioEdit.telefono_usuario" />
+            <small class="p-invalid" v-if="submitted && !usuarioEdit.telefono_usuario">El numero de telefono usuario es requerida.</small>
+        </div>
+        <div class="field">
+            <label for="password">Contraseña</label>
+            <InputText id="password" v-model.trim="usuarioEdit.password" required="true" :invalid="submitted && !usuarioEdit.password" />
+            <small class="p-invalid" v-if="submitted && !usuarioEdit.password">El numero de contraseña es requerida.</small>
+        </div>
+        <div class="field">
+            <label for="roles">Roles</label>
+            <MultiSelect v-model="usuarioEdit.roles" display="chip" :options="roles" optionLabel="nombre_rol" optionValue="rol_id" placeholder="Selecciona los roles" class="w-full md:min-w-full" />
+        </div>
+        <div class="field" v-if="isEditMode">
+            <label for="status">Status</label>
+            <Dropdown id="status" v-model="usuarioEdit.status" :options="statuses" optionLabel="label" optionValue="value" placeholder="Selecciona un status" class="w-full md:min-w-full" />
+        </div>
+
+        <!-- </ScrollPanel> -->
+        <template #footer>
+            <Button label="Cancelar" icon="pi pi-times" text="" @click="hideDialog" />
+            <Button label="Guardar" icon="pi pi-check" text="" @click="saveUsuario" />
+        </template>
+    </Dialog>
+
+    <Dialog v-model:visible="deletUsuarioModal" :style="{ width: '450px' }" header="Confirm" :modal="true">
+        <div class="flex align-items-center justify-content-center">
+            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+            <span v-if="usuarioEdit"
+                >¿Estás seguro que quieres eliminar a ID Usuario: <b>{{ usuarioEdit.usuario_id }}</b
+                >?</span
+            >
+        </div>
+        <template #footer>
+            <Button label="No" icon="pi pi-times" text @click="deletUsuarioModal = false" />
+            <Button label="Yes" icon="pi pi-check" text @click="deleteUsuario" />
+        </template>
+    </Dialog>
 </template>

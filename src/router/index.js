@@ -102,13 +102,13 @@ const router = createRouter({
                     path: '/admin/usuarios',
                     name: 'usuariosView',
                     component: () => import('@/views/administrador/usuariosView.vue'),
-                    meta: { roles: ['Administrador'] }
+                    meta: { roles: ['SUPERADMIN'] }
                 },
                 {
                     path: '/admin/roles',
                     name: 'rolesView',
                     component: () => import('@/views/administrador/rolesView.vue'),
-                    meta: { roles: ['Administrador'] }
+                    meta: { roles: ['SUPERADMIN'] }
                 },
                 {
                     path: '/admin/tipoEvidencias',
@@ -126,7 +126,7 @@ const router = createRouter({
                     path: '/admin/periodos',
                     name: 'periodosView',
                     component: () => import('@/views/administrador/periodosView.vue'),
-                    meta: { roles: ['Administrador'] }
+                    meta: { roles: ['SUPERADMIN'] }
                 },
                 // Rutas de alumno
                 {
