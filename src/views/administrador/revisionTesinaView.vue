@@ -52,7 +52,7 @@ onMounted(async () => {
 });
 
 const aceptarTesina = async () => {
-    isAccepting.value = true;
+    loading.value = true;
     try {
         await TesinaApi.acceptTesinasByName(tesinaSeleccionada.value, docenteSeleccionado.value.id);
         toast.open({
@@ -66,7 +66,7 @@ const aceptarTesina = async () => {
             type: 'error'
         });
     } finally {
-        isAccepting.value = false;
+        loading.value = false;
         mostrarModalAsignacion.value = false;
         tesinaSeleccionada.value = null;
         docenteSeleccionado.value = null;
@@ -74,7 +74,7 @@ const aceptarTesina = async () => {
 };
 
 const aceptarTesinaUrl = async (tesinaId) => {
-    isAccepting.value = true;
+    loading.value = true;
     try {
         const tesina = tesinas.value.find(t => t.tesina_id === tesinaId);
         const relacionadas = tesinas.value.filter(t => t.nombre_tesina === tesina.nombre_tesina && t.tesina_id !== tesinaId);
@@ -107,7 +107,7 @@ const aceptarTesinaUrl = async (tesinaId) => {
             type: 'error'
         });
     } finally {
-        isAccepting.value = false;
+        loading.value = false;
     }
 };
 
@@ -140,7 +140,7 @@ const cancelarRechazo = () => {
 };
 
 const rechazarRegistroTesina = async () => {
-    isAccepting.value = true;
+    loading.value = true;
     try {
         await TesinaApi.rejectTesinasByName(tesinaSeleccionada.value, motivoRechazo.value);
         toast.open({
@@ -154,13 +154,13 @@ const rechazarRegistroTesina = async () => {
             type: 'error'
         });
     } finally {
-        isAccepting.value = false;
+        loading.value = false;
         cancelarRechazo();
     }
 };
 
 const rechazarDocumentoTesina = async () => {
-    isAccepting.value = true;
+    loading.value = true;
     try {
         const response = await TesinaApi.rejectTesinaDocumento(tesinaSeleccionada.value, motivoRechazo.value);
         toast.open({
@@ -174,7 +174,7 @@ const rechazarDocumentoTesina = async () => {
             type: 'error'
         });
     } finally {
-        isAccepting.value = false;
+        loading.value = false;
         cancelarRechazo2();
     }
 };
