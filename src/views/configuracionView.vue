@@ -133,7 +133,7 @@ const convertirYSubirArchivo = async (event) => {
                     </form>
                 </div>
             </Fieldset>
-            <Fieldset v-if="rolAdmin" legend="Configurar templates" :toggleable="true" :collapsed="true">
+            <!-- <Fieldset v-if="rolAdmin" legend="Configurar templates" :toggleable="true" :collapsed="true">
                 <div class="card p-fluid">
                     <div class="field">
                         <label for="name1">Selecciona el membrete para la documentación</label>
@@ -144,7 +144,7 @@ const convertirYSubirArchivo = async (event) => {
                         </FileUpload>
                     </div>
                 </div>
-            </Fieldset>
+            </Fieldset> -->
         </template>
     </card>
 </template>

@@ -143,6 +143,11 @@ const model = ref([
                 icon: 'pi pi-graduation-cap',
                 to: '/admin/carreras'
             },
+            {
+                label: 'Cursos',
+                icon: 'pi pi-book',
+                to: '/admin/createSeminarios'
+            },
 
             {
                 label: 'Materias',
@@ -166,7 +171,7 @@ const model = ref([
         label: 'Otros',
         items: [
             {
-                label: 'Configuración',
+                label: 'Reportar Errores',
                 icon: 'pi pi-cog',
                 to: '/configuracion'
             }
