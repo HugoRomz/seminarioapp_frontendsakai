@@ -27,7 +27,6 @@ export default {
     },
     aceptarProyecto(id) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        console.log(token);
         return api.put(`/docentes/aceptarProyecto/${id}`, id, {
             headers: {
                 Authorization: `Bearer ${token}`

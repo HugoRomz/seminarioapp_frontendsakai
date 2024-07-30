@@ -313,7 +313,6 @@ const loadAsesorados = async () => {
         const response = await AuthAPI.auth();
         const response2 = await DocenteApi.getAsesorados(response.data.usuario_id);
         asesorados.value = response2.data;
-        console.log('Asesorados: ', asesorados.value);
     } catch (error) {
         console.error('Error loading asesorados: ', error);
     } finally {
@@ -348,6 +347,7 @@ const formatUrl = (url) => {
 };
 
 const aceptarProyecto = async (proyectoId) => {
+    loading.value = true;
     try {
         const response = await DocenteApi.aceptarProyecto(proyectoId);
         toast.open({
@@ -357,6 +357,8 @@ const aceptarProyecto = async (proyectoId) => {
         await loadAsesorados();
     } catch (error) {
         console.error('Error aceptando proyecto: ', error);
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -368,6 +370,7 @@ const rechazarProyecto = (proyecto_id) => {
 };
 
 const agregarComentario = async (proyectoRechazo) => {
+    loading.value = true;
     try {
         const response = await DocenteApi.rechazarProyecto(proyectoRechazo);
         toast.open({
@@ -378,6 +381,8 @@ const agregarComentario = async (proyectoRechazo) => {
         await loadAsesorados();
     } catch (error) {
         console.error('Error rechazando proyecto: ', error);
+    } finally {
+        loading.value = false;
     }
 };
 </script>
