@@ -78,6 +78,11 @@ const model = ref([
                 label: 'Evidencias',
                 icon: 'pi pi-file',
                 to: '/admin/evidenciasDocentes'
+            },
+            {
+                label: 'Revisión de Tesinas',
+                icon: 'pi pi-file',
+                to: '/admin/revisionTesinas'
             }
         ],
         roles: ['Administrador']

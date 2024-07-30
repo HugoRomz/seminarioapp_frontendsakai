@@ -80,5 +80,46 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    getAllTesinas() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/tesina/tesinas', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    acceptTesinasByName(tesinaId, docenteId) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/tesina/aceptar/${tesinaId}`, { docenteId }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    acceptTesinaUrl(tesinaId) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/tesina/aceptarurl/${tesinaId}`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    rejectTesinasByName(tesinaId, motivo) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/tesina/rechazar/registro/${tesinaId}/${motivo}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    rejectTesinaDocumento(tesinaId, motivo) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/tesina/rechazar/documento/${tesinaId}/${motivo}`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
+

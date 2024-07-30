@@ -63,6 +63,12 @@ const router = createRouter({
                     meta: { roles: ['Administrador'] }
                 },
                 {
+                    path: '/admin/revisionTesinas',
+                    name: 'rTesinas',
+                    component: () => import('@/views/administrador/revisionTesinaView.vue'),
+                    meta: { roles: ['Administrador'] }
+                },
+                {
                     path: '/admin/seminarios',
                     name: 'seminario',
                     component: () => import('@/views/administrador/seminarioView.vue'),
