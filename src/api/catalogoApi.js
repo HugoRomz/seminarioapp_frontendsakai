@@ -170,6 +170,40 @@ export default {
         });
     },
 
+    // TIPO EVIDENCIAS
+    findTipoEvidencias() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/tipoEvidencias', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createTipoEvidencia(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/tipoEvidencias', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateTipoEvidencia(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/tipoEvidencias/${data.tipo_evidencia_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deleteTipoEvidencia(tipo_evidencia_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/catalogo/tipoEvidencias/${tipo_evidencia_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
     // Cursos
     findCursos() {
         const token = localStorage.getItem('AUTH_TOKEN');
@@ -200,6 +234,40 @@ export default {
     asignarDocumentos(data) {
         const token = localStorage.getItem('AUTH_TOKEN');
         return api.post('/catalogo/asginarDocumentos', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    // Usuarios
+    findUsuarios() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/catalogo/usuarios', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    createUsuario(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post('/catalogo/usuarios', data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    updateUsuario(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/usuarios/${data.usuario_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    deleteUsuario(usuario_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.delete(`/catalogo/usuarios/${usuario_id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

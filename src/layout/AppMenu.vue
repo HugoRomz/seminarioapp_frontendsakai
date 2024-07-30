@@ -21,6 +21,27 @@ const model = ref([
         roles: ['Administrador', 'Docente', 'Alumno', 'Asistente']
     },
     {
+        label: 'SuperAdmin',
+        items: [
+            {
+                label: 'Roles',
+                icon: 'pi pi-sliders-h',
+                to: '/admin/roles'
+            },
+            {
+                label: 'Usuarios',
+                icon: 'pi pi-users',
+                to: '/admin/usuarios'
+            },
+            {
+                label: 'Periodos',
+                icon: 'pi pi-calendar',
+                to: '/admin/periodos'
+            }
+        ],
+        roles: ['SUPERADMIN']
+    },
+    {
         label: 'Administrador',
         items: [
             {
@@ -113,29 +134,16 @@ const model = ref([
         ],
         roles: ['Docente']
     },
+
     {
         label: 'Catalogos',
         items: [
-            {
-                label: 'Roles',
-                icon: 'pi pi-sliders-h',
-                to: '/admin/roles'
-            },
-            {
-                label: 'Usuarios',
-                icon: 'pi pi-users',
-                to: '/admin/usuarios'
-            },
             {
                 label: 'Carreras',
                 icon: 'pi pi-graduation-cap',
                 to: '/admin/carreras'
             },
-            {
-                label: 'Periodos',
-                icon: 'pi pi-calendar',
-                to: '/admin/periodos'
-            },
+
             {
                 label: 'Materias',
                 icon: 'pi pi-bookmark',

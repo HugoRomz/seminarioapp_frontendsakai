@@ -4,8 +4,9 @@ import TesinaApi from '../../api/TesinaApi';
 import AuthAPI from '../../api/AuthAPI';
 import Spinner from '../../components/Spinner.vue';
 
-const isAccepting = ref(false);
 const toast = inject('toast');
+
+const numeroCompañeros = 1;
 
 const users = ref(null);
 const loading = ref(true);
@@ -51,6 +52,7 @@ const getInvitationsForUser = async () => {
     try {
         const responseInvitado = await TesinaApi.getInvitationsForUser(RegTesina.value.userId);
         invitacionesRecibidas.value = responseInvitado.data;
+        console.log(invitacionesRecibidas.value);
     } catch (error) {
         console.error('Error al obtener las invitaciones recibidas:', error);
     }
@@ -60,6 +62,7 @@ const getUserTesinas = async () => {
     try {
         const response = await TesinaApi.getTesinasByUser(RegTesina.value.userId);
         tesinas.value = response.data;
+        console.log(tesinas.value);
     } catch (error) {
         console.error('Error al obtener las tesinas del usuario:', error);
     }
@@ -72,25 +75,21 @@ const determineDisplayState = () => {
         showTable.value = false;
         showModal.value = false;
         showAllAcceptedModal.value = false;
-    }
-    else if (invitacionesRecibidas.value.some(inv => inv.status === 'ACEPTADO')) {
+    } else if (invitacionesRecibidas.value.some((inv) => inv.status === 'ACEPTADO')) {
         showAllAcceptedModal.value = true;
         showForm.value = false;
         showTable.value = false;
         showModal.value = false;
-    }
-    else if (invitacionesRecibidas.value.some(inv => inv.status === 'PENDIENTE')) {
+    } else if (invitacionesRecibidas.value.some((inv) => inv.status === 'PENDIENTE')) {
         showModal.value = true;
         showForm.value = false;
         showTable.value = false;
-    }
-    else if (invitaciones.value.length > 0) {
+    } else if (invitaciones.value.length > 0) {
         showTable.value = true;
         showForm.value = false;
         showModal.value = false;
         showAllAcceptedModal.value = false;
-    }
-    else {
+    } else {
         showForm.value = true;
         showTable.value = true;
         showModal.value = false;
@@ -206,88 +205,234 @@ const rechazarInvitacion = async (invitacionId) => {
         loading.value = false;
     }
 };
+
+const formatFecha = (fecha) => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString();
+};
 </script>
 
 <template>
     <Spinner v-if="loading" />
-    <div class="grid" v-else>
+    <div class="grid">
         <div v-if="showForm" class="col-12 lg:col-4">
             <div class="card">
                 <h3>Registro de Tesina</h3>
                 <div class="p-fluid">
                     <div class="field">
                         <label for="nombre_tesina">Nombre de la Tesina</label>
-                        <InputText id="nombre_tesina" v-model="RegTesina.nombre_tesina" />
+                        <InputText id="nombre_tesina" v-model="RegTesina.nombre_tesina" required />
                     </div>
                     <div class="field">
                         <label for="area_tema">Área de la Tesina</label>
-                        <InputText id="area_tema" v-model="RegTesina.area_tema" />
+                        <InputText id="area_tema" v-model="RegTesina.area_tema" required />
                     </div>
                     <div class="field">
                         <label for="resenia_tema">Reseña de la Tesina</label>
-                        <Textarea id="resenia_tema" v-model="RegTesina.resenia_tema" rows="3" />
+                        <Textarea id="resenia_tema" v-model="RegTesina.resenia_tema" rows="3" required />
                     </div>
                     <div class="field">
                         <label for="invite">¿Desea invitar a algún compañero?</label>
-                        <div class="p-formgroup-inline">
-                            <div class="field-radiobutton">
+                        <div class="flex flex-wrap gap-3">
+                            <div class="flex align-items-center">
                                 <RadioButton inputId="inviteYes" name="invite" value="yes" v-model="invite" />
-                                <label for="inviteYes">Sí</label>
+                                <label for="inviteYes" class="ml-2">Sí</label>
                             </div>
-                            <div class="field-radiobutton">
+                            <div class="flex align-items-center">
                                 <RadioButton inputId="inviteNo" name="invite" value="no" v-model="invite" />
-                                <label for="inviteNo">No</label>
+                                <label for="inviteNo" class="ml-2">No</label>
                             </div>
                         </div>
                     </div>
                     <div class="field" v-if="invite === 'yes'">
-                        <label for="invitado_email">Correos de los Compañeros</label>
-                        <Chips id="invitado_email" v-model="RegTesina.invitado_email" separator="," />
+                        <label for="invitado_email">Correo de tu compañero</label>
+                        <Chips id="invitado_email" v-model="RegTesina.invitado_email" separator="," placeholder="correo@unach.mx" :max="numeroCompañeros" />
+                        <InlineMessage severity="info" class="mt-2"> Presiona Enter para agregar un correo. </InlineMessage>
                     </div>
                     <Button label="Enviar Proyecto" class="p-mt-2" @click="submitProject" />
                 </div>
             </div>
         </div>
-        <div v-if="showTable" class="col">
-            <div class="card">
-                <h3>Invitaciones Realizadas</h3>
-                <div class="grid">
-                    <div v-for="invitacion in invitaciones" :key="invitacion.id" class="col-12 lg:col-4">
-                        <div class="card">
-                            <h4>{{ invitacion.nombre_tesina }}</h4>
-                            <p><strong>Área:</strong> {{ invitacion.area_tema }}</p>
+        <!-- <p><strong>Área:</strong> {{ invitacion.area_tema }}</p>
                             <p><strong>Reseña:</strong> {{ invitacion.resenia_tema }}</p>
                             <p><strong>Invitado:</strong> {{ invitacion.usuario.nombre }} ({{ invitacion.usuario.email_usuario }})</p>
-                            <p><strong>Estado:</strong> {{ invitacion.status }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div>
-            <Card v-if="showModal" header="Invitación Recibida" class="p-mb-4">
+                            <p><strong>Estado:</strong> {{ invitacion.status }}</p> -->
+        <div v-if="showTable" class="col">
+            <Card>
+                <template #title> Invitaciones Realizadas</template>
                 <template #content>
-                    <p>Has recibido una invitación. ¿Deseas aceptarla o rechazarla?</p>
-                    <div v-for="invitacion in invitacionesRecibidas" :key="invitacion.invitacion_id">
-                        <p>{{ invitacion.nombre_tesina }}</p>
-                        <Button label="Aceptar" class="p-mr-2" @click="aceptarInvitacion(invitacion.invitacion_id)" />
-                        <Button label="Rechazar" class="p-button-danger" @click="rechazarInvitacion(invitacion.invitacion_id)" />
+                    <div class="grid">
+                        <div v-for="invitacion in invitaciones" :key="invitacion.id" class="col-12 lg:col-4">
+                            <Card>
+                                <template #content>
+                                    <div class="flex flex-column">
+                                        <div class="flex flex-row align-items-center">
+                                            <Avatar icon="pi pi-user" class="mr-2" size="large" shape="circle" />
+                                            <div class="flex-column">
+                                                <div class="font-bold text-lg">{{ invitacion.usuario.nombre }}</div>
+                                                <div class="text-base">Invitado</div>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-2xl font-semibold">{{ invitacion.nombre_tesina }}</h3>
+                                        <div class="text-500 font-semibold">Área: {{ invitacion.area_tema }}</div>
+                                        <p class="my-3">
+                                            {{ invitacion.resenia_tema }}
+                                        </p>
+                                        <div className="flex items-center gap-2 text-sm font-medium">
+                                            <Tag :severity="invitacion.status === 'PENDIENTE' ? 'warning' : 'contrast'">
+                                                <div class="flex align-items-center gap-2 px-1">
+                                                    <span class="text-base">{{ invitacion.status }}</span>
+                                                </div>
+                                            </Tag>
+                                        </div>
+                                    </div>
+                                </template>
+                            </Card>
+                        </div>
                     </div>
                 </template>
             </Card>
+        </div>
+        <div>
+            <Card v-if="showModal">
+                <template #title> Invitaciones Recibidas</template>
+                <template #content>
+                    <div class="grid">
+                        <div v-for="invitacion in invitacionesRecibidas" :key="invitacion.invitacion_id" class="col-12 lg:col-4">
+                            <Card>
+                                <template #content>
+                                    <div class="flex flex-column">
+                                        <div class="flex flex-row align-items-center">
+                                            <Avatar icon="pi pi-user" class="mr-2" size="large" shape="circle" />
+                                            <div class="flex-column">
+                                                <div class="font-bold text-lg">{{ invitacion.anfitrion.nombre }}</div>
+                                                <div class="text-base">Anfitrión</div>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-2xl font-semibold">{{ invitacion.nombre_tesina }}</h3>
+                                        <div class="text-500 font-semibold">Área: {{ invitacion.area_tema }}</div>
+                                        <p class="my-3">
+                                            {{ invitacion.resenia_tema }}
+                                        </p>
+                                        <div className="flex items-center gap-2 text-sm font-medium">
+                                            <Button label="Aceptar" class="p-mr-2" @click="aceptarInvitacion(invitacion.invitacion_id)" />
+                                            <Button label="Rechazar" class="p-button-danger" @click="rechazarInvitacion(invitacion.invitacion_id)" />
+                                        </div>
+                                    </div>
+                                </template>
+                            </Card>
+                        </div>
+                    </div>
+                </template>
+            </Card>
+
             <Card v-if="showAllAcceptedModal" header="Tesinas Aceptadas" class="p-mb-4">
                 <template #content>
                     <p>Has aceptado la invitación. Espera a que la tesina se registre</p>
                 </template>
             </Card>
-            <Card v-if="showRegisteredTesinasMessage" header="Tesinas Registradas" class="p-mb-4">
-                <template #content>
-                    <p>Tienes las siguientes tesinas registradas:</p>
-                    <div v-for="tesina in tesinas" :key="tesina.tesina_id">
-                        <p>{{ tesina.nombre_tesina }}</p>
-                    </div>
-                </template>
-            </Card>
         </div>
+    </div>
+    <div id="showTesinasRegistradas">
+        <Message severity="info" v-if="showRegisteredTesinasMessage"> Ya estas registrado en una tesina </Message>
+        <Card v-if="showRegisteredTesinasMessage">
+            <template #content>
+                <div class="grid" v-for="tesina in tesinas" :key="tesina.id">
+                    <div class="col-12">
+                        <div class="grid">
+                            <div class="col-12 md:col-4">
+                                <h1 class="font-bold text-900 text-3xl my-0">Detalles</h1>
+                                <p class="text-500">Revisa y envía tu documento de tesis.</p>
+
+                                <div class="flex flex-column gap-3">
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Nombre de la Tesina</div>
+                                        <div class="text-900 text-lg">{{ tesina.nombre_tesina }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Área de la Tesina</div>
+                                        <div class="text-900 text-lg">{{ tesina.area_tesina }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Reseña de la Tesina</div>
+                                        <div class="text-900">{{ tesina.resenia_tesina }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-xl">Fecha de Registro</div>
+                                        <div class="text-900 text-lg">{{ formatFecha(tesina.fecha_registro) }}</div>
+                                    </div>
+                                    <div class="flex flex-column">
+                                        <div class="text-900 font-bold text-lg">Status</div>
+                                        <div class="text-900 text-lg">
+                                            <Tag v-if="tesina.status == 'PENDIENTE'" class="mr-2" severity="warning" value="Pendiente"></Tag>
+                                            <Tag v-if="tesina.status == 'ACEPTADO'" class="mr-2" severity="success" value="Aceptado"></Tag>
+                                            <Tag v-if="tesina.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-4 flex justify-center">
+                                <Card class="flex justify-content-center">
+                                    <template #title>Portada de la tesina</template>
+                                    <template #content>
+                                        <Image src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg" alt="Image" width="400" preview />
+                                    </template>
+                                </Card>
+                            </div>
+                            <div class="col-12 md:col-4 flex justify-center">
+                                <Card class="flex justify-content-center">
+                                    <template #title>Captura de pantalla del proyecto</template>
+                                    <template #content>
+                                        <Image src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg" alt="Image" width="400" preview />
+                                    </template>
+                                </Card>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card">
+                            <FileUpload
+                                name="documento"
+                                @uploader="console.log($event)"
+                                :accept="'application/pdf'"
+                                :multiple="false"
+                                :maxFileSize="1000000"
+                                :fileLimit="1"
+                                :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
+                                customUpload
+                            >
+                                <template #empty>
+                                    <div class="flex align-items-center justify-content-center flex-column">
+                                        <i class="pi pi-cloud-upload border-2 border-circle p-5 text-8xl text-400 border-400" />
+                                        <p class="mt-4 mb-0 text-center">'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.'</p>
+                                    </div>
+                                </template>
+                            </FileUpload>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card">
+                            <FileUpload
+                                name="documento"
+                                @uploader="console.log($event)"
+                                :accept="'application/pdf'"
+                                :multiple="false"
+                                :maxFileSize="1000000"
+                                :fileLimit="1"
+                                :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
+                                customUpload
+                            >
+                                <template #empty>
+                                    <div class="flex align-items-center justify-content-center flex-column">
+                                        <i class="pi pi-cloud-upload border-2 border-circle p-5 text-8xl text-400 border-400" />
+                                        <p class="mt-4 mb-0 text-center">'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.'</p>
+                                    </div>
+                                </template>
+                            </FileUpload>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </Card>
     </div>
 </template>
