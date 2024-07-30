@@ -24,5 +24,22 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    aceptarProyecto(id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        console.log(token);
+        return api.put(`/docentes/aceptarProyecto/${id}`, id, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    rechazarProyecto(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/docentes/rechazarProyecto/${data.proyecto_id}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };

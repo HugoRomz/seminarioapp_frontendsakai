@@ -32,6 +32,12 @@ let tokenClient;
 let gapiInited = false;
 let gisInited = false;
 
+const showRechazo = ref(false);
+const proyectoRechazo = ref({
+    proyecto_id: '',
+    comentario: ''
+});
+
 const selectedEvent = ref();
 const showInfo = ref(false);
 const isGoogleAuthenticated = ref(false);
@@ -307,6 +313,7 @@ const loadAsesorados = async () => {
         const response = await AuthAPI.auth();
         const response2 = await DocenteApi.getAsesorados(response.data.usuario_id);
         asesorados.value = response2.data;
+        console.log('Asesorados: ', asesorados.value);
     } catch (error) {
         console.error('Error loading asesorados: ', error);
     } finally {
@@ -315,7 +322,6 @@ const loadAsesorados = async () => {
 };
 
 onMounted(async () => {
-    // Load gapi and gis scripts using async/await
     try {
         await loadScript('https://apis.google.com/js/api.js', gapiLoaded);
         await loadScript('https://accounts.google.com/gsi/client', gisLoaded);
@@ -333,6 +339,47 @@ watch(
         }
     }
 );
+
+const formatUrl = (url) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return 'http://' + url;
+    }
+    return url;
+};
+
+const aceptarProyecto = async (proyectoId) => {
+    try {
+        const response = await DocenteApi.aceptarProyecto(proyectoId);
+        toast.open({
+            message: 'Proyecto aceptado correctamente',
+            type: 'success'
+        });
+        await loadAsesorados();
+    } catch (error) {
+        console.error('Error aceptando proyecto: ', error);
+    }
+};
+
+// rechazar proyecto con motivo
+const rechazarProyecto = (proyecto_id) => {
+    showRechazo.value = true;
+    proyectoRechazo.value.proyecto_id = proyecto_id;
+    proyectoRechazo.value.comentario = '';
+};
+
+const agregarComentario = async (proyectoRechazo) => {
+    try {
+        const response = await DocenteApi.rechazarProyecto(proyectoRechazo);
+        toast.open({
+            message: 'Proyecto rechazado correctamente',
+            type: 'success'
+        });
+        showRechazo.value = false;
+        await loadAsesorados();
+    } catch (error) {
+        console.error('Error rechazando proyecto: ', error);
+    }
+};
 </script>
 
 <template>
@@ -418,33 +465,76 @@ watch(
             </TabPanel>
             <TabPanel header="Equipos">
                 <div class="w-full mx-auto">
-                    <h2 class="text-2xl font-bold mb-5">Equipos Asesorados</h2>
-                    <div class="grid p-2">
-                        <div v-for="asesoria in asesorados" :key="asesoria.id" class="col-12">
-                            <div class="card grid p-2 shadow-2">
-                                <div class="col-12 md:col-10">
-                                    <h3 class="text-2xl font-bold text-black-alpha-90 mb-2">Equipo {{}}</h3>
-                                    <div class="text-gray-700 font-bold text-lg mb-2">
-                                        <Avatar icon="pi pi-code" shape="circle" />
-                                        <span class="ml-2">Proyecto</span>
-                                        <span class="mx-2">•</span>
-                                        <span class="text-gray-500 font-medium">{{ asesoria.Proyectos[0]?.nombre_proyecto }}</span>
-                                    </div>
-                                    <div class="text-gray-700 font-bold text-lg mb-2">
-                                        <Avatar icon="pi pi-book" shape="circle" />
-                                        <span class="ml-2">Tesina</span>
-                                        <span class="mx-2">•</span>
-                                        <span class="text-gray-500 font-medium"> {{ asesoria.nombre_tesina }}</span>
-                                    </div>
-                                    <div class="text-gray-700 font-bold text-lg mb-2">
-                                        <Avatar icon="pi pi-users" shape="circle" />
-                                        <span class="ml-2">Integrantes</span>
-                                        <span class="text-gray-500 font-medium" v-for="alumno in asesoria.Alumnos" :key="alumno.id"> • {{ alumno.nombre }} {{ alumno.apellido_p }}</span>
-                                    </div>
+                    <h2 class="text-2xl font-bold mb-5">Alumnos Asesorados</h2>
+                    <div class="grid">
+                        <div v-for="asesoria in asesorados" :key="asesoria.id" class="col-12 md:col-6">
+                            <div class="card shadow-2 mx-1">
+                                <h3 class="text-2xl font-bold text-black-alpha-90 mb-2">{{ asesoria.Alumno.nombre }} {{ asesoria.Alumno.apellido_p }} {{ asesoria.Alumno.apellido_m }}</h3>
+                                <div class="text-gray-700 font-bold text-lg mb-2">
+                                    <Avatar icon="pi pi-book" shape="circle" />
+                                    <span class="ml-2">Tesina</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-gray-500 font-medium">
+                                        <template v-if="!asesoria.length">
+                                            {{ asesoria.nombre_tesina }}
+                                        </template>
+                                        <template v-else> Pendiente </template>
+                                    </span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-gray-500 font-medium"
+                                        ><template v-if="asesoria.proyectos.length">
+                                            <a :href="formatUrl(asesoria.proyectos[0].url_documento)" target="_blank">{{ asesoria.proyectos[0].url_documento }}</a>
+                                        </template>
+                                        <template v-else> Pendiente </template></span
+                                    >
                                 </div>
-                                <div class="col-12 flex flex-column align-items-center justify-content-center md:col-2 md:gap-2">
-                                    <Button @click="openlink(asesoria.url_documento)" class="w-full mt-2" label="Ver Enlace del Proyecto" severity="contrast" outlined :disabled="!asesoria.Proyectos[0]?.url_documento" />
-                                    <Button @click="console.log(asesoria.url_documento)" class="w-full mt-2" label="Descargar Tesina" severity="contrast" outlined :disabled="!asesoria.url_documento" />
+                                <div class="text-gray-700 font-bold text-lg mb-2">
+                                    <Avatar icon="pi pi-users" shape="circle" />
+                                    <span class="ml-2">Descripción</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-gray-500 font-medium"> {{ asesoria.resenia_tesina }}</span>
+                                </div>
+                                <div class="text-gray-700 font-bold text-lg mb-2">
+                                    <Avatar icon="pi pi-users" shape="circle" />
+                                    <span class="ml-2">Status</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-gray-500 font-medium">
+                                        <Tag v-if="asesoria.status == 'PENDIENTE'" class="mr-2" severity="warning" value="Pendiente"></Tag>
+                                        <Tag v-if="asesoria.status == 'ACEPTADO'" class="mr-2" severity="success" value="Aceptado"></Tag>
+                                        <Tag v-if="asesoria.status == 'REGISTRADO'" class="mr-2" severity="success" value="Registrado"></Tag>
+                                        <Tag v-if="asesoria.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag
+                                    ></span>
+                                </div>
+                                <div class="text-gray-700 font-bold text-lg mb-2">
+                                    <Avatar icon="pi pi-code" shape="circle" />
+                                    <span class="ml-2">Proyecto</span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-gray-500 font-medium">
+                                        <template v-if="asesoria.proyectos.length">
+                                            {{ asesoria.proyectos[0].nombre_proyecto || 'Sin nombre' }}
+                                        </template>
+                                        <template v-else> Pendiente </template>
+                                    </span>
+                                    <span class="mx-2">•</span>
+                                    <span class="text-gray-500 font-medium">
+                                        <template v-if="asesoria.proyectos.length">
+                                            <a :href="formatUrl(asesoria.proyectos[0].url_documento)" target="_blank">{{ asesoria.proyectos[0].url_documento }}</a>
+                                        </template>
+                                        <template v-else> Pendiente </template>
+                                    </span>
+                                    <span class="mx-2">•</span>
+                                    <span class="mx-2">
+                                        <template v-if="asesoria.proyectos.length && asesoria.proyectos[0].status === 'PENDIENTE'">
+                                            <Button label="Aceptar" @click="aceptarProyecto(asesoria.proyectos[0].proyecto_id)" severity="success" class="mr-2" />
+                                            <Button label="Rechazar" @click="rechazarProyecto(asesoria.proyectos[0].proyecto_id)" severity="danger" />
+                                        </template>
+                                        <template v-else-if="asesoria.proyectos.length && asesoria.proyectos[0].status === 'ACEPTADO'">
+                                            <Tag class="mr-2" severity="success" value="Aceptado"></Tag>
+                                        </template>
+                                        <template v-else-if="asesoria.proyectos.length && asesoria.proyectos[0].status === 'RECHAZADO'">
+                                            <Tag class="mr-2" severity="danger" value="Rechazado"></Tag>
+                                        </template>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -489,6 +579,17 @@ watch(
         </div>
         <template #footer>
             <Button label="Eliminar" severity="danger" outlined @click="deleteEvent(selectedEvent.id)" />
+        </template>
+    </Dialog>
+    <Dialog v-model:visible="showRechazo" :style="{ width: '450px' }" header="Agregar comentarios" :modal="true" :closable="false">
+        <div class="flex flex-column align-items-center justify-content-center">
+            <i class="pi pi-exclamation-triangle" style="font-size: 2rem" />
+            <span class="mt-3">Ingrese el motivo del rechazo del documento</span>
+            <InputText class="mt-3 w-8" v-model.trim="proyectoRechazo.comentario" placeholder="Comentarios" />
+        </div>
+        <template #footer>
+            <Button label="No" icon="pi pi-times" text @click="(showRechazo = false), (proyectoRechazo.comentario = '')" />
+            <Button label="Yes" icon="pi pi-check" text @click="agregarComentario(proyectoRechazo)" />
         </template>
     </Dialog>
 </template>
