@@ -14,8 +14,13 @@ const showForm = ref(false);
 const showTable = ref(false);
 const showModal = ref(false);
 const showAllAcceptedModal = ref(false);
-const showRegisteredTesinasMessage = ref(false);
+const showAcceptedTesinasMessage = ref(false);
 const invite = ref(null);
+
+const tesinaform = ref({});
+const proyectoform = ref({});
+const existTesina = ref(false);
+const existProyecto = ref(false);
 
 const RegTesina = ref({
     userId: null,
@@ -52,7 +57,6 @@ const getInvitationsForUser = async () => {
     try {
         const responseInvitado = await TesinaApi.getInvitationsForUser(RegTesina.value.userId);
         invitacionesRecibidas.value = responseInvitado.data;
-        console.log(invitacionesRecibidas.value);
     } catch (error) {
         console.error('Error al obtener las invitaciones recibidas:', error);
     }
@@ -62,7 +66,19 @@ const getUserTesinas = async () => {
     try {
         const response = await TesinaApi.getTesinasByUser(RegTesina.value.userId);
         tesinas.value = response.data;
-        console.log(tesinas.value);
+
+        if (tesinas.value.length > 0) {
+            existTesina.value = tesinas.value[0];
+
+            if (existTesina.value.proyectos && existTesina.value.proyectos.length > 0) {
+                existProyecto.value = existTesina.value.proyectos[0];
+            } else {
+                existProyecto.value = {};
+            }
+        } else {
+            existTesina.value = {};
+            existProyecto.value = {};
+        }
     } catch (error) {
         console.error('Error al obtener las tesinas del usuario:', error);
     }
@@ -70,7 +86,7 @@ const getUserTesinas = async () => {
 
 const determineDisplayState = () => {
     if (tesinas.value.length > 0) {
-        showRegisteredTesinasMessage.value = true;
+        showAcceptedTesinasMessage.value = true;
         showForm.value = false;
         showTable.value = false;
         showModal.value = false;
@@ -210,12 +226,73 @@ const formatFecha = (fecha) => {
     const date = new Date(fecha);
     return date.toLocaleDateString();
 };
+
+const limpiarTesina = () => {
+    tesinaform.value = null;
+};
+const limpiarProyecto = () => {
+    proyectoform.value = null;
+};
+
+const saveUrlTesina = async () => {
+    loading.value = true;
+
+    tesinaform.value.id_tesina = existTesina.value.tesina_id;
+
+    try {
+        const response = await TesinaApi.saveUrlTesina(tesinaform.value);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        cargarData();
+    } catch (error) {
+        toast.open({
+            message: error.response && error.response.data.message ? error.response.data.message : 'Error al guardar la url de la tesina',
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+
+const saveUrlProyecto = async () => {
+    loading.value = true;
+
+    proyectoform.value.tesina_id = existTesina.value.tesina_id;
+    proyectoform.value.nombre_proyecto = existTesina.value.nombre_tesina;
+    proyectoform.value.descripcion_proyecto = existTesina.value.resenia_tesina;
+
+    try {
+        const response = await TesinaApi.saveProyecto(proyectoform.value);
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        cargarData();
+    } catch (error) {
+        toast.open({
+            message: error.response && error.response.data.message ? error.response.data.message : 'Error al guardar la url de la tesina',
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+
+const openFilePreview = (url) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'http://' + url;
+    }
+    window.open(url, '_blank');
+};
 </script>
 
 <template>
     <Spinner v-if="loading" />
-    <div class="grid">
-        <div v-if="showForm" class="col-12 lg:col-4">
+    <div class="grid-nogutter">
+        <!-- FORM PARA REGISTRAR TESINA Y COMPAÑEROS -->
+        <div v-if="showForm" class="col-12 md:col-6">
             <div class="card">
                 <h3>Registro de Tesina</h3>
                 <div class="p-fluid">
@@ -249,15 +326,12 @@ const formatFecha = (fecha) => {
                         <Chips id="invitado_email" v-model="RegTesina.invitado_email" separator="," placeholder="correo@unach.mx" :max="numeroCompañeros" />
                         <InlineMessage severity="info" class="mt-2"> Presiona Enter para agregar un correo. </InlineMessage>
                     </div>
-                    <Button label="Enviar Proyecto" class="p-mt-2" @click="submitProject" />
+                    <Button label="Enviar Proyecto" class="mt-2" @click="submitProject" />
                 </div>
             </div>
         </div>
-        <!-- <p><strong>Área:</strong> {{ invitacion.area_tema }}</p>
-                            <p><strong>Reseña:</strong> {{ invitacion.resenia_tema }}</p>
-                            <p><strong>Invitado:</strong> {{ invitacion.usuario.nombre }} ({{ invitacion.usuario.email_usuario }})</p>
-                            <p><strong>Estado:</strong> {{ invitacion.status }}</p> -->
-        <div v-if="showTable" class="col">
+        <!-- TABLA DE INVITACIONES REALIZADAS -->
+        <div v-if="showTable" class="col-12 md:col-6">
             <Card>
                 <template #title> Invitaciones Realizadas</template>
                 <template #content>
@@ -293,12 +367,13 @@ const formatFecha = (fecha) => {
                 </template>
             </Card>
         </div>
-        <div>
-            <Card v-if="showModal">
+        <!-- INVITACIONES RECIBIDAS -->
+        <div v-if="showModal" class="col-12 md:col-6">
+            <Card>
                 <template #title> Invitaciones Recibidas</template>
                 <template #content>
                     <div class="grid">
-                        <div v-for="invitacion in invitacionesRecibidas" :key="invitacion.invitacion_id" class="col-12 lg:col-4">
+                        <div v-for="invitacion in invitacionesRecibidas" :key="invitacion.invitacion_id" class="col-12">
                             <Card>
                                 <template #content>
                                     <div class="flex flex-column">
@@ -325,114 +400,102 @@ const formatFecha = (fecha) => {
                     </div>
                 </template>
             </Card>
-
-            <Card v-if="showAllAcceptedModal" header="Tesinas Aceptadas" class="p-mb-4">
+            <!-- Invitaciones Pendientes de aceptar   -->
+            <Card v-if="showAllAcceptedModal" header="Tesinas Aceptadas" class="">
                 <template #content>
-                    <p>Has aceptado la invitación. Espera a que la tesina se registre</p>
+                    <p>Has aceptado la invitación. Espera a que tus compañeros acepten la invitación.</p>
                 </template>
             </Card>
         </div>
-    </div>
-    <div id="showTesinasRegistradas">
-        <Message severity="info" v-if="showRegisteredTesinasMessage"> Ya estas registrado en una tesina </Message>
-        <Card v-if="showRegisteredTesinasMessage">
-            <template #content>
-                <div class="grid" v-for="tesina in tesinas" :key="tesina.id">
-                    <div class="col-12">
-                        <div class="grid">
-                            <div class="col-12 md:col-4">
-                                <h1 class="font-bold text-900 text-3xl my-0">Detalles</h1>
-                                <p class="text-500">Revisa y envía tu documento de tesis.</p>
+        <!-- SI YA ESTA REGISTRADA LA TESINA -->
+        <div id="showTesinasRegistradas">
+            <Message severity="info" v-if="showAcceptedTesinasMessage"> Ya estas registrado en una tesina </Message>
+            <Card v-if="showAcceptedTesinasMessage">
+                <template #content>
+                    <div class="grid" v-for="tesina in tesinas" :key="tesina.id">
+                        <div class="col-12">
+                            <div class="grid">
+                                <div class="col-12">
+                                    <h1 class="font-bold text-900 text-3xl my-0">Detalles</h1>
+                                    <p class="text-500">Aquí puedes ver los detalles de tu tesina.</p>
 
-                                <div class="flex flex-column gap-3">
-                                    <div class="flex flex-column">
-                                        <div class="text-900 font-bold text-xl">Nombre de la Tesina</div>
-                                        <div class="text-900 text-lg">{{ tesina.nombre_tesina }}</div>
-                                    </div>
-                                    <div class="flex flex-column">
-                                        <div class="text-900 font-bold text-xl">Área de la Tesina</div>
-                                        <div class="text-900 text-lg">{{ tesina.area_tesina }}</div>
-                                    </div>
-                                    <div class="flex flex-column">
-                                        <div class="text-900 font-bold text-xl">Reseña de la Tesina</div>
-                                        <div class="text-900">{{ tesina.resenia_tesina }}</div>
-                                    </div>
-                                    <div class="flex flex-column">
-                                        <div class="text-900 font-bold text-xl">Fecha de Registro</div>
-                                        <div class="text-900 text-lg">{{ formatFecha(tesina.fecha_registro) }}</div>
-                                    </div>
-                                    <div class="flex flex-column">
-                                        <div class="text-900 font-bold text-lg">Status</div>
-                                        <div class="text-900 text-lg">
-                                            <Tag v-if="tesina.status == 'PENDIENTE'" class="mr-2" severity="warning" value="Pendiente"></Tag>
-                                            <Tag v-if="tesina.status == 'ACEPTADO'" class="mr-2" severity="success" value="Aceptado"></Tag>
-                                            <Tag v-if="tesina.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag>
+                                    <div class="flex flex-column gap-3">
+                                        <div class="flex flex-column">
+                                            <div class="text-900 font-bold text-xl">Nombre de la Tesina</div>
+                                            <div class="text-900 text-lg">{{ tesina.nombre_tesina }}</div>
+                                        </div>
+                                        <div class="flex flex-column">
+                                            <div class="text-900 font-bold text-xl">Área de la Tesina</div>
+                                            <div class="text-900 text-lg">{{ tesina.area_tesina }}</div>
+                                        </div>
+                                        <div class="flex flex-column">
+                                            <div class="text-900 font-bold text-xl">Reseña de la Tesina</div>
+                                            <div class="text-900">{{ tesina.resenia_tesina }}</div>
+                                        </div>
+                                        <div class="flex flex-column">
+                                            <div class="text-900 font-bold text-xl">Fecha de Registro</div>
+                                            <div class="text-900 text-lg">{{ formatFecha(tesina.fecha_registro) }}</div>
+                                        </div>
+                                        <div class="flex flex-column">
+                                            <div class="text-900 font-bold text-lg">Status</div>
+                                            <div class="text-900 text-lg">
+                                                <Tag v-if="tesina.status == 'PENDIENTE'" class="mr-2" severity="warning" value="Pendiente"></Tag>
+                                                <Tag v-if="tesina.status == 'ACEPTADO'" class="mr-2" severity="success" value="Aceptado"></Tag>
+                                                <Tag v-if="tesina.status == 'REGISTRADO'" class="mr-2" severity="success" value="Registrado"></Tag>
+                                                <Tag v-if="tesina.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 md:col-4 flex justify-center">
-                                <Card class="flex justify-content-center">
-                                    <template #title>Portada de la tesina</template>
-                                    <template #content>
-                                        <Image src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg" alt="Image" width="400" preview />
-                                    </template>
-                                </Card>
+                        </div>
+                        <div class="col-12" v-if="tesinas[0].status === 'REGISTRADO' || tesinas[0].status === 'ACEPTADO'">
+                            <div class="grid">
+                                <div class="col-12 md:col-6">
+                                    <Card class="p-fluid">
+                                        <template #title>Tesina</template>
+                                        <template #content>
+                                            <div v-if="existTesina.url_documento">
+                                                <Button label="Ver" class="w-full" @click="openFilePreview(existTesina.url_documento)" />
+                                            </div>
+                                            <div v-else class="field">
+                                                <label for="url_tesina">Url del Proyecto</label>
+                                                <InputText id="url_tesina" v-model="tesinaform.url_documento" required placeholder="www.drive.google.com/tesina.pdf || www.dropbox.com/tesina.zip" />
+                                            </div>
+                                        </template>
+                                        <template #footer v-if="!existTesina.url_documento">
+                                            <div class="flex gap-3 mt-1">
+                                                <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarTesina" />
+                                                <Button label="Guardar" class="w-full" @click="saveUrlTesina" />
+                                            </div>
+                                        </template>
+                                    </Card>
+                                </div>
+                                <div class="col-12 md:col-6" :style="tesinas[0].status === 'ACEPTADO' ? '' : 'pointer-events: none; opacity: 0.7'">
+                                    <Card class="p-fluid">
+                                        <template #title>Proyecto</template>
+                                        <template #content>
+                                            <div v-if="existProyecto.url_documento">
+                                                <Button label="Ver" class="w-full" @click="openFilePreview(existProyecto.url_documento)" />
+                                            </div>
+                                            <div v-else class="field">
+                                                <label for="url_proyecto">Url del Proyecto</label>
+                                                <InputText id="url_proyecto" v-model.trim="proyectoform.url_documento" required placeholder="www.github.com/usuario/proyecto.git || www.dropbox.com/proyecto.zip" />
+                                            </div>
+                                        </template>
+                                        <template #footer v-if="!existProyecto.url_documento">
+                                            <div class="flex gap-3 mt-1">
+                                                <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarProyecto" />
+                                                <Button label="Guardar" class="w-full" @click="saveUrlProyecto" />
+                                            </div>
+                                        </template>
+                                    </Card>
+                                </div>
                             </div>
-                            <div class="col-12 md:col-4 flex justify-center">
-                                <Card class="flex justify-content-center">
-                                    <template #title>Captura de pantalla del proyecto</template>
-                                    <template #content>
-                                        <Image src="https://primefaces.org/cdn/primevue/images/galleria/galleria10.jpg" alt="Image" width="400" preview />
-                                    </template>
-                                </Card>
-                            </div>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="card">
-                            <FileUpload
-                                name="documento"
-                                @uploader="console.log($event)"
-                                :accept="'application/pdf'"
-                                :multiple="false"
-                                :maxFileSize="1000000"
-                                :fileLimit="1"
-                                :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
-                                customUpload
-                            >
-                                <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column">
-                                        <i class="pi pi-cloud-upload border-2 border-circle p-5 text-8xl text-400 border-400" />
-                                        <p class="mt-4 mb-0 text-center">'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.'</p>
-                                    </div>
-                                </template>
-                            </FileUpload>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="card">
-                            <FileUpload
-                                name="documento"
-                                @uploader="console.log($event)"
-                                :accept="'application/pdf'"
-                                :multiple="false"
-                                :maxFileSize="1000000"
-                                :fileLimit="1"
-                                :invalidFileSizeMessage="'El tamaño del archivo debe ser menor a 1 MB'"
-                                customUpload
-                            >
-                                <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column">
-                                        <i class="pi pi-cloud-upload border-2 border-circle p-5 text-8xl text-400 border-400" />
-                                        <p class="mt-4 mb-0 text-center">'Arrastra y suelta un archivo aquí o haz clic para seleccionar un archivo.'</p>
-                                    </div>
-                                </template>
-                            </FileUpload>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </Card>
+                </template>
+            </Card>
+        </div>
     </div>
 </template>
