@@ -60,7 +60,7 @@ const model = ref([
                 to: '/admin/documentacionAlumnos'
             },
             {
-                label: 'Documentación Docentes',
+                label: 'Revisión Documentos Docente',
                 icon: 'pi pi-file-check',
                 to: '/admin/documentacionDocentes'
             },
