@@ -2,6 +2,9 @@
 import { ref, inject, onMounted } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useRoute } from 'vue-router';
+import { useConfirm } from 'primevue/useconfirm';
+
+const confirm = useConfirm();
 
 const toast = inject('toast');
 
@@ -251,6 +254,63 @@ initFilters();
 const clearFilter = () => {
     initFilters();
 };
+
+const passwords = ref({
+    password1: '',
+    password2: ''
+});
+const passwordError = ref('');
+
+const confirm2 = () => {
+    const { password1, password2 } = passwords.value;
+    passwordError.value = '';
+
+    confirm.require({
+        message: '¿Estás seguro de cerrar el curso?',
+        header: 'Cerrar Curso',
+
+        rejectLabel: 'Cancelar',
+        acceptLabel: 'Cerrar Curso',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        acceptClass: 'p-button-danger',
+        accept: async () => {
+            loading.value = true;
+            if (passwords.value.password1 !== passwords.value.password2) {
+                passwordError.value = 'Las palabras no coinciden.';
+                toast.open({
+                    message: 'Las palabras no coinciden.',
+                    type: 'error'
+                });
+                passwords.value = { password1: '', password2: '' };
+                loading.value = false;
+                return;
+            }
+            try {
+                const response = await SeminarioApi.cerrarCurso(cursoId.value, passwords.value);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+                passwords.value = { password1: '', password2: '' };
+                window.location.href = '/admin/seminarios';
+            } catch (error) {
+                passwords.value = { password1: '', password2: '' };
+                toast.open({
+                    message: error.response.data.msg,
+                    type: 'error'
+                });
+            } finally {
+                loading.value = false;
+            }
+        },
+        reject: () => {
+            toast.open({
+                message: 'Se cancelo la acción',
+                type: 'info'
+            });
+        }
+    });
+};
 </script>
 
 <template>
@@ -352,6 +412,9 @@ const clearFilter = () => {
                     </div>
                 </div>
             </div>
+            <div class="flex justify-content-end">
+                <Button @click="confirm2()" label="Cerrar Seminario" severity="danger" outlined></Button>
+            </div>
         </div>
     </div>
 
@@ -429,4 +492,16 @@ const clearFilter = () => {
             <Button label="Generar" icon="pi pi-check" text="" @click="generarConstancias" />
         </template>
     </Dialog>
+
+    <ConfirmDialog>
+        <template #message="slotProps">
+            <div class="flex flex-column align-items-center w-full gap-3 border-bottom-1 surface-border">
+                <div class="w-full flex flex-column m-2">
+                    <InputText v-model="passwords.password1" placeholder="Escriba 'confirmar'" />
+                    <InputText v-model="passwords.password2" placeholder="Repita 'confirmar'" class="mt-2" />
+                    <p v-if="passwordError" class="p-error">{{ passwordError }}</p>
+                </div>
+            </div>
+        </template>
+    </ConfirmDialog>
 </template>

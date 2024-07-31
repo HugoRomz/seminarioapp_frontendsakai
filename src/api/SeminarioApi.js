@@ -153,5 +153,13 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+    cerrarCurso(cursoId, data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/seminario/cerrarCurso/${cursoId}`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
     }
 };
