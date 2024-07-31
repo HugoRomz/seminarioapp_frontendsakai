@@ -55,7 +55,7 @@ const model = ref([
                 to: '/admin/preregister'
             },
             {
-                label: 'Documentación Alumnos',
+                label: 'Revisión Documentos Alumno',
                 icon: 'pi pi-file-check',
                 to: '/admin/documentacionAlumnos'
             },
