@@ -246,7 +246,7 @@ const clearFilter = () => {
             <div class="card">
                 <Toolbar class="mb-4">
                     <template v-slot:start>
-                        <div class="my-2"><Button label="Periodo" icon="pi pi-calendar-times" iconPos="right" class="mr-2" severity="primary" @click="openModalPeriodo" /></div>
+                        <div class="my-2"><Button label="Periodo" icon="pi pi-plus" class="mr-2" severity="primary" @click="openModalPeriodo" /></div>
                         <div class="my-2"><Button label="Alta Curso" icon="pi pi-plus" class="mr-2" severity="success" @click="openModalCurso" /></div>
                     </template>
                     <template v-slot:center> </template>
