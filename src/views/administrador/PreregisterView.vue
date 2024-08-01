@@ -199,7 +199,7 @@ const getRandomPastelColor = () => {
                         <Column field="email_usuario" header="Email" :sortable="true"></Column>
                         <Column field="telefono" header="Telefono" :sortable="true" style="width: 10rem"></Column>
                         <Column field="nombre_carrera" header="Carrera" :sortable="true"></Column>
-                        <Column field="anio_egreso" header="Año de Egreso" :sortable="true">
+                        <Column field="anio_egreso" header="Año Egreso" :sortable="true">
                             <template #body="{ data }">
                                 <template v-if="data.anio_egreso !== null">
                                     {{ data.anio_egreso }}
@@ -212,7 +212,7 @@ const getRandomPastelColor = () => {
                                 <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.trabajando, 'pi-times-circle text-red-500': !data.trabajando }"></i>
                             </template>
                         </Column>
-                        <Column field="lugar_trabajo" header="Lugar de Trabajo" :sortable="true">
+                        <Column field="lugar_trabajo" header="Lugar Trabajo" :sortable="true">
                             <template #body="{ data }">
                                 <template v-if="data.trabajando">
                                     {{ data.lugar_trabajo }}

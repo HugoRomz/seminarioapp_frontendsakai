@@ -42,7 +42,7 @@ const model = ref([
         roles: ['SUPERADMIN']
     },
     {
-        label: 'Administrador',
+        label: 'Coordinador - Administrador',
         items: [
             {
                 label: 'Seminarios',

@@ -58,7 +58,7 @@ const hideDialog = () => {
 const saveDocente = async () => {
     submitted.value = true;
     isAccepting.value = true;
-    if (docente.value.num_plaza && docente.value.nombre.trim() && docente.value.apellido_p.trim() && docente.value.apellido_m.trim() && docente.value.telefono_usuario.trim() && docente.value.email_usuario.trim() && docente.value.password.trim()) {
+    if (docente.value.num_plaza && docente.value.nombre.trim() && docente.value.apellido_p.trim() && docente.value.apellido_m.trim() && docente.value.telefono_usuario.trim() && docente.value.email_usuario.trim()) {
         loading.value = true;
         try {
             let response;
@@ -323,7 +323,6 @@ const clearFilter = () => {
                         <div class="field col">
                             <label for="password">Contraseña</label>
                             <InputText type="password" id="password" v-model.trim="docente.password" required="true" :invalid="submitted && !docente.password" />
-                            <small class="p-invalid" v-if="submitted && !docente.password">El password es requerido.</small>
                         </div>
                     </div>
 

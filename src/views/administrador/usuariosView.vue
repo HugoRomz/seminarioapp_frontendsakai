@@ -188,7 +188,7 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Usuarios', route: '/admin/us
                     <Toolbar class="mb-4">
                         <template v-slot:start>
                             <div class="my-2">
-                                <Button label="Nueva Materia" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                                <Button label="Nuevo Usuario" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
                             </div>
                         </template>
 
@@ -244,7 +244,7 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Usuarios', route: '/admin/us
                                     <TriStateCheckbox v-model="filterModel.value" @change="filterCallback()" />
                                 </template>
                             </Column>
-                            <Column field="roles" header="Roles" :sortable="true">
+                            <Column field="roles" header="Roles-Módulo" :sortable="true">
                                 <template #body="{ data }">
                                     <div class="flex flex-wrap gap-1">
                                         <Tag v-for="rol in data.roles" :key="rol.rol_id" style="background: var(--surface-700); color: var(--surface-0)">
@@ -306,7 +306,7 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Usuarios', route: '/admin/us
             <small class="p-invalid" v-if="submitted && !usuarioEdit.password">El numero de contraseña es requerida.</small>
         </div>
         <div class="field">
-            <label for="roles">Roles</label>
+            <label for="roles">Roles-Módulos</label>
             <MultiSelect v-model="usuarioEdit.roles" display="chip" :options="roles" optionLabel="nombre_rol" optionValue="rol_id" placeholder="Selecciona los roles" class="w-full md:min-w-full" />
         </div>
         <div class="field" v-if="isEditMode">

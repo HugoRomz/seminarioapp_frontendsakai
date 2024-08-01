@@ -195,7 +195,7 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Carreras', route: '/admin/ca
                             <Button icon="pi pi-refresh" @click="loadCarreras" />
                         </template>
                         <Column field="carrera_id" header="ID Carrera" :sortable="true"></Column>
-                        <Column field="nombre_carrera" header="Nombre de la Carrera" :sortable="true"></Column>
+                        <Column field="nombre_carrera" header="Nombre Carrera" :sortable="true"></Column>
                         <Column headerStyle="min-width:10rem;" header="Acciones">
                             <template #body="{ data }">
                                 <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editCarrera(data)" />

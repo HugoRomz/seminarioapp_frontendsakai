@@ -67,7 +67,7 @@ const openFilePreview = (url) => {
 
 <template>
     <Spinner v-if="loading" />
-    <Message severity="warn" :closable="false">
+    <Message severity="success" :closable="false">
         <!-- Verificar si users existe antes de acceder a su propiedad status -->
         {{
             users && users.status === 'ACTIVO'

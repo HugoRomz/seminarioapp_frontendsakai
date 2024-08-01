@@ -346,7 +346,7 @@ const downloadFile = async (url) => {
                 <div class="grid">
                     <div class="col-12 lg:col-6 pb-0">
                         <div class="flex flex-column">
-                            <h3 class="text-xl font-bold mb-1">Nombre del Módulo</h3>
+                            <h3 class="text-xl font-bold mb-1">Nombre</h3>
                             <p class="text-xl font-medium">{{ ModuloData[index].nombre_modulo }}</p>
                         </div>
                     </div>
@@ -358,13 +358,13 @@ const downloadFile = async (url) => {
                     </div>
                     <div class="col-12 lg:col-6 pb-0">
                         <div class="flex flex-column">
-                            <h3 class="text-xl font-bold mb-1">Nombre del Curso</h3>
+                            <h3 class="text-xl font-bold mb-1">Curso</h3>
                             <p class="text-xl font-medium">{{ ModuloData[index].cursos_periodo.curso.nombre_curso }}</p>
                         </div>
                     </div>
                     <div class="col-12 lg:col-6 pb-0">
                         <div class="flex flex-column">
-                            <h3 class="text-xl font-bold mb-1">Nombre del Docente</h3>
+                            <h3 class="text-xl font-bold mb-1">Docente</h3>
                             <p class="text-xl font-medium">{{ ModuloData[index].docente }}</p>
                         </div>
                     </div>
@@ -402,7 +402,7 @@ const downloadFile = async (url) => {
                         <template #loading> Cargando... por favor espera </template>
                         <template #paginatorstart> <Button icon="pi pi-refresh" @click="loadModulo" /> </template>
                         <Column field="actividad_id" header="ID" style="width: 5%"></Column>
-                        <Column field="nombre_actividad" header="Nombre de la actividad" style="width: 15%"></Column>
+                        <Column field="nombre_actividad" header="Nombre     actividad" style="width: 15%"></Column>
                         <Column field="descripcion" header="Descripción" style="width: 35%"></Column>
                         <Column field="tipo_evidencia.nombre_tipo_ev" header="Tipo" style="width: 10%"></Column>
                         <Column header="Fecha de Entrega" style="width: 15%">
@@ -493,8 +493,8 @@ const downloadFile = async (url) => {
                             <template #loading> Cargando... por favor espera </template>
 
                             <Column field="evidencias_id" header="ID Evidencia" style="width: 5%"></Column>
-                            <Column field="actividade.nombre_actividad" header="Nombre de la Actividad" style="width: 15%"></Column>
-                            <Column field="descripcion" header="Descripción de la Evidencia" style="width: 35%"></Column>
+                            <Column field="actividade.nombre_actividad" header="Nombre Actividad" style="width: 15%"></Column>
+                            <Column field="descripcion" header="Descripción Evidencia" style="width: 35%"></Column>
                             <Column header="Visualizar" style="width: 20%">
                                 <template #body="{ data }">
                                     <div class="flex gap-2">

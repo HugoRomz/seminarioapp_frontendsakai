@@ -43,7 +43,7 @@ onMounted(async () => {
                     </template>
                 </div>
                 <div class="label">
-                    Estudiante: <span class="value uppercase" id="nombre">{{ users.nombre }} {{ users.apellido_p }} {{ users.apellido_m }}</span>
+                    Usuario: <span class="value uppercase" id="nombre">{{ users.nombre }} {{ users.apellido_p }} {{ users.apellido_m }}</span>
                 </div>
                 <div class="label">
                     Curp: <span class="value uppercase" id="curp">{{ users.curp }}</span>

@@ -398,7 +398,7 @@ const showModalDocumentosInfo = (dataAlumno, dataDocente) => {
                                 <Column field="documento.nombre_documento" header="Name"></Column>
                                 <Column headerStyle="width:4rem">
                                     <template #body>
-                                        <Button icon="pi pi-search" @click="$router.push('documentos')" disabled />
+                                        <Button icon="pi pi-search" @click="$router.push('documentos')" />
                                     </template>
                                 </Column>
                             </DataTable>
@@ -409,7 +409,7 @@ const showModalDocumentosInfo = (dataAlumno, dataDocente) => {
                                 <Column field="documento.nombre_documento" header="Name"></Column>
                                 <Column headerStyle="width:4rem">
                                     <template #body>
-                                        <Button icon="pi pi-search" @click="$router.push('documentos')" disabled />
+                                        <Button icon="pi pi-search" @click="$router.push('documentos')" />
                                     </template>
                                 </Column>
                             </DataTable>
@@ -420,7 +420,7 @@ const showModalDocumentosInfo = (dataAlumno, dataDocente) => {
                                 <Column field="documento.nombre_documento" header="Name"></Column>
                                 <Column headerStyle="width:4rem">
                                     <template #body>
-                                        <Button icon="pi pi-search" @click="$router.push('documentos')" disabled />
+                                        <Button icon="pi pi-search" @click="$router.push('documentos')" />
                                     </template>
                                 </Column>
                             </DataTable>

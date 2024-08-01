@@ -54,6 +54,8 @@ const submitNuevaContrasena = async ({ password }) => {
         <div class="text-center mt-3">
             <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Ingresa la nueva contraseña</h1>
         </div>
+        <Message severity="info">Las credenciales son responsabilidad del usuario que las escribe</Message>
+        <Message severity="info">La seguridad empieza por uno mismo </Message>
         <FormKit id="loginCambiarContrasena" type="form" :actions="false" incomplete-message="No se pudo enviar, intenta de nuevo" @submit="submitNuevaContrasena">
             <FormKit
                 type="password"

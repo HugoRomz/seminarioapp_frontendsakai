@@ -80,7 +80,7 @@ const onRowEditSave = async (event) => {
                 <h2 class="font-bold">Información del Módulo</h2>
                 <div class="grid">
                     <div class="col-6">
-                        <p class="text-xl text-gray-400 font-medium m-0">Nombre del Módulo</p>
+                        <p class="text-xl text-gray-400 font-medium m-0">Nombre</p>
                         <p class="text-xl font-bold m-0">{{ modulo.nombre_modulo }}</p>
                     </div>
                     <div class="col-6">
@@ -88,21 +88,21 @@ const onRowEditSave = async (event) => {
                         <p class="text-xl font-bold m-0">{{ modulo.cursos_periodo.periodo.descripcion }}</p>
                     </div>
                     <div class="col-6">
-                        <p class="text-xl text-gray-400 font-medium m-0">Nombre del Curso</p>
+                        <p class="text-xl text-gray-400 font-medium m-0">Curso</p>
                         <p class="text-xl font-bold m-0">{{ modulo.cursos_periodo.curso.nombre_curso }}</p>
                     </div>
                     <div class="col-6">
-                        <p class="text-xl text-gray-400 font-medium m-0">Fecha de Inicio</p>
+                        <p class="text-xl text-gray-400 font-medium m-0">Fecha Inicio</p>
                         <p class="text-xl font-bold m-0">{{ formatDate(modulo.fecha_inicio) }}</p>
                     </div>
                     <div class="col-6">
-                        <p class="text-xl text-gray-400 font-medium m-0">Fecha de Cierre</p>
+                        <p class="text-xl text-gray-400 font-medium m-0">Fecha Cierre</p>
                         <p class="text-xl font-bold m-0">{{ formatDate(modulo.fecha_cierre) }}</p>
                     </div>
                 </div>
             </div>
             <div class="col-12 md:col-8">
-                <h4 class="font-bold">Estudiantes del Módulo</h4>
+                <h4 class="font-bold">Estudiantes Módulo</h4>
                 <card>
                     <template #content>
                         <DataTable

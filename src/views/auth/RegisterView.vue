@@ -139,6 +139,7 @@ const handleSubmit = async (formData) => {
             />
             <FormKit
                 type="text"
+                :style="{ textTransform: 'uppercase' }"
                 label="CURP:"
                 name="curp"
                 placeholder="Tu CURP"
@@ -205,13 +206,14 @@ const handleSubmit = async (formData) => {
         </div>
     </div>
     <div v-else>
-        <Card>
-            <template #title> No hay cursos disponibles </template>
+        <Card style="width: 25rem">
+            <template #title><h3 class="tracking-tight text-2xl font-bold">No hay cursos disponibles</h3> </template>
             <template #content>
-                <div class="space-y-3 text-center mt-5">
-                    <p class="text-base text-blue-600">
-                        <a href="/auth/login" class="font-medium hover:underline">Regresar</a>
-                    </p>
+                <div class="text-center">
+                    <p class="mt-0 mb-5 text-center text-lg">Lo sentimos, no tenemos cursos disponibles en este momento</p>
+                    <router-link to="/" rel="noopener">
+                        <Button label="Regresar" />
+                    </router-link>
                 </div>
             </template>
         </Card>
