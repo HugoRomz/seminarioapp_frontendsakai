@@ -353,7 +353,7 @@ const confirm2 = () => {
                                     </div>
                                     <div class="col-12 flex flex-column align-items-center justify-content-end md:col-6 md:gap-2 md:flex-row">
                                         <Button @click="openEditModulo(modulo)" class="w-full md:w-auto mt-3 md:mt-0" label="Editar Módulo" severity="success" />
-                                        <Button @click="generarCalificaciones(modulo.modulo_id, modulo.nombre_modulo)" class="w-full md:w-auto mt-3 md:mt-0" label="Generar Calificaciones" severity="info" />
+                                        <Button @click="generarCalificaciones(modulo.modulo_id, modulo.nombre_modulo)" class="w-full md:w-auto mt-3 md:mt-0" label="Acta de Calificaciones" severity="info" />
                                     </div>
                                 </div>
                             </div>
