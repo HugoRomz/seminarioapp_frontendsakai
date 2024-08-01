@@ -183,6 +183,8 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Roles', route: '/admin/roles
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             :rowsPerPageOptions="[5, 10, 25]"
                             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} roles"
+                            sortField="rol_id"
+                            :sortOrder="1"
                         >
                             <template #header>
                                 <div class="flex justify-content-between flex-column sm:flex-row">

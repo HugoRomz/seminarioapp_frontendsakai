@@ -409,7 +409,7 @@ const openFilePreview = (url) => {
         </div>
         <!-- SI YA ESTA REGISTRADA LA TESINA -->
         <div id="showTesinasRegistradas">
-            <Message severity="info" v-if="showAcceptedTesinasMessage"> Ya estas registrado en una tesina </Message>
+            <Message severity="info" v-if="showAcceptedTesinasMessage" :sticky="false" :life="4000"> Ya estas registrado en una tesina </Message>
             <Card v-if="showAcceptedTesinasMessage">
                 <template #content>
                     <div class="grid" v-for="tesina in tesinas" :key="tesina.id">
@@ -418,31 +418,56 @@ const openFilePreview = (url) => {
                                 <div class="col-12">
                                     <h1 class="font-bold text-900 text-3xl my-0">Detalles</h1>
                                     <p class="text-500">Aquí puedes ver los detalles de tu tesina.</p>
+                                    <div class="grid">
+                                        <div class="col-12 md:col-6">
+                                            <div class="flex flex-wrap gap-3">
+                                                <div class="flex flex-column w-full md:w-1/2">
+                                                    <div class="text-900 font-bold text-xl">Nombre</div>
+                                                    <div class="text-900 text-lg">{{ tesina.nombre_tesina }}</div>
+                                                </div>
+                                                <div class="flex flex-column w-full md:w-1/2">
+                                                    <div class="text-900 font-bold text-xl">Área</div>
+                                                    <div class="text-900 text-lg">{{ tesina.area_tesina }}</div>
+                                                </div>
+                                                <div class="flex flex-column w-full md:w-1/2">
+                                                    <div class="text-900 font-bold text-xl">Reseña</div>
+                                                    <div class="text-900">{{ tesina.resenia_tesina }}</div>
+                                                </div>
+                                                <div class="flex flex-column w-full md:w-1/2">
+                                                    <div class="text-900 font-bold text-xl">Participantes</div>
+                                                    <div class="text-900 flex flex-wrap gap-1">
+                                                        <Tag severity="info" value="Success">{{ tesina.Alumno.nombre }} {{ tesina.Alumno.apellido_p }} {{ tesina.Alumno.apellido_m }}</Tag>
+                                                        <div v-for="companero in tesina.companeros" :key="companero.usuario_id">
+                                                            <Tag severity="info" value="Success">{{ companero }}</Tag>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 md:col-6">
+                                            <div class="flex flex-wrap gap-3">
+                                                <div class="flex flex-column w-full md:w-1/2">
+                                                    <div class="text-900 font-bold text-xl">Fecha Registro</div>
+                                                    <div class="text-900 text-lg">{{ formatFecha(tesina.fecha_registro) }}</div>
+                                                </div>
+                                                <div class="flex flex-column w-full md:w-1/2" v-if="tesina.usuario_id_docente">
+                                                    <div class="text-900 font-bold text-xl">Asesor</div>
+                                                    <div class="text-900">{{ tesina.Docente.nombre }} {{ tesina.Docente.apellido_p }} {{ tesina.Docente.apellido_m }}</div>
+                                                </div>
+                                                <div class="flex flex-column w-full md:w-1/2" v-if="tesina.usuario_id_docente">
+                                                    <div class="text-900 font-bold text-xl">Correo Asesor</div>
+                                                    <div class="text-900">{{ tesina.Docente.email_usuario }}</div>
+                                                </div>
 
-                                    <div class="flex flex-column gap-3">
-                                        <div class="flex flex-column">
-                                            <div class="text-900 font-bold text-xl">Nombre de la Tesina</div>
-                                            <div class="text-900 text-lg">{{ tesina.nombre_tesina }}</div>
-                                        </div>
-                                        <div class="flex flex-column">
-                                            <div class="text-900 font-bold text-xl">Área de la Tesina</div>
-                                            <div class="text-900 text-lg">{{ tesina.area_tesina }}</div>
-                                        </div>
-                                        <div class="flex flex-column">
-                                            <div class="text-900 font-bold text-xl">Reseña de la Tesina</div>
-                                            <div class="text-900">{{ tesina.resenia_tesina }}</div>
-                                        </div>
-                                        <div class="flex flex-column">
-                                            <div class="text-900 font-bold text-xl">Fecha de Registro</div>
-                                            <div class="text-900 text-lg">{{ formatFecha(tesina.fecha_registro) }}</div>
-                                        </div>
-                                        <div class="flex flex-column">
-                                            <div class="text-900 font-bold text-lg">Status</div>
-                                            <div class="text-900 text-lg">
-                                                <Tag v-if="tesina.status == 'PENDIENTE'" class="mr-2" severity="warning" value="Pendiente"></Tag>
-                                                <Tag v-if="tesina.status == 'ACEPTADO'" class="mr-2" severity="success" value="Aceptado"></Tag>
-                                                <Tag v-if="tesina.status == 'REGISTRADO'" class="mr-2" severity="success" value="Registrado"></Tag>
-                                                <Tag v-if="tesina.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag>
+                                                <div class="flex flex-column w-full md:w-1/2">
+                                                    <div class="text-900 font-bold text-lg">Status</div>
+                                                    <div class="text-900 text-lg">
+                                                        <Tag v-if="tesina.status == 'PENDIENTE'" class="mr-2" severity="warning" value="Pendiente"></Tag>
+                                                        <Tag v-if="tesina.status == 'ACEPTADO'" class="mr-2" severity="success" value="Aceptado"></Tag>
+                                                        <Tag v-if="tesina.status == 'REGISTRADO'" class="mr-2" severity="success" value="Registrado"></Tag>
+                                                        <Tag v-if="tesina.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -459,7 +484,8 @@ const openFilePreview = (url) => {
                                                 <Button label="Ver" class="w-full" @click="openFilePreview(existTesina.url_documento)" />
                                             </div>
                                             <div v-else class="field">
-                                                <label for="url_tesina">Url del Proyecto</label>
+                                                <Message severity="info">Info Message</Message>
+                                                <label for="url_tesina">Url de la Tesina</label>
                                                 <InputText id="url_tesina" v-model="tesinaform.url_documento" required placeholder="www.drive.google.com/tesina.pdf || www.dropbox.com/tesina.zip" />
                                             </div>
                                         </template>
@@ -479,6 +505,7 @@ const openFilePreview = (url) => {
                                                 <Button label="Ver" class="w-full" @click="openFilePreview(existProyecto.url_documento)" />
                                             </div>
                                             <div v-else class="field">
+                                                <Message severity="info">Info Message</Message>
                                                 <label for="url_proyecto">Url del Proyecto</label>
                                                 <InputText id="url_proyecto" v-model.trim="proyectoform.url_documento" required placeholder="www.github.com/usuario/proyecto.git || www.dropbox.com/proyecto.zip" />
                                             </div>

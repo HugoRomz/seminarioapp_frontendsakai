@@ -190,6 +190,8 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Documentos', route: '/admin/
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             :rowsPerPageOptions="[5, 10, 25]"
                             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} documentos"
+                            sortField="documento_id"
+                            :sortOrder="1"
                         >
                             <template #header>
                                 <div class="flex justify-content-between flex-column sm:flex-row">

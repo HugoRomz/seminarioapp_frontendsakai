@@ -179,6 +179,8 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Carreras', route: '/admin/ca
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                         :rowsPerPageOptions="[5, 10, 25]"
                         currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} carreras"
+                        sortField="carrera_id"
+                        :sortOrder="1"
                     >
                         <template #header>
                             <div class="flex justify-content-between flex-column sm:flex-row">

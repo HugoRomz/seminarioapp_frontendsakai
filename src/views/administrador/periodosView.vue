@@ -183,6 +183,8 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Períodos', route: '/admin/p
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             :rowsPerPageOptions="[5, 10, 25]"
                             currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} periodos"
+                            sortField="descripcion"
+                            :sortOrder="1"
                         >
                             <template #header>
                                 <div class="flex justify-content-between flex-column sm:flex-row">
