@@ -1,6 +1,5 @@
 // import './assets/main.css';
 
-import { createPinia } from 'pinia';
 import { plugin, defaultConfig } from '@formkit/vue';
 import '@formkit/themes/genesis';
 
@@ -124,7 +123,6 @@ const $toast = useToast({
 const app = createApp(App);
 
 app.provide('toast', $toast);
-app.use(createPinia());
 
 app.use(VueTheMask);
 

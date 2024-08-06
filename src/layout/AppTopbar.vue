@@ -1,9 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
-import { useUser } from '../stores/user';
 
-const user = useUser();
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+const Logout = () => {
+    localStorage.removeItem('AUTH_TOKEN');
+    localStorage.removeItem('gapi_token');
+    router.push({ name: 'Login' });
+};
 
 const { onMenuToggle } = useLayout();
 
@@ -82,7 +88,7 @@ const isOutsideClicked = (event) => {
         </button>
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
-            <button @click="user.logout" class="p-link layout-topbar-button">
+            <button @click="Logout()" class="p-link layout-topbar-button">
                 <i class="pi pi-sign-out"></i>
                 <span>Logout</span>
             </button>
