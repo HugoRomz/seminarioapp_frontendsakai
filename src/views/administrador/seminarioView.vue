@@ -411,11 +411,17 @@ const clearFilter = () => {
                                             </div>
                                             <div class="field col-12 md:col-6">
                                                 <label for="periodo">Fecha de Inicio</label>
-                                                <Calendar :showIcon="true" :showButtonBar="true" v-model="formDataModulos[index].fecha_inicio" dateFormat="dd/mm/yy"></Calendar>
+                                                <Calendar
+                                                    :showIcon="true"
+                                                    :showButtonBar="true"
+                                                    v-model="formDataModulos[index].fecha_inicio"
+                                                    dateFormat="dd/mm/yy"
+                                                    :minDate="index > 0 ? formDataModulos[index - 1].fecha_cierre : new Date()"
+                                                ></Calendar>
                                             </div>
                                             <div class="field col-12 md:col-6">
                                                 <label for="periodo">Fecha de Cierre</label>
-                                                <Calendar :showIcon="true" :showButtonBar="true" v-model="formDataModulos[index].fecha_cierre" dateFormat="dd/mm/yy"></Calendar>
+                                                <Calendar :showIcon="true" :showButtonBar="true" v-model="formDataModulos[index].fecha_cierre" dateFormat="dd/mm/yy" :minDate="new Date(formDataModulos[index].fecha_inicio)"></Calendar>
                                             </div>
                                             <div class="field col-12">
                                                 <MultiSelect v-model="formDataModulos[index].docente" :selectionLimit="1" :options="dataDocentes" optionLabel="nombre" placeholder="Selecciona el docente para asignar al módulo" :filter="true">
