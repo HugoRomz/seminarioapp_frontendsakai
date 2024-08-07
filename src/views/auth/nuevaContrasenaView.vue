@@ -7,6 +7,10 @@ import Spinner from '../../components/Spinner2.vue';
 
 const toast = inject('toast');
 
+import { useToast } from 'primevue/usetoast';
+
+const message = useToast();
+
 const loading = ref(false);
 
 const router = useRouter();
@@ -21,6 +25,12 @@ onMounted(async () => {
     try {
         const { data } = await AuthAPI.verificarContrasenaToken(token);
         validToken.value = true;
+        message.add({
+            severity: 'warn',
+            summary: 'No hay props',
+            group: 'bc',
+            life: 5000
+        });
     } catch (error) {
         toast.open({
             message: error.response.data.msg,
@@ -50,14 +60,26 @@ const submitNuevaContrasena = async ({ password }) => {
 
 <template>
     <Spinner v-if="loading" />
+    <Toast position="center" group="bc" @close="onClose">
+        <template #message="slotProps">
+            <div class="flex flex-column align-items-start" style="flex: 1">
+                <div class="flex align-items-center gap-2"></div>
+                <div class="font-medium text-lg my-3 text-900 text-center">
+                    Las credenciales son responsabilidad del usuario que las escribe.
+                    <br />
+                    <br />La seguridad empieza por uno mismo.
+                </div>
+            </div>
+        </template>
+    </Toast>
     <div v-if="validToken" class="surface-card p-4 shadow-2 border-round-3xl w-auto">
         <div class="text-center mt-3">
             <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Ingresa la nueva contraseña</h1>
         </div>
-        <Message severity="info">Las credenciales son responsabilidad del usuario que las escribe</Message>
-        <Message severity="info">La seguridad empieza por uno mismo </Message>
+
         <FormKit id="loginCambiarContrasena" type="form" :actions="false" incomplete-message="No se pudo enviar, intenta de nuevo" @submit="submitNuevaContrasena">
             <FormKit
+                class="w-full"
                 type="password"
                 label="Contraseña"
                 prefix-icon="lock"
@@ -86,25 +108,20 @@ const submitNuevaContrasena = async ({ password }) => {
                 <FormKit type="submit">Guardar nueva contraseña</FormKit>
             </div>
         </FormKit>
-        <div class="text-center mt-4">
-            <!-- botón regresar al login -->
-            <p class="text-base text-blue-900">
-                <a href="/auth/login" class="font-medium hover:underline">Regresar</a>
-            </p>
-        </div>
     </div>
 
-    <p v-else class="text-center text-2xl font-black text-white">Token no válido</p>
-</template>
+    <p v-else>
+        <Card>
+            <template #title>
+                <h1 class="text-xl font-bold line-height-2 tracking text-blue-900 text-center">Token no válido, intenta de nuevo.</h1>
+                <div class="text-center mt-4">
+                    <!-- botón regresar al login -->
 
-<style scoped>
-.bg-custom {
-    background-color: #00294f;
-}
-.tracking {
-    letter-spacing: 0.05em;
-}
-.tracking-wide {
-    letter-spacing: 0.5em;
-}
-</style>
+                    <p class="text-base text-blue-900">
+                        <a href="/auth/login" class="font-medium hover:underline">Regresar</a>
+                    </p>
+                </div>
+            </template>
+        </Card>
+    </p>
+</template>
