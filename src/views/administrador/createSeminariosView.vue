@@ -4,7 +4,6 @@ import { ref, inject, onMounted, watch } from 'vue';
 import catalogoApi from '../../api/catalogoApi.js';
 import Spinner from '../../components/Spinner.vue';
 
-const isAccepting = ref(false);
 const toast = inject('toast');
 
 const carreras = ref([]);
@@ -106,10 +105,44 @@ const showModalDocumentos = (data) => {
     }));
 };
 
+const modalEditaDocumentos = ref(false);
+const DataEditarDocumentos = ref([]);
+
+const showModalEditarDocumentos = (data) => {
+    modalEditaDocumentos.value = true;
+
+    DataEditarDocumentos.value = {
+        curso_id: data.curso_id,
+        det_doc_alumnos: data.det_doc_alumnos.filter((doc) => !doc.egresado).map((doc) => doc.documento),
+        det_doc_egresados: data.det_doc_alumnos.filter((doc) => doc.egresado).map((doc) => doc.documento),
+        det_doc_docentes: data.det_doc_docentes.map((doc) => doc.documento)
+    };
+};
+
+const updateDocumentosCurso = async () => {
+    loading.value = true;
+
+    try {
+        const response = await catalogoApi.updateDocumentosCurso(DataEditarDocumentos.value);
+
+        toast.open({
+            message: response.data.msg,
+            type: 'success'
+        });
+        modalEditaDocumentos.value = false;
+        loadCursos();
+    } catch (error) {
+        toast.open({
+            message: error.response && error.response.data.msg ? error.response.data.msg : 'Error desconocido',
+            type: 'error'
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+
 const saveCurso = async () => {
     submitted.value = true;
-    isAccepting.value = true;
-
     loading.value = true;
 
     try {
@@ -120,6 +153,25 @@ const saveCurso = async () => {
                 message: response.data.msg,
                 type: 'success'
             });
+            if (cursosEdit.value.det_doc_alumnos.length === 0 && cursosEdit.value.det_doc_docentes.length === 0) {
+                showModalDocumentos(cursosEdit.value);
+            } else {
+                const alumnosHaveStates = cursosEdit.value.det_doc_alumnos.some((doc) => doc.doc_alumnos_estados && doc.doc_alumnos_estados.length > 0);
+                const docentesHaveStates = cursosEdit.value.det_doc_docentes.some((doc) => doc.doc_docente_estados && doc.doc_docente_estados.length > 0);
+
+                if (!alumnosHaveStates && !docentesHaveStates) {
+                    showModalEditarDocumentos(cursosEdit.value);
+                } else {
+                    cursosModal.value = false;
+                    cursosEdit.value = {};
+                    isEditMode.value = false;
+                    await loadCursos();
+                    toast.open({
+                        message: 'Accion cancelada, ya hay usuarios asociados a estos documentos',
+                        type: 'error'
+                    });
+                }
+            }
         } else {
             response = await catalogoApi.createCurso(cursosEdit.value);
             toast.open({
@@ -138,7 +190,6 @@ const saveCurso = async () => {
         });
     } finally {
         loading.value = false;
-        isAccepting.value = false;
     }
 };
 
@@ -150,7 +201,6 @@ const editCursos = (curso) => {
 };
 
 const saveAsignarDocumentos = async () => {
-    isAccepting.value = true;
     loading.value = true;
 
     try {
@@ -168,7 +218,6 @@ const saveAsignarDocumentos = async () => {
         });
     } finally {
         loading.value = false;
-        isAccepting.value = false;
     }
 };
 
@@ -206,7 +255,7 @@ const showModalDocumentosInfo = (dataAlumno, dataDocente) => {
 };
 </script>
 <template>
-    <Spinner v-if="isAccepting" />
+    <Spinner v-if="loading" />
     <div class="grid">
         <div class="col-12">
             <div class="card">
@@ -426,6 +475,60 @@ const showModalDocumentosInfo = (dataAlumno, dataDocente) => {
                             </DataTable>
                         </TabPanel>
                     </TabView>
+                </Dialog>
+                <Dialog v-model:visible="modalEditaDocumentos" class="w-full md:w-6 p-fluid" header="Editar Documentos Curso" :modal="true">
+                    <div class="field">
+                        <label for="curso_id">Documentos del Alumno </label>
+                        <MultiSelect v-model="DataEditarDocumentos.det_doc_alumnos" :options="dataDocumentos" optionLabel="nombre_documento" placeholder="Selecciona el documento" :filter="true" class="w-full">
+                            <template #value="slotProps">
+                                <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.det_alumno_id">
+                                    <div>{{ option.nombre_documento }}</div>
+                                </div>
+                                <template v-if="!slotProps.value || slotProps.value.length === 0">
+                                    <div class="p-1">Selecciona el documento</div>
+                                </template>
+                            </template>
+                            <template #option="slotProps">
+                                <div>{{ slotProps.option.nombre_documento }}</div>
+                            </template>
+                        </MultiSelect>
+                    </div>
+                    <div class="field">
+                        <label for="curso_id">Documentos del Egresado </label>
+                        <MultiSelect v-model="DataEditarDocumentos.det_doc_egresados" :options="dataDocumentos" optionLabel="nombre_documento" placeholder="Selecciona el documento" :filter="true" class="w-full">
+                            <template #value="slotProps">
+                                <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.det_alumno_id">
+                                    <div>{{ option.nombre_documento }}</div>
+                                </div>
+                                <template v-if="!slotProps.value || slotProps.value.length === 0">
+                                    <div class="p-1">Selecciona el documento</div>
+                                </template>
+                            </template>
+                            <template #option="slotProps">
+                                <div>{{ slotProps.option.nombre_documento }}</div>
+                            </template>
+                        </MultiSelect>
+                    </div>
+                    <div class="field">
+                        <label for="curso_id">Documentos del Docente </label>
+                        <MultiSelect v-model="DataEditarDocumentos.det_doc_docentes" :options="dataDocumentos" optionLabel="nombre_documento" placeholder="Selecciona el documento" :filter="true" class="w-full">
+                            <template #value="slotProps">
+                                <div class="inline-flex align-items-center py-1 px-2 bg-blue-900 text-white border-round mr-2" v-for="option of slotProps.value" :key="option.det_alumno_id">
+                                    <div>{{ option.nombre_documento }}</div>
+                                </div>
+                                <template v-if="!slotProps.value || slotProps.value.length === 0">
+                                    <div class="p-1">Selecciona el documento</div>
+                                </template>
+                            </template>
+                            <template #option="slotProps">
+                                <div>{{ slotProps.option.nombre_documento }}</div>
+                            </template>
+                        </MultiSelect>
+                    </div>
+                    <template #footer>
+                        <Button label="Cancelar" icon="pi pi-times" text="" @click="modalEditaDocumentos = false" />
+                        <Button label="Guardar" icon="pi pi-check" text="" @click="updateDocumentosCurso" />
+                    </template>
                 </Dialog>
             </div>
         </div>

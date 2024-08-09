@@ -429,10 +429,7 @@ const openFilePreview = (url) => {
                                                     <div class="text-900 font-bold text-xl">Área</div>
                                                     <div class="text-900 text-lg">{{ tesina.area_tesina }}</div>
                                                 </div>
-                                                <div class="flex flex-column w-full md:w-1/2">
-                                                    <div class="text-900 font-bold text-xl">Reseña</div>
-                                                    <div class="text-900">{{ tesina.resenia_tesina }}</div>
-                                                </div>
+
                                                 <div class="flex flex-column w-full md:w-1/2">
                                                     <div class="text-900 font-bold text-xl">Participantes</div>
                                                     <div class="text-900 flex flex-wrap gap-1">
@@ -454,10 +451,6 @@ const openFilePreview = (url) => {
                                                     <div class="text-900 font-bold text-xl">Asesor</div>
                                                     <div class="text-900">{{ tesina.Docente.nombre }} {{ tesina.Docente.apellido_p }} {{ tesina.Docente.apellido_m }}</div>
                                                 </div>
-                                                <div class="flex flex-column w-full md:w-1/2" v-if="tesina.usuario_id_docente">
-                                                    <div class="text-900 font-bold text-xl">Correo Asesor</div>
-                                                    <div class="text-900">{{ tesina.Docente.email_usuario }}</div>
-                                                </div>
 
                                                 <div class="flex flex-column w-full md:w-1/2">
                                                     <div class="text-900 font-bold text-lg">Status</div>
@@ -468,6 +461,12 @@ const openFilePreview = (url) => {
                                                         <Tag v-if="tesina.status == 'RECHAZADO'" class="mr-2" severity="danger" value="Rechazado"></Tag>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 pt-0">
+                                            <div class="flex flex-column w-full md:w-1/2">
+                                                <div class="text-900 font-bold text-xl">Reseña</div>
+                                                <div class="text-900 text-justify">{{ tesina.resenia_tesina }}</div>
                                             </div>
                                         </div>
                                     </div>

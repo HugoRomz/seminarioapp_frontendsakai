@@ -207,7 +207,7 @@ const handleSubmit = async (formData) => {
     </div>
     <div v-else>
         <Card style="width: 25rem">
-            <template #title><h3 class="tracking-tight text-2xl font-bold">No hay cursos disponibles</h3> </template>
+            <template #title><h3 class="tracking-tight text-2xl font-bold text-center">No hay cursos disponibles</h3> </template>
             <template #content>
                 <div class="text-center">
                     <p class="mt-0 mb-5 text-center text-lg">Lo sentimos, no tenemos cursos disponibles en este momento</p>

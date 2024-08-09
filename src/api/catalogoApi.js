@@ -240,6 +240,15 @@ export default {
         });
     },
 
+    updateDocumentosCurso(data) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.put(`/catalogo/documentosCurso`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
     // Usuarios
     findUsuarios() {
         const token = localStorage.getItem('AUTH_TOKEN');
