@@ -81,9 +81,9 @@ export default {
             }
         });
     },
-    getAllTesinas() {
+    getAllTesinas(perido_id) {
         const token = localStorage.getItem('AUTH_TOKEN');
-        return api.get('/tesina/tesinas', {
+        return api.get(`/tesina/tesinasall/${perido_id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -120,6 +120,22 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
-    }
+    },
+    getDocentesConTesinasAsignadas(perido_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/tesina/docentes-asignados/${perido_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+    loadPeriodos() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/tesina/periodo', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
 };
 
