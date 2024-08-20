@@ -290,7 +290,7 @@ const openFilePreview = (url) => {
 
 <template>
     <Spinner v-if="loading" />
-    <div class="grid-nogutter">
+    <div class="grid">
         <!-- FORM PARA REGISTRAR TESINA Y COMPAÑEROS -->
         <div v-if="showForm" class="col-12 md:col-6">
             <div class="card">
@@ -483,14 +483,14 @@ const openFilePreview = (url) => {
                                                 <Button label="Ver" class="w-full" @click="openFilePreview(existTesina.url_documento)" />
                                             </div>
                                             <div v-else class="field">
-                                                <Message severity="info">Info Message</Message>
+                                                <Message severity="info">Proporciona la URL de la tesina en cualquier plataforma (GitHub, Drive, MEGA, etc.).</Message>
                                                 <label for="url_tesina">Url de la Tesina</label>
                                                 <InputText id="url_tesina" v-model="tesinaform.url_documento" required placeholder="www.drive.google.com/tesina.pdf || www.dropbox.com/tesina.zip" />
                                             </div>
                                         </template>
                                         <template #footer v-if="!existTesina.url_documento">
                                             <div class="flex gap-3 mt-1">
-                                                <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarTesina" />
+                                                <!-- <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarTesina" /> -->
                                                 <Button label="Guardar" class="w-full" @click="saveUrlTesina" />
                                             </div>
                                         </template>
@@ -504,14 +504,14 @@ const openFilePreview = (url) => {
                                                 <Button label="Ver" class="w-full" @click="openFilePreview(existProyecto.url_documento)" />
                                             </div>
                                             <div v-else class="field">
-                                                <Message severity="info">Info Message</Message>
+                                                <Message severity="info">Proporciona la URL del proyecto en cualquier plataforma (GitHub, Drive, MEGA, etc.).</Message>
                                                 <label for="url_proyecto">Url del Proyecto</label>
                                                 <InputText id="url_proyecto" v-model.trim="proyectoform.url_documento" required placeholder="www.github.com/usuario/proyecto.git || www.dropbox.com/proyecto.zip" />
                                             </div>
                                         </template>
                                         <template #footer v-if="!existProyecto.url_documento">
                                             <div class="flex gap-3 mt-1">
-                                                <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarProyecto" />
+                                                <!-- <Button label="Limpiar" severity="secondary" outlined class="w-full" @click="limpiarProyecto" /> -->
                                                 <Button label="Guardar" class="w-full" @click="saveUrlProyecto" />
                                             </div>
                                         </template>

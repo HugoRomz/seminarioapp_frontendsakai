@@ -444,7 +444,10 @@ const confirm2 = () => {
         </template>
     </Dialog>
 
-    <Dialog v-model:visible="alumnoModal" header="Asignar Alumnos" :modal="true" class="p-fluid" style="min-width: 25%">
+    <Dialog v-model:visible="alumnoModal" header="Asignar Alumnos" :modal="true" class="p-fluid" style="min-width: 30%">
+        <template #header>
+            <Message severity="info" :closable="false" class="my-0">Los grupos máximos para cada curso son de 29 alumnos</Message>
+        </template>
         <div class="field">
             <label for="materia">Selecciona los alumnos</label>
             <MultiSelect v-model="alumnosForm.usuario_id" :options="alumnosdata" optionLabel="usuario_id" placeholder="Selecciona los alumnos" :filter="true">

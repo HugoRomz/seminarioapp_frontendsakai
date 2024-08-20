@@ -161,5 +161,27 @@ export default {
                 Authorization: `Bearer ${token}`
             }
         });
+    },
+
+    getAlumnosAceptados(curso_periodo_id) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get(`/seminario/AlumnosAceptados/${curso_periodo_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    aceptarCursoconAlumnos(dataCurso, alumnos) {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.post(
+            '/seminario/aceptarCursoconAlumnos',
+            { dataCurso, alumnos },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
     }
 };

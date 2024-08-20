@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, inject } from 'vue';
 import { FilterMatchMode } from 'primevue/api';
+import { useConfirm } from 'primevue/useconfirm';
 const toast = inject('toast');
 
 import { useRouter } from 'vue-router';
@@ -9,6 +10,8 @@ const router = useRouter();
 import SeminarioApi from '../../api/SeminarioApi.js';
 
 import Spinner from '../../components/Spinner.vue';
+const confirm = useConfirm();
+const curso_periodo_id = ref();
 
 const filters = ref();
 const loadingSpinner = ref(false);
@@ -119,6 +122,9 @@ const openModalPeriodo = () => {
 const openModalAceptarCurso = async (data) => {
     loadingSpinner.value = true;
     aceptarCurso.value = true;
+
+    curso_periodo_id.value = data.curso_periodo_id;
+
     try {
         const response = await SeminarioApi.getMateriasCurso(data.curso_id);
         if (dataDocentes.value.length === 0) {
@@ -167,6 +173,9 @@ const savePeriodo = async () => {
 };
 const validateSaveCurso = () => {
     // Verificar si hay campos vacíos en los formDataModulos
+
+    console.log('golAAA');
+
     let camposVacios = false;
     formDataModulos.value.forEach((modulo) => {
         if (!modulo.fecha_inicio || !modulo.fecha_cierre || !modulo.docente) {
@@ -187,17 +196,73 @@ const validateSaveCurso = () => {
 const saveAceptarCurso = async () => {
     loadingSpinner.value = true;
     try {
-        const response = await SeminarioApi.aceptarCurso(formDataModulos.value);
-        toast.open({
-            message: response.data.msg,
-            type: 'success'
-        });
-        dataModulos.value = [];
-        formDataModulos.value = [];
-        aceptarCurso.value = false;
-        loadSeminarios();
+        const alumnosAceptados = await SeminarioApi.getAlumnosAceptados(curso_periodo_id.value);
+
+        if (alumnosAceptados.data.length > 0) {
+            confirm.require({
+                group: 'templating',
+                header: 'Confirmación de Alumnos',
+                message: 'Estos son los alumnos que se agregarán:',
+                icon: 'pi pi-exclamation-circle',
+                acceptIcon: 'pi pi-check',
+                rejectIcon: 'pi pi-times',
+                rejectClass: 'p-button-outlined p-button-sm',
+                acceptClass: 'p-button-sm',
+                rejectLabel: 'Cancelar',
+                acceptLabel: 'Aceptar',
+                alumnos: alumnosAceptados,
+                accept: async () => {
+                    try {
+                        const response = await SeminarioApi.aceptarCursoconAlumnos(formDataModulos.value, alumnosAceptados);
+                        toast.open({
+                            message: response.data.msg,
+                            type: 'success'
+                        });
+                        dataModulos.value = [];
+                        formDataModulos.value = [];
+                        aceptarCurso.value = false;
+                        loadSeminarios();
+                    } catch (error) {
+                        toast.open({
+                            message: error.response?.data?.msg || 'Error al aceptar el curso.',
+                            type: 'error'
+                        });
+                    } finally {
+                        loadingSpinner.value = false;
+                    }
+                },
+                reject: () => {
+                    toast.open({
+                        message: 'Operación cancelada.',
+                        type: 'info'
+                    });
+                }
+            });
+        } else {
+            try {
+                const response = await SeminarioApi.aceptarCurso(formDataModulos.value);
+                toast.open({
+                    message: response.data.msg,
+                    type: 'success'
+                });
+                dataModulos.value = [];
+                formDataModulos.value = [];
+                aceptarCurso.value = false;
+                loadSeminarios();
+            } catch (error) {
+                toast.open({
+                    message: error.response?.data?.msg || 'Error al aceptar el curso.',
+                    type: 'error'
+                });
+            } finally {
+                loadingSpinner.value = false;
+            }
+        }
     } catch (error) {
-        console.error('Error al aceptar el curso:', error);
+        toast.open({
+            message: error.response?.data?.msg || 'Error al aceptar el curso.',
+            type: 'error'
+        });
     } finally {
         loadingSpinner.value = false;
     }
@@ -240,6 +305,32 @@ const clearFilter = () => {
 };
 </script>
 <template>
+    <ConfirmDialog group="templating">
+        <template #message="slotProps">
+            <div class="flex flex-column align-items-center w-full gap-3 border-bottom-1 surface-border">
+                <i :class="slotProps.message.icon" class="text-6xl text-primary-500"></i>
+                <p>{{ slotProps.message.message }}</p>
+                <DataTable :value="slotProps.message.alumnos.data" showGridlines class="w-full" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]">
+                    <Column field="matricula" header="ID">
+                        <template #body="{ data }">
+                            <template v-if="data.alumno">
+                                <span>{{ data.alumno.matricula }}</span>
+                            </template>
+                            <template v-else-if="data.egresado">
+                                <span>{{ data.egresado.cod_egresado }}</span>
+                            </template>
+                            <template v-else>
+                                <span>N/a</span>
+                            </template>
+                        </template>
+                    </Column>
+                    <Column field="nombre" header="Nombre" />
+                    <Column field="apellido_p" header="Apellido P" />
+                    <Column field="apellido_m" header="Apellido M" />
+                </DataTable>
+            </div>
+        </template>
+    </ConfirmDialog>
     <Spinner v-if="loadingSpinner" />
     <div class="grid">
         <div class="col-12">
@@ -444,6 +535,7 @@ const clearFilter = () => {
                                 <div class="flex pt-7 justify-content-between">
                                     <Button v-if="index > 0" label="Regresar" icon="pi pi-arrow-left" @click="prevCallback" />
                                     <Button v-else label="Regresar" icon="pi pi-arrow-left" disabled />
+                                    <Message severity="info" :closable="false" class="my-0">Los grupos máximos para cada curso son de 29 alumnos</Message>
                                     <Button v-if="index < dataModulos.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" />
                                     <Button v-else label="Guardar" icon="pi pi-check" iconPos="right" @click="validateSaveCurso()" />
                                 </div>
