@@ -27,8 +27,11 @@ const docenteSeleccionado = ref(null);
 const motivoRechazo = ref('');
 const selectedStatus = ref('Todos');
 
+const showTesinasRegistradas = ref(true);
+
 watch(selectedPeriodos, async (newValue) => {
     if (newValue && newValue.value.periodo_id) {
+        showTesinasRegistradas.value = false;
         await getAllTesinas(newValue.value.periodo_id);
         await getDocentesConTesinas(newValue.value.periodo_id);
     }
@@ -38,7 +41,7 @@ const filterTesinasByStatus = () => {
     if (selectedStatus.value === 'Todos') {
         return tesinas.value;
     }
-    return tesinas.value.filter(tesina => tesina.status === selectedStatus.value);
+    return tesinas.value.filter((tesina) => tesina.status === selectedStatus.value);
 };
 
 const getAllTesinas = async (periodoId) => {
@@ -251,8 +254,24 @@ const openFilePreview = (url) => {
 
 const initFilters = () => {
     filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.EQUALS }
     };
+};
+
+const statuses = ref(['ACEPTADO', 'PENDIENTE', 'REGISTRADO']);
+
+const getSeverity = (status) => {
+    switch (status) {
+        case 'ACEPTADO':
+            return 'success';
+
+        case 'REGISTRADO':
+            return 'info';
+
+        case 'PENDIENTE':
+            return 'warning';
+    }
 };
 
 initFilters();
@@ -342,7 +361,7 @@ const clearFilter = () => {
                         </Fieldset>
                     </div>
                     <div class="col-12">
-                        <Fieldset class="mb-3" legend="Tesinas Registradas" :toggleable="true" :collapsed="false">
+                        <Fieldset class="mb-3" legend="Tesinas Registradas" :toggleable="true" :collapsed="showTesinasRegistradas">
                             <div class="card bg-white shadow-xl rounded-lg p-5 border border-gray-200">
                                 <div class="mb-4">
                                     <Dropdown v-model="selectedStatus" :options="['Todos', 'PENDIENTE', 'ACEPTADO']" placeholder="Filtrar por estado" />
@@ -357,6 +376,8 @@ const clearFilter = () => {
                                     :rowsPerPageOptions="[5, 10, 20, 50]"
                                     :expandedRows="expandedRows"
                                     @rowToggle="onRowToggle"
+                                    :globalFilterFields="['status']"
+                                    filterDisplay="row"
                                 >
                                     <template #header>
                                         <div class="flex justify-content-between flex-column sm:flex-row">
@@ -380,9 +401,16 @@ const clearFilter = () => {
                                             {{ format(new Date(data.fecha_registro), 'yyyy-MM-dd') }}
                                         </template>
                                     </Column>
-                                    <Column field="status" header="Status">
+                                    <Column field="status" header="Status" :showFilterMenu="false" :filterMenuStyle="{ width: '14rem' }">
                                         <template #body="{ data }">
-                                            <Tag :value="data.status" :severity="data.status === 'ACEPTADO' ? 'success' : data.status === 'REGISTRADO' ? 'success' : data.status === 'RECHAZADO' ? 'danger' : 'warning'" />
+                                            <Tag :value="data.status" :severity="data.status === 'ACEPTADO' ? 'success' : data.status === 'REGISTRADO' ? 'info' : data.status === 'RECHAZADO' ? 'danger' : 'warning'" />
+                                        </template>
+                                        <template #filter="{ filterModel, filterCallback }">
+                                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="statuses" placeholder="Selecciona" class="p-column-filter" style="min-width: 12rem" :showClear="true">
+                                                <template #option="slotProps">
+                                                    <Tag :value="slotProps.option" :severity="getSeverity(slotProps.option)" />
+                                                </template>
+                                            </Dropdown>
                                         </template>
                                     </Column>
                                     <Column header="Acciones" bodyStyle="text-align:center" style="width: 20rem">
