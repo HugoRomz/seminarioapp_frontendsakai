@@ -205,6 +205,11 @@ const items = ref([{ label: 'Catalogo' }, { label: 'Materias', route: '/admin/ma
                                     <Badge :value="data.creditos" size="large" severity="secondary"></Badge>
                                 </template>
                             </Column>
+                            <Column field="status" header="Status" dataType="boolean" :sortable="true" style="width: 3rem">
+                                <template #body="{ data }">
+                                    <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.status, 'pi-times-circle text-red-500': !data.status }"></i>
+                                </template>
+                            </Column>
                             <Column headerStyle="min-width:10rem;" header="Acciones">
                                 <template #body="{ data }">
                                     <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editMateria(data)" />
