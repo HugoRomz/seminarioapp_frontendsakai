@@ -137,5 +137,13 @@ export default {
             }
         });
     },
+    getDocentes() {
+        const token = localStorage.getItem('AUTH_TOKEN');
+        return api.get('/tesina/docentes', {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
 };
 
