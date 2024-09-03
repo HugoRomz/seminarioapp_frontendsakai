@@ -129,6 +129,14 @@ onMounted(async () => {
 const submitProject = async () => {
     loading.value = true;
     try {
+        if (RegTesina.value.nombre_tesina.length === 0 || RegTesina.value.area_tema.length === 0 || RegTesina.value.resenia_tema.length === 0) {
+            toast.open({
+                message: 'Por favor llena todos los campos.',
+                type: 'error'
+            });
+            return;
+        }
+
         if (RegTesina.value.invitado_email.length === 0 && invite.value === 'yes') {
             toast.open({
                 message: 'Por favor ingresa al menos un correo de compañero.',
@@ -153,6 +161,13 @@ const submitProject = async () => {
                     message: message,
                     type: 'success'
                 });
+                RegTesina.value = {
+                    userId: users.value.usuario_id,
+                    nombre_tesina: '',
+                    area_tema: '',
+                    resenia_tema: '',
+                    invitado_email: []
+                };
             }
 
             if (failedInvitations.length > 0) {
@@ -335,8 +350,8 @@ const openFilePreview = (url) => {
             <Card>
                 <template #title> Invitaciones Realizadas</template>
                 <template #content>
-                    <div class="grid">
-                        <div v-for="invitacion in invitaciones" :key="invitacion.id" class="col-12 lg:col-4">
+                    <div v-if="invitaciones.length > 0" class="grid">
+                        <div v-for="invitacion in invitaciones" :key="invitacion.id" class="col-12">
                             <Card>
                                 <template #content>
                                     <div class="flex flex-column">
@@ -363,6 +378,9 @@ const openFilePreview = (url) => {
                                 </template>
                             </Card>
                         </div>
+                    </div>
+                    <div v-else>
+                        <Message severity="info">No has realizado ninguna invitación.</Message>
                     </div>
                 </template>
             </Card>
