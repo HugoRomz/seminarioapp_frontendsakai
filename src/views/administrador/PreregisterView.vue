@@ -84,6 +84,8 @@ const aceptarUsuario = async (userData) => {
 };
 
 const rechazarUsuario = async (userData) => {
+    console.log(userData);
+
     confirmPopup.require({
         target: event.target,
         message: '¿Estás seguro de que quieres rechazar a este usuario?',
@@ -93,9 +95,10 @@ const rechazarUsuario = async (userData) => {
         accept: async () => {
             isAccepting.value = true;
             try {
-                const response = await UserApi.delete(userData.id);
+                // const response = await UserApi.delete(userData.id);
                 toast.open({
-                    message: response.data.msg,
+                    // message: response.data.msg,
+                    message: 'Este es un Error del administrador',
                     type: 'success'
                 });
                 loadUsers(selectedPeriodos.value.periodo_id);
@@ -134,6 +137,7 @@ const getRandomPastelColor = () => {
 </script>
 
 <template>
+    <ConfirmPopup></ConfirmPopup>
     <Spinner v-if="isAccepting" />
     <div class="grid">
         <div class="col-12">
