@@ -147,14 +147,34 @@ const submitProject = async () => {
 
         if (RegTesina.value.invitado_email.length === 0) {
             const response = await TesinaApi.createTesina(RegTesina.value);
-            toast.open({
-                message: 'Tesina registrada con éxito.',
-                type: 'success'
-            });
-            cargarData();
+            const { alreadyHasTesinaName } = response.data;
+            
+            if (alreadyHasTesinaName && alreadyHasTesinaName.length > 0) {
+                toast.open({
+                    message: `Ya existe una tesina registrada con el nombre: ${alreadyHasTesinaName.join(', ')}`,
+                    type: 'error'
+                });
+                return;
+            } else {
+                toast.open({
+                    message: 'Tesina registrada con éxito.',
+                    type: 'success'
+                });
+                cargarData(); // Asegúrate de que esta función funcione correctamente.
+                return; // Agrega return para detener el flujo después del registro exitoso
+            }
+
         } else {
             const response = await TesinaApi.createInvitation(RegTesina.value);
-            const { message, successfulInvitations, failedInvitations, pendingInvitations } = response.data;
+            const { message, successfulInvitations, failedInvitations, pendingInvitations, alreadyHasTesina, alreadyHasTesinaName } = response.data;
+
+            if (alreadyHasTesinaName && alreadyHasTesinaName.length > 0) {
+                toast.open({
+                    message: `Ya existe una tesina registrada con el nombre: ${alreadyHasTesinaName.join(', ')}`,
+                    type: 'error'
+                });
+                return;
+            }
 
             if (successfulInvitations.length > 0) {
                 toast.open({
@@ -184,11 +204,18 @@ const submitProject = async () => {
                 });
             }
 
+            if (alreadyHasTesina.length > 0) {
+                toast.open({
+                    message: `Los siguientes correos ya tienen una tesina registrada: ${alreadyHasTesina.join(', ')}`,
+                    type: 'error'
+                });
+            }
+
             cargarData();
         }
     } catch (error) {
         toast.open({
-            message: error.response && error.response.data.message ? error.response.data.message : 'Error al registrar la tesina',
+            message: error.response && error.response.data.message ? error.response.data.message : 'Error al registrar la tesinaaaa',
             type: 'error'
         });
         showForm.value = true;
