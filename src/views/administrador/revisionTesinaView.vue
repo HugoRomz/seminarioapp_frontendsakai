@@ -206,7 +206,7 @@ const rechazarRegistroTesina = async () => {
             message: 'Has rechazado la tesina y todas las relacionadas',
             type: 'success'
         });
-        await getAllTesinas(); // Reload data after rejecting
+        await getAllTesinas(selectedPeriodos.value.value.periodo_id);
     } catch (error) {
         toast.open({
             message: 'Error al rechazar las tesinas',
@@ -226,7 +226,7 @@ const rechazarDocumentoTesina = async () => {
             message: 'Has rechazado el documento de la tesina y todos las relacionadas',
             type: 'success'
         });
-        getAllTesinas();
+        await getAllTesinas(selectedPeriodos.value.value.periodo_id);
     } catch (error) {
         toast.open({
             message: 'Error al rechazar el documento de las tesinas',
